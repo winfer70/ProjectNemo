@@ -1,0 +1,11 @@
+{
+  "name": "Project Nemo",
+  "short_name": "Nemo",
+  "description": "Aquarium automation dashboard",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "landscape",
+  "background_color": "#0a1628",
+  "theme_color": "#0a1628",
+  "icons": []
+}

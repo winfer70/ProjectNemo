@@ -1,0 +1,11 @@
+{
+  "domain": "fluvalble",
+  "name": "Fluval Shaker BLE",
+  "version": "1.1.0",
+  "config_flow": true,
+  "dependencies": ["bluetooth"],
+  "codeowners": ["@nemo-project"],
+  "iot_class": "local_push",
+  "documentation": "https://github.com/mrzottel/fluvalble",
+  "requirements": ["bleak>=0.21.0"]
+}

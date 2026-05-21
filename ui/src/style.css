@@ -1,0 +1,486 @@
+/* ── CSS Variables ─────────────────────────────────────────── */
+:root {
+  --bg: #0a1628;
+  --bg-card: #0e2040;
+  --bg-card2: #132848;
+  --accent: #00b4d8;
+  --accent2: #48cae4;
+  --ok: #2ec4b6;
+  --warn: #f4a261;
+  --danger: #e63946;
+  --text: #e8f4f8;
+  --text-muted: #7ba3be;
+  --border: #1a3a5c;
+  --radius: 12px;
+  --tab-h: 56px;
+  --header-h: 52px;
+}
+
+/* ── Reset ─────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body, #app { height: 100%; overflow: hidden; }
+body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); }
+
+/* ── Layout ────────────────────────────────────────────────── */
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.app-header {
+  height: var(--header-h);
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  flex-shrink: 0;
+}
+
+.app-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 12px;
+  padding-bottom: calc(var(--tab-h) + 8px);
+}
+
+.tab-bar {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  height: var(--tab-h);
+  background: var(--bg-card);
+  border-top: 1px solid var(--border);
+  display: flex;
+  z-index: 100;
+}
+
+.tab-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 10px;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+
+.tab-btn.active { color: var(--accent); }
+.tab-btn svg { width: 22px; height: 22px; }
+
+/* ── Cards ─────────────────────────────────────────────────── */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  margin-bottom: 10px;
+}
+
+.card-title {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+}
+
+/* ── Grid helpers ──────────────────────────────────────────── */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+
+/* ── Gauges ────────────────────────────────────────────────── */
+.gauge-value {
+  font-size: 2.8rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--text);
+}
+.gauge-unit { font-size: 1rem; color: var(--text-muted); }
+.gauge-range { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+/* ── Status badges ─────────────────────────────────────────── */
+.badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+.badge-ok { background: rgba(46,196,182,0.15); color: var(--ok); }
+.badge-warn { background: rgba(244,162,97,0.15); color: var(--warn); }
+.badge-danger { background: rgba(230,57,70,0.15); color: var(--danger); }
+
+/* ── Buttons ───────────────────────────────────────────────── */
+.btn {
+  padding: 9px 18px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  transition: opacity 0.15s;
+}
+.btn:active { opacity: 0.75; }
+.btn-primary { background: var(--accent); color: #000; }
+.btn-secondary { background: var(--bg-card2); color: var(--text); border: 1px solid var(--border); }
+.btn-danger { background: var(--danger); color: #fff; }
+.btn-sm { padding: 5px 12px; font-size: 12px; }
+.btn-full { width: 100%; }
+
+/* ── Progress bar ──────────────────────────────────────────── */
+.progress-bar {
+  height: 6px;
+  background: var(--border);
+  border-radius: 3px;
+  overflow: hidden;
+  margin: 6px 0;
+}
+.progress-fill {
+  height: 100%;
+  border-radius: 3px;
+  background: var(--accent);
+  transition: width 0.4s ease;
+}
+.progress-fill.warn { background: var(--warn); }
+.progress-fill.danger { background: var(--danger); }
+
+/* ── Sliders (Fluval channels) ─────────────────────────────── */
+.channel-slider { display: flex; align-items: center; gap: 8px; margin: 6px 0; }
+.channel-label { width: 16px; font-size: 12px; font-weight: 700; }
+.channel-slider input[type=range] { flex: 1; accent-color: var(--accent); }
+.channel-value { width: 36px; text-align: right; font-size: 12px; color: var(--text-muted); }
+
+/* ── Smart plug cards ──────────────────────────────────────── */
+.plug-card { text-align: center; padding: 12px 8px; }
+.plug-state { font-size: 11px; font-weight: 700; margin-top: 4px; }
+.plug-state.on { color: var(--ok); }
+.plug-state.off { color: var(--text-muted); }
+.plug-watts { font-size: 1.4rem; font-weight: 700; }
+.plug-kwh { font-size: 11px; color: var(--text-muted); }
+
+/* ── Water test table ──────────────────────────────────────── */
+.test-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 8px;
+}
+.test-param {
+  background: var(--bg-card2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px;
+  text-align: center;
+}
+.test-param.out-of-range { border-color: var(--danger); }
+.test-param-name { font-size: 10px; color: var(--text-muted); margin-bottom: 4px; }
+.test-param-value { font-size: 1.3rem; font-weight: 700; }
+.test-param-unit { font-size: 10px; color: var(--text-muted); }
+.test-param-age { font-size: 10px; color: var(--text-muted); margin-top: 4px; }
+
+/* ── Modal overlay ─────────────────────────────────────────── */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.7);
+  display: flex; align-items: flex-end; justify-content: center;
+  z-index: 200;
+}
+.modal-sheet {
+  background: var(--bg-card);
+  border-radius: var(--radius) var(--radius) 0 0;
+  border: 1px solid var(--border);
+  width: 100%;
+  max-width: 640px;
+  max-height: 85vh;
+  overflow-y: auto;
+  padding: 20px;
+}
+.modal-title { font-size: 16px; font-weight: 700; margin-bottom: 16px; }
+.modal-footer { display: flex; gap: 10px; margin-top: 16px; }
+
+/* ── Maintenance steps ─────────────────────────────────────── */
+.step-list { list-style: none; }
+.step-item {
+  display: flex; gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+  line-height: 1.4;
+}
+.step-num {
+  flex-shrink: 0;
+  width: 22px; height: 22px;
+  background: var(--accent);
+  color: #000;
+  border-radius: 50%;
+  font-size: 11px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+}
+.parts-list { margin-top: 12px; }
+.part-item { display: flex; align-items: center; gap: 8px; padding: 6px 0; font-size: 13px; }
+.part-item input[type=checkbox] { width: 18px; height: 18px; accent-color: var(--accent); }
+
+/* ── pH reading timer ──────────────────────────────────────── */
+.ph-timer { text-align: center; padding: 20px; }
+.ph-timer-ring {
+  width: 80px; height: 80px;
+  border-radius: 50%;
+  border: 4px solid var(--border);
+  border-top-color: var(--accent);
+  animation: spin 1s linear infinite;
+  margin: 0 auto 12px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Banners ───────────────────────────────────────────────── */
+.banner {
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+.banner-warn { background: rgba(244,162,97,0.15); border: 1px solid var(--warn); color: var(--warn); }
+.banner-ok { background: rgba(46,196,182,0.12); border: 1px solid var(--ok); color: var(--ok); }
+.banner-danger { background: rgba(230,57,70,0.12); border: 1px solid var(--danger); color: var(--danger); }
+
+/* ── Language toggle ───────────────────────────────────────── */
+.lang-toggle { font-size: 12px; cursor: pointer; color: var(--text-muted); user-select: none; }
+.lang-toggle span.active { color: var(--accent); font-weight: 700; }
+
+/* ── Responsive breakpoints ────────────────────────────────── */
+
+/* Phone (<768px) — single column */
+@media (max-width: 767px) {
+  .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+  .app-content { padding: 8px; }
+  .gauge-value { font-size: 2.2rem; }
+}
+
+/* Tab A11+ (768–1199px) — standard layout */
+@media (768px <= width <= 1199px) {
+  .grid-3 { grid-template-columns: repeat(3, 1fr); }
+  .grid-4 { grid-template-columns: repeat(4, 1fr); }
+}
+
+/* Tab S11 Ultra (≥1200px) — wider cards, more whitespace */
+@media (min-width: 1200px) {
+  .app-content { padding: 20px; width: 100%; }
+  .card { padding: 20px; }
+  .gauge-value { font-size: 3.5rem; }
+  .grid-4 { grid-template-columns: repeat(4, 1fr); gap: 16px; }
+  .test-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+}
+
+/* ── Calendar ──────────────────────────────────────────────── */
+.cal-container { padding-bottom: 4px; margin: 0 -12px; width: calc(100% + 24px); }
+
+.cal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0 14px;
+}
+
+.cal-nav-btn {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 5px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  transition: border-color 0.15s;
+}
+.cal-nav-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+.cal-month-title { font-size: 16px; font-weight: 700; }
+
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 3px;
+}
+
+.cal-weekday {
+  text-align: center;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-muted);
+  padding: 2px 0 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.cal-day {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  min-height: 60px;
+  padding: 6px 5px 5px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  overflow: hidden;
+}
+.cal-day:hover { border-color: var(--accent); }
+.cal-day.other-month { opacity: 0.25; cursor: default; pointer-events: none; }
+.cal-day.today { border-color: var(--accent); background: rgba(0,180,216,0.06); }
+.cal-day.selected { border-color: var(--accent); background: rgba(0,180,216,0.14); }
+
+.cal-day-num {
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 5px;
+  color: var(--text);
+}
+.cal-day.today .cal-day-num { color: var(--accent); }
+
+/* day cell layout */
+.cal-day {
+  display: flex;
+  flex-direction: column;
+}
+.cal-day-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+  margin-bottom: 3px;
+}
+.cal-all-done {
+  font-size: 10px;
+  color: var(--ok);
+  font-weight: 700;
+}
+.cal-day-rows {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-height: 0;
+}
+.cal-day-row {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(255,255,255,0.04);
+  border-radius: 4px;
+  padding: 0 4px;
+  min-height: 0;
+  overflow: hidden;
+  transition: opacity 0.2s;
+}
+.cal-day-row.done { opacity: 0.4; }
+.cal-row-bar {
+  width: 3px;
+  align-self: stretch;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+.cal-row-text {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text);
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.cal-row-amt {
+  font-size: 9px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+/* remove old all-done absolute positioning sentinel */
+  font-weight: 900;
+  color: #000;
+}
+
+/* Day detail task list */
+.cal-detail-list { list-style: none; }
+
+.cal-task-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 13px 0;
+  border-bottom: 1px solid var(--border);
+}
+.cal-task-item:last-child { border-bottom: none; }
+
+.cal-task-color {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.cal-task-info { flex: 1; }
+
+.cal-task-name { font-size: 15px; font-weight: 600; }
+
+.cal-task-amount { font-size: 12px; color: var(--text-muted); margin-top: 3px; }
+
+.cal-task-done-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  background: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  color: var(--text-muted);
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+  flex-shrink: 0;
+}
+.cal-task-done-btn:active { opacity: 0.7; }
+.cal-task-done-btn.done {
+  border-color: var(--ok);
+  background: rgba(46,196,182,0.15);
+  color: var(--ok);
+}
+
+.cal-no-tasks {
+  color: var(--text-muted);
+  font-size: 13px;
+  padding: 12px 0;
+  text-align: center;
+}
+
+/* Responsive: phone — smaller cells */
+@media (max-width: 767px) {
+  .cal-day { min-height: 48px; padding: 4px 3px; }
+  .cal-day-num { font-size: 11px; }
+  .cal-month-title { font-size: 14px; }
+}
+
+/* Tablet landscape — larger text/dots */
+@media (min-width: 768px) {
+  .cal-day-num { font-size: 14px; }
+  .cal-month-title { font-size: 18px; }
+  .cal-grid { gap: 5px; }
+}
+
+/* Landscape: cells fill exact screen height (6 rows) */
+@media (orientation: landscape) and (min-width: 768px) {
+  .cal-day {
+    height: calc((100vh - var(--header-h) - var(--tab-h) - 120px) / 6);
+    min-height: unset;
+  }
+}
+
+/* Wide landscape (≥1200px, e.g. Tab A8+ 1280px) */
+@media (min-width: 1200px) {
+  .cal-container { margin: 0 -20px; width: calc(100% + 40px); }
+  .cal-header { padding: 8px 20px 18px; }
+}

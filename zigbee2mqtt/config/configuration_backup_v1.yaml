@@ -1,0 +1,29 @@
+homeassistant: true          # publish device state to HA via MQTT autodiscovery
+
+mqtt:
+  base_topic: zigbee2mqtt
+  server: mqtt://mosquitto:1883
+  user: nemo
+  password: change_me_mqtt   # match MQTT_PASSWORD in .env
+
+serial:
+  port: /dev/ttyUSB0          # SONOFF ZBDongle-E — use 1m USB extension cable
+  adapter: ezsp               # EFR32MG21 chip on the "E" variant
+
+frontend:
+  port: 8080
+  host: 0.0.0.0
+
+# Zigbee channel — 11-26 for 2.4GHz; pick one not overlapping WiFi channels 1/6/11
+advanced:
+  channel: 15
+  network_key: GENERATE       # Z2M auto-generates on first run — backup this value!
+  log_level: warn
+  pan_id: GENERATE
+  ext_pan_id: GENERATE
+
+# Permit join off by default — enable in UI when adding new devices
+permit_join: false
+
+# InfluxDB not needed for Z2M directly (HA handles it)
+# All Zigbee devices auto-discovered in HA via MQTT integration

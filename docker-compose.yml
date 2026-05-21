@@ -1,0 +1,145 @@
+version: "3.9"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Project Nemo — Docker Compose
+# REDACTED-HOST Ubuntu server
+# Services: mosquitto | homeassistant | zigbee2mqtt | influxdb | nemo-api | nemo-ui
+# ─────────────────────────────────────────────────────────────────────────────
+
+services:
+
+  # ── MQTT broker ────────────────────────────────────────────────────────────
+  mosquitto:
+    image: eclipse-mosquitto:2
+    container_name: nemo-mosquitto
+    restart: unless-stopped
+    ports:
+      - "1883:1883"
+      - "9001:9001"   # WebSocket (optional, for MQTT-over-WS clients)
+    volumes:
+      - ./mosquitto/config:/mosquitto/config:ro
+      - ./mosquitto/data:/mosquitto/data
+      - ./mosquitto/log:/mosquitto/log
+    networks:
+      - nemo-net
+
+  # ── Home Assistant ─────────────────────────────────────────────────────────
+  homeassistant:
+    image: ghcr.io/home-assistant/home-assistant:stable
+    container_name: nemo-homeassistant
+    restart: unless-stopped
+    privileged: true          # needed for USB device passthrough (ZBDongle-E)
+    environment:
+      - TZ=Europe/Dublin
+    ports:
+      - "8123:8123"
+      - "80:80"               # emulated_hue Alexa discovery (must be port 80)
+    volumes:
+      - ./homeassistant/config:/config
+    depends_on:
+      - mosquitto
+      - influxdb
+    networks:
+      - nemo-net
+
+  # ── Zigbee2MQTT ────────────────────────────────────────────────────────────
+  zigbee2mqtt:
+    image: koenkk/zigbee2mqtt:latest
+    container_name: nemo-zigbee2mqtt
+    restart: unless-stopped
+    environment:
+      - TZ=Europe/Dublin
+    ports:
+      - "8080:8080"           # Z2M web UI (local access only)
+    volumes:
+      - ./zigbee2mqtt/config:/app/data
+                                     # comment out HA device line if Z2M manages ZBDongle-E
+    depends_on:
+      - mosquitto
+    networks:
+      - nemo-net
+
+  # ── InfluxDB v2 ────────────────────────────────────────────────────────────
+  influxdb:
+    image: influxdb:2.7
+    container_name: nemo-influxdb
+    restart: unless-stopped
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=${INFLUXDB_INIT_MODE}
+      - DOCKER_INFLUXDB_INIT_USERNAME=${INFLUXDB_INIT_USERNAME}
+      - DOCKER_INFLUXDB_INIT_PASSWORD=${INFLUXDB_INIT_PASSWORD}
+      - DOCKER_INFLUXDB_INIT_ORG=${INFLUXDB_INIT_ORG}
+      - DOCKER_INFLUXDB_INIT_BUCKET=${INFLUXDB_INIT_BUCKET}
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=${INFLUXDB_INIT_ADMIN_TOKEN}
+    ports:
+      - "8086:8086"
+    volumes:
+      - influxdb-data:/var/lib/influxdb2
+      - influxdb-config:/etc/influxdb2
+    networks:
+      - nemo-net
+
+  # ── Nemo API (FastAPI + SQLite) ────────────────────────────────────────────
+  nemo-api:
+    build: ./api
+    container_name: nemo-api
+    restart: unless-stopped
+    environment:
+      - HA_URL=${HA_URL}
+      - HA_TOKEN=${HA_TOKEN}
+      - INFLUXDB_URL=${INFLUXDB_URL}
+      - INFLUXDB_TOKEN=${INFLUXDB_INIT_ADMIN_TOKEN}
+      - INFLUXDB_ORG=${INFLUXDB_INIT_ORG}
+      - INFLUXDB_BUCKET=${INFLUXDB_INIT_BUCKET}
+      - MQTT_HOST=${MQTT_HOST}
+      - MQTT_PORT=${MQTT_PORT}
+      - MQTT_USERNAME=${MQTT_USERNAME}
+      - MQTT_PASSWORD=${MQTT_PASSWORD}
+      - N8N_BASE_URL=${N8N_BASE_URL}
+      - N8N_WEBHOOK_ALERT=${N8N_WEBHOOK_ALERT}
+      - N8N_WEBHOOK_REMINDER=${N8N_WEBHOOK_REMINDER}
+      - N8N_WEBHOOK_SUPPLY=${N8N_WEBHOOK_SUPPLY}
+      - N8N_WEBHOOK_DAILY=${N8N_WEBHOOK_DAILY}
+      - TELEGRAM_LANG=${TELEGRAM_LANG}
+      - TAPO_FILTER_ENTITY=${TAPO_FILTER_ENTITY}
+      - TAPO_HEATER_ENTITY=${TAPO_HEATER_ENTITY}
+      - TAPO_LIGHT_ENTITY=${TAPO_LIGHT_ENTITY}
+      - TAPO_AIR_ENTITY=${TAPO_AIR_ENTITY}
+      - FLUVAL_BLE_MAC=${FLUVAL_BLE_MAC}
+      - ESPHOME_TEMP_ENTITY=${ESPHOME_TEMP_ENTITY}
+      - ESPHOME_PH_ENTITY=${ESPHOME_PH_ENTITY}
+      - API_SECRET_KEY=${API_SECRET_KEY}
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./api:/app
+      - nemo-db:/app/data    # SQLite lives here — persisted separately from code
+    depends_on:
+      - influxdb
+      - homeassistant
+    networks:
+      - nemo-net
+
+  # ── Nemo UI (Nginx + Vue 3 build) ─────────────────────────────────────────
+  nemo-ui:
+    build: ./ui
+    container_name: nemo-ui
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    depends_on:
+      - nemo-api
+    networks:
+      - nemo-net
+
+# ── Named volumes ──────────────────────────────────────────────────────────
+volumes:
+  influxdb-data:
+  influxdb-config:
+  nemo-db:
+
+# ── Network ────────────────────────────────────────────────────────────────
+networks:
+  nemo-net:
+    driver: bridge

@@ -1,0 +1,129 @@
+# Home Assistant configuration.yaml
+# Project Nemo — Aquarium Automation
+
+homeassistant:
+  name: "Project Nemo"
+  latitude: 0.0
+  longitude: 0.0
+  elevation: 20
+  unit_system: metric
+  time_zone: Europe/Dublin
+
+# ── Core ──────────────────────────────────────────────────────────────────────
+default_config:
+frontend:
+http:
+  server_host: 0.0.0.0
+  server_port: 8123
+
+# ── MQTT (Zigbee2MQTT bridge) ─────────────────────────────────────────────────
+mqtt:
+  broker: mosquitto
+  port: 1883
+  username: nemo
+  password: !secret mqtt_password
+  discovery: true
+  discovery_prefix: homeassistant
+
+# ── InfluxDB v2 — write all sensor + energy data ──────────────────────────────
+influxdb:
+  api_version: 2
+  host: influxdb
+  port: 8086
+  token: !secret influxdb_token
+  organization: nemo
+  bucket: aquarium
+  ssl: false
+  include:
+    entities:
+      - sensor.nemo_sensor_temperature
+      - sensor.nemo_sensor_ph
+      - sensor.tapo_filter_current_power
+      - sensor.tapo_filter_today_energy
+      - sensor.tapo_heater_current_power
+      - sensor.tapo_heater_today_energy
+      - sensor.tapo_light_current_power
+      - sensor.tapo_air_pump_current_power
+
+# ── ESPHome (auto-discovered via mDNS) ───────────────────────────────────────
+# No manual config needed — add ESPHome integration in UI after flashing the ESP32
+
+# ── Tapo P110 (auto-discovered via TP-Link Tapo integration) ─────────────────
+# Add "TP-Link Tapo" integration in HA UI — enter Tapo cloud credentials once
+# All P110 plugs appear automatically with switch + sensor entities
+
+# ── emulated_hue — Alexa voice control (free, local) ─────────────────────────
+emulated_hue:
+  host_ip: !secret lan_ip
+  listen_port: 80
+  expose_by_default: false
+  entities:
+    switch.tapo_light:
+      name: "Aquarium Light"
+      hidden: false
+    switch.tapo_filter:
+      name: "Aquarium Filter"
+      hidden: false
+    switch.tapo_heater:
+      name: "Aquarium Heater"
+      hidden: false
+    script.feed_fish:
+      name: "Feed Fish"
+      hidden: false
+
+# ── REST commands (called by Nemo API → n8n webhooks) ────────────────────────
+rest_command:
+  nemo_alert:
+    url: "{{ n8n_url }}/webhook/{{ webhook_id }}"
+    method: POST
+    content_type: "application/json"
+    payload: '{"message_en": "{{ message_en }}", "message_pl": "{{ message_pl }}", "lang": "{{ lang }}"}'
+
+# ── Input number helpers for Fluval RGBW channels ────────────────────────────
+# These are set by the Nemo API and read by the fluvalble custom component
+input_number:
+  fluval_r:
+    name: "Fluval Red"
+    min: 0
+    max: 100
+    step: 1
+    unit_of_measurement: "%"
+  fluval_g:
+    name: "Fluval Green"
+    min: 0
+    max: 100
+    step: 1
+    unit_of_measurement: "%"
+  fluval_b:
+    name: "Fluval Blue"
+    min: 0
+    max: 100
+    step: 1
+    unit_of_measurement: "%"
+  fluval_w:
+    name: "Fluval White"
+    min: 0
+    max: 100
+    step: 1
+    unit_of_measurement: "%"
+
+# ── Scripts ───────────────────────────────────────────────────────────────────
+script:
+  feed_fish:
+    alias: "Feed Fish (pause filter)"
+    sequence:
+      - service: switch.turn_off
+        target:
+          entity_id: switch.tapo_filter
+      - delay:
+          minutes: 10
+      - service: switch.turn_on
+        target:
+          entity_id: switch.tapo_filter
+
+# ── Logger ────────────────────────────────────────────────────────────────────
+logger:
+  default: warning
+  logs:
+    custom_components.fluvalble: debug
+    homeassistant.components.esphome: info

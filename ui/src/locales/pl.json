@@ -1,0 +1,96 @@
+{
+  "nav": {
+    "schedule": "Harmonogram",
+    "live": "Na Żywo",
+    "tests": "Testy",
+    "calendar": "Kalendarz"
+  },
+  "schedule": {
+    "title": "Harmonogram",
+    "feeding": "Karmienie",
+    "dosing": "Dozowanie",
+    "lighting": "Oświetlenie",
+    "maintenance": "Konserwacja",
+    "feedNow": "Nakarm Teraz",
+    "nextFeed": "Następne: {time}",
+    "lastFed": "Ostatnio: {time}",
+    "complete": "Zrobione",
+    "remaining": "Zostało: {amount} {unit}",
+    "doseIn": "Dawka: {amount} {unit}",
+    "restock": "Uzupełnij",
+    "addTask": "Dodaj Zadanie",
+    "filterPaused": "Filtr zatrzymany podczas karmienia ({secs}s)"
+  },
+  "lighting": {
+    "on": "WŁĄCZONE",
+    "off": "WYŁĄCZONE",
+    "toggle": "Włącz/Wyłącz",
+    "schedule": "{on} → {off}",
+    "red": "C",
+    "green": "Z",
+    "blue": "N",
+    "white": "B"
+  },
+  "maintenance": {
+    "due": "Za {days} dni",
+    "dueToday": "DZIŚ",
+    "overdue": "Zaległa o {days} dni",
+    "lastDone": "{days} dni temu",
+    "start": "Konserwacja",
+    "confirm": "Potwierdź",
+    "cancel": "Anuluj",
+    "steps": "Kroki",
+    "partsReplaced": "Wymienione części",
+    "nextDue": "Następna: {date}"
+  },
+  "live": {
+    "title": "Dane Na Żywo",
+    "temperature": "Temperatura",
+    "ph": "pH",
+    "phReadingBtn": "Zacznij Odczyt pH",
+    "phStabilising": "Stabilizacja... {secs}s",
+    "phStable": "pH stabilne — zapisano",
+    "tds": "TDS",
+    "orp": "ORP",
+    "smartPlugs": "Inteligentne Wtyczki",
+    "filter": "Filtr",
+    "heater": "Grzałka",
+    "light": "Światło",
+    "airPump": "Pompa Powietrza",
+    "on": "WŁĄCZ",
+    "off": "WYŁĄCZ",
+    "unavailable": "N/D",
+    "supplyWarnings": "Niski Stan Zapasów",
+    "orderSoon": "zamów wkrótce"
+  },
+  "tests": {
+    "title": "Testy Wody",
+    "newSession": "Nowy Test",
+    "lastTest": "Ostatni test: {days} dni temu",
+    "noTests": "Brak zalogowanych testów",
+    "cycled": "Akwarium Uruchomione ✓",
+    "waterChangeRecommended": "WYMAGANA WYMIANA WODY — NH3 > 0,25 mg/L",
+    "sessionNotes": "Notatki (opcjonalne)",
+    "save": "Zapisz Test",
+    "cancel": "Anuluj",
+    "history": "Historia",
+    "daysAgo": "{days}d temu",
+    "ok": "OK",
+    "outOfRange": "POZA NORMĄ",
+    "trend": "Trend"
+  },
+  "common": {
+    "loading": "Ładowanie...",
+    "error": "Błąd ładowania danych",
+    "never": "Nigdy",
+    "today": "Dziś",
+    "close": "Zamknij"
+  },
+  "calendar": {
+    "noTasks": "Brak zadań na ten dzień",
+    "markDone": "Oznacz jako wykonane",
+    "markUndone": "Oznacz jako niewykonane",
+    "weekdays": ["Pon", "Wt", "Śr", "Czw", "Pt", "Sob", "Nd"],
+    "months": ["Styczeń", "Luty", "Marzec", "Kwiecień", "Maj", "Czerwiec", "Lipiec", "Sierpień", "Wrzesień", "Październik", "Listopad", "Grudzień"]
+  }
+}

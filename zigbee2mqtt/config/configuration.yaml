@@ -1,0 +1,22 @@
+homeassistant:
+  enabled: true
+mqtt:
+  base_topic: zigbee2mqtt
+  server: mqtt://mosquitto:1883
+  user: nemo
+  password: change_me_mqtt
+serial:
+  port: /dev/ttyUSB0
+  adapter: ezsp
+frontend:
+  enabled: true
+  port: 8080
+  host: 0.0.0.0
+advanced:
+  channel: 15
+  network_key:
+    - GENERATE
+  log_level: warning
+  pan_id: GENERATE
+  ext_pan_id: GENERATE
+version: 5

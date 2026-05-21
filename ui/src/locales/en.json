@@ -1,0 +1,96 @@
+{
+  "nav": {
+    "schedule": "Schedule",
+    "live": "Live",
+    "tests": "Tests",
+    "calendar": "Calendar"
+  },
+  "schedule": {
+    "title": "Schedule",
+    "feeding": "Feeding",
+    "dosing": "Dosing",
+    "lighting": "Lighting",
+    "maintenance": "Maintenance",
+    "feedNow": "Feed Now",
+    "nextFeed": "Next: {time}",
+    "lastFed": "Last fed: {time}",
+    "complete": "Done",
+    "remaining": "{amount} {unit} left",
+    "doseIn": "Dose: {amount} {unit}",
+    "restock": "Restock",
+    "addTask": "Add Task",
+    "filterPaused": "Filter paused for feeding ({secs}s)"
+  },
+  "lighting": {
+    "on": "ON",
+    "off": "OFF",
+    "toggle": "Toggle Light",
+    "schedule": "{on} → {off}",
+    "red": "R",
+    "green": "G",
+    "blue": "B",
+    "white": "W"
+  },
+  "maintenance": {
+    "due": "Due in {days} days",
+    "dueToday": "Due TODAY",
+    "overdue": "Overdue by {days} days",
+    "lastDone": "{days} days ago",
+    "start": "Maintenance",
+    "confirm": "Confirm Done",
+    "cancel": "Cancel",
+    "steps": "Steps",
+    "partsReplaced": "Parts replaced",
+    "nextDue": "Next due: {date}"
+  },
+  "live": {
+    "title": "Live Data",
+    "temperature": "Temperature",
+    "ph": "pH",
+    "phReadingBtn": "Start pH Reading",
+    "phStabilising": "Stabilising... {secs}s",
+    "phStable": "pH stable — reading logged",
+    "tds": "TDS",
+    "orp": "ORP",
+    "smartPlugs": "Smart Plugs",
+    "filter": "Filter",
+    "heater": "Heater",
+    "light": "Light",
+    "airPump": "Air Pump",
+    "on": "ON",
+    "off": "OFF",
+    "unavailable": "N/A",
+    "supplyWarnings": "Supply Warnings",
+    "orderSoon": "order soon"
+  },
+  "tests": {
+    "title": "Water Tests",
+    "newSession": "New Test Session",
+    "lastTest": "Last test: {days} days ago",
+    "noTests": "No tests logged yet",
+    "cycled": "Tank Cycled ✓",
+    "waterChangeRecommended": "WATER CHANGE RECOMMENDED — NH3 > 0.25 mg/L",
+    "sessionNotes": "Notes (optional)",
+    "save": "Save Test",
+    "cancel": "Cancel",
+    "history": "History",
+    "daysAgo": "{days}d ago",
+    "ok": "OK",
+    "outOfRange": "OUT OF RANGE",
+    "trend": "Trend"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Error loading data",
+    "never": "Never",
+    "today": "Today",
+    "close": "Close"
+  },
+  "calendar": {
+    "noTasks": "No tasks for this day",
+    "markDone": "Mark done",
+    "markUndone": "Mark as not done",
+    "weekdays": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+    "months": ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+  }
+}
