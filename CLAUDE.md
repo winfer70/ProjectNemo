@@ -26,5 +26,9 @@ Built and working locally. Not deployed to any server. Next action: deploy to a 
 
 ## graphify
 
-No graphify graph yet. Run `graphify hook install` then `graphify claude install` to set up.
-After setup, read `graphify-out/GRAPH_REPORT.md` before answering architecture questions.
+This project has a graphify knowledge graph at `graphify-out/`.
+
+Rules:
+- Before answering architecture or codebase questions, read `graphify-out/GRAPH_REPORT.md` for god nodes and community structure
+- If `graphify-out/wiki/index.md` exists, navigate it instead of reading raw files
+- After modifying code files in this session, run `PYTHONUTF8=1 python -c "from graphify.watch import _rebuild_code; from pathlib import Path; _rebuild_code(Path('.'))"` to keep the graph current
