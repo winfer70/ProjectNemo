@@ -116,7 +116,7 @@ DEFAULT_MAINTENANCE_TASKS = [
 
 CALENDAR_TASKS = [
     {
-        # Every day: morning visual check + evening feeding
+        # Every day: morning check + phased evening feeding
         "name": "Daily Check & Feeding",
         "name_pl": "Dzienny Przegląd i Karmienie",
         "color": "#4fc3f7",
@@ -126,33 +126,54 @@ CALENDAR_TASKS = [
         "start_date": "2026-05-28",
         "end_date": None,
         "amount": "rano + wieczór",
-        "notes_pl": "Rano: sprawdź filtr, bąbelki, temp 25-26°C — czy wszystkie ryby są aktywne i widoczne.\nWieczór (parzyste dni): 1 tabletka JBL Pronovo Corydoras Tab M — wciśnij do mułu przy kirysach.\nWieczór (nieparzyste dni): 1 wafel Tropical Green Algae Wafers — przy dnie, dla otosków i phantoma.",
+        "notes_pl": (
+            "Codziennie rano: sprawdź temp 25-26°C, pracę filtra i bąbelki — czy wszystkie ryby widoczne?\n\n"
+            "FAZA 1 (29 maja – 11 czerwca) — wieczorem:\n"
+            "Dni parzyste (pt, nd, wt…): 1 tabletka JBL Pronovo Corydoras Tab M → na piasek, przy kirysach.\n"
+            "Dni nieparzyste (sb, pn, śr…): 1 wafel Tropical Green Algae Wafers → na piasek, dla otosków i krewetek.\n\n"
+            "FAZA 2 (od 12 czerwca) — karmisz 2× dziennie:\n"
+            "Rano (przed pracą): mała szczypta JBL Pronovo Bel MOCNO roztarta w palcach → do toni wodnej (skalary, ławica).\n"
+            "Wieczór parzyste: 3 tabletki JBL Pronovo Corydoras → na piasek (kiryski + piskorki).\n"
+            "Wieczór nieparzyste: 2 wafle Tropical Green Algae Wafers → na piasek (otoski + phantom).\n"
+            "Niedziela wieczór (przysmak): zamiast tabletek/waflów — 1/4 kostki mrożonej artemii dla wszystkich.\n\n"
+            "Seachem Stability: 25 ml wieczorem 28 maja, 25 ml rano 29/30/31 maja. Od 1 czerwca STOP.\n"
+            "Jednorazowe dawki Stability 25 ml: 11 czerwca (Krok 2) i 25 czerwca (Krok 3)."
+        ),
     },
     {
-        # Every week on Saturday + Sunday: water change, Prime, glass cleaning, plant trimming
+        # Every Thursday: water change, Prime, glass cleaning, plant trimming
         "name": "Weekly Water Change",
         "name_pl": "Tygodniowa Wymiana Wody",
         "color": "#29b6f6",
         "recurrence_type": "weekdays",
         "interval_days": None,
-        "recurrence_days": [5, 6],
-        "start_date": "2026-05-28",
+        "recurrence_days": [3],  # Thursday
+        "start_date": "2026-06-04",
         "end_date": None,
-        "amount": "3 wiadra (~30-40L)",
-        "notes_pl": "Przygotuj 3 wiadra (~30-40L wody z kranu). Do każdego wiadra: 2-3 krople Seachem Prime, wyrównaj temp do zbiornika (±1°C).\nPrzed nalaniem: wyczyść przednią szybę od środka ściereczką.\nZasyfonuj brud z dna, szczególnie przy karmiku. Powoli wlej uzdatnioną wodę.\nPrzytnij żółte lub zniszczone liście przy samej łodydze.",
+        "amount": "3 wiadra (~30L)",
+        "notes_pl": (
+            "Co czwartek: spuść 3 wiadra (~30L). Do każdego wiadra świeżej wody z kranu: 2-3 krople Seachem Prime. Wyrównaj temp do zbiornika (±1°C).\n"
+            "Przed nalaniem: przetarcie przedniej szyby od środka czystą gąbką. Obcięcie żółtych/zniszczonych liści Żabienicy.\n\n"
+            "Pierwsza podmiana: czwartek, 4 czerwca 2026.\n\n"
+            "Od 11 czerwca (Piątek po podmianie): Easy-Life ProFito — połowa dawki zalecanej na opakowaniu.\n"
+            "Seachem Stability (jednorazowo): 25 ml w czwartek 11 czerwca (wpuszczenie Kroku 2) i 25 ml 25 czerwca (Krok 3)."
+        ),
     },
     {
-        # Every month: substrate vacuum with siphon over white sand
+        # Last Saturday of month: substrate vacuum over white sand
         "name": "Monthly Substrate Vacuum",
         "name_pl": "Miesięczne Odmulanie Podłoża",
         "color": "#66bb6a",
         "recurrence_type": "every_n_days",
         "interval_days": 30,
         "recurrence_days": [],
-        "start_date": "2026-06-28",
+        "start_date": "2026-06-27",
         "end_date": None,
         "amount": "~10 min",
-        "notes_pl": "Odmulacz delikatnie po wierzchniej warstwie białego piasku — tam gdzie karmisz ryby.\nNie kopaj głęboko — tylko zbieraj brud z wierzchu. Nie ruszaj korzeni ani roślin.",
+        "notes_pl": (
+            "Ostatnia sobota miesiąca: odmulacz delikatnie po powierzchni białego piasku — tylko tam gdzie karmisz ryby.\n"
+            "Nie kopaj głęboko — tylko zbieraj brud z wierzchu. Nie ruszaj korzeni ani roślin."
+        ),
     },
     {
         # Every 3 months: Fluval 307 full service — NEVER same day as water change
@@ -162,10 +183,18 @@ CALENDAR_TASKS = [
         "recurrence_type": "every_n_days",
         "interval_days": 90,
         "recurrence_days": [],
-        "start_date": "2026-08-28",
+        "start_date": "2026-08-29",
         "end_date": None,
         "amount": "~20 min",
-        "notes_pl": "⚠️ NIGDY tego samego dnia co podmiana wody — czekaj min. 2-3 dni!\nGąbki wstępne (intake): przepłucz pod letnią wodą z kranu — mogą być pod kranem.\nCeramika (koszyki 1+2): NIGDY pod kranówką — przepłucz wyłącznie w wodzie ze zbiornika w misce.\nKosz 3: wymień węgiel aktywny + pochłaniacz fosforanów.\nKosz 4: przepłucz lub wymień gąbkę polerującą Quick-Clear.\nZłóż filtr, uruchom. Przez 7 kolejnych dni dodawaj dawkę Seachem Stability.",
+        "notes_pl": (
+            "⚠️ NIGDY tego samego dnia co podmiana wody — czekaj min. 2-3 dni!\n"
+            "Najbliższy termin: sobota, 29 sierpnia 2026.\n\n"
+            "Czarne gąbki wstępne (intake strainer): przepłucz pod letnią wodą z kranu.\n"
+            "Ceramika koszyki 1+2: NIGDY pod kranówką — przepłucz wyłącznie w wodzie ze zbiornika w misce.\n"
+            "Kosz 3: wymień węgiel aktywny + pochłaniacz fosforanów.\n"
+            "Kosz 4: przepłucz lub wymień gąbkę polerującą Quick-Clear.\n"
+            "Złóż filtr, uruchom. Przez 7 kolejnych dni dodawaj dawkę Seachem Stability."
+        ),
     },
     {
         # Every 6 months: filter tubes + substrate fertilizer capsules
@@ -178,7 +207,10 @@ CALENDAR_TASKS = [
         "start_date": "2026-11-28",
         "end_date": None,
         "amount": "co 6 mies.",
-        "notes_pl": "Węże filtra: jeśli przepływ wyraźnie słabszy — oczyść wyciorem do węży.\nKapsułki nawozowe: wciśnij 1 kapsułkę głęboko pod korzenie żabienic i kryptokoryn w piasek (co 6 miesięcy).",
+        "notes_pl": (
+            "Węże filtra: jeśli przepływ wyraźnie słabszy — oczyść wyciorem do węży.\n"
+            "Kapsułki nawozowe: wciśnij 1 kapsułkę głęboko pod korzenie Żabienicy i kryptokoryn w piasek (co 6 miesięcy)."
+        ),
     },
 ]
 
