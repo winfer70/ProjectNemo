@@ -53,6 +53,7 @@ async def list_tasks(db: AsyncSession = Depends(get_db)):
             "start_date": t.start_date,
             "end_date": t.end_date,
             "amount": t.amount,
+            "notes_pl": t.notes_pl,
         }
         for t in tasks
     ]
@@ -91,6 +92,7 @@ async def get_month(year: int, month: int, db: AsyncSession = Depends(get_db)):
                     "name_pl": t.name_pl,
                     "color": t.color,
                     "amount": t.amount,
+                    "notes_pl": t.notes_pl,
                     "completed": comp_key in comp_set,
                     "completed_at": comp_at.isoformat() if comp_at else None,
                 })

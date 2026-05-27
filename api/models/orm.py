@@ -183,6 +183,7 @@ class CalendarTask(Base):
     start_date: Mapped[str] = mapped_column(String(10))        # YYYY-MM-DD
     end_date: Mapped[str | None] = mapped_column(String(10), nullable=True)
     amount: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    notes_pl: Mapped[str | None] = mapped_column(Text, nullable=True)
     active: Mapped[bool] = mapped_column(Boolean, default=True)
 
     completions: Mapped[list["CalendarCompletion"]] = relationship(back_populates="task")

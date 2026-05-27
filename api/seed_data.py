@@ -126,6 +126,7 @@ CALENDAR_TASKS = [
         "start_date": "2026-05-28",
         "end_date": None,
         "amount": "rano + wieczór",
+        "notes_pl": "Rano: sprawdź filtr, bąbelki, temp 25-26°C — czy wszystkie ryby są aktywne i widoczne.\nWieczór (parzyste dni): 1 tabletka JBL Pronovo Corydoras Tab M — wciśnij do mułu przy kirysach.\nWieczór (nieparzyste dni): 1 wafel Tropical Green Algae Wafers — przy dnie, dla otosków i phantoma.",
     },
     {
         # Every week on Saturday + Sunday: water change, Prime, glass cleaning, plant trimming
@@ -138,6 +139,7 @@ CALENDAR_TASKS = [
         "start_date": "2026-05-28",
         "end_date": None,
         "amount": "3 wiadra (~30-40L)",
+        "notes_pl": "Przygotuj 3 wiadra (~30-40L wody z kranu). Do każdego wiadra: 2-3 krople Seachem Prime, wyrównaj temp do zbiornika (±1°C).\nPrzed nalaniem: wyczyść przednią szybę od środka ściereczką.\nZasyfonuj brud z dna, szczególnie przy karmiku. Powoli wlej uzdatnioną wodę.\nPrzytnij żółte lub zniszczone liście przy samej łodydze.",
     },
     {
         # Every month: substrate vacuum with siphon over white sand
@@ -150,6 +152,7 @@ CALENDAR_TASKS = [
         "start_date": "2026-06-28",
         "end_date": None,
         "amount": "~10 min",
+        "notes_pl": "Odmulacz delikatnie po wierzchniej warstwie białego piasku — tam gdzie karmisz ryby.\nNie kopaj głęboko — tylko zbieraj brud z wierzchu. Nie ruszaj korzeni ani roślin.",
     },
     {
         # Every 3 months: Fluval 307 full service — NEVER same day as water change
@@ -162,6 +165,7 @@ CALENDAR_TASKS = [
         "start_date": "2026-08-28",
         "end_date": None,
         "amount": "~20 min",
+        "notes_pl": "⚠️ NIGDY tego samego dnia co podmiana wody — czekaj min. 2-3 dni!\nGąbki wstępne (intake): przepłucz pod letnią wodą z kranu — mogą być pod kranem.\nCeramika (koszyki 1+2): NIGDY pod kranówką — przepłucz wyłącznie w wodzie ze zbiornika w misce.\nKosz 3: wymień węgiel aktywny + pochłaniacz fosforanów.\nKosz 4: przepłucz lub wymień gąbkę polerującą Quick-Clear.\nZłóż filtr, uruchom. Przez 7 kolejnych dni dodawaj dawkę Seachem Stability.",
     },
     {
         # Every 6 months: filter tubes + substrate fertilizer capsules
@@ -174,6 +178,7 @@ CALENDAR_TASKS = [
         "start_date": "2026-11-28",
         "end_date": None,
         "amount": "co 6 mies.",
+        "notes_pl": "Węże filtra: jeśli przepływ wyraźnie słabszy — oczyść wyciorem do węży.\nKapsułki nawozowe: wciśnij 1 kapsułkę głęboko pod korzenie żabienic i kryptokoryn w piasek (co 6 miesięcy).",
     },
 ]
 
@@ -244,6 +249,7 @@ async def seed(session: AsyncSession):
                 start_date=t["start_date"],
                 end_date=t["end_date"],
                 amount=t["amount"],
+                notes_pl=t.get("notes_pl"),
             )
             task.recurrence_days = t["recurrence_days"]
             session.add(task)

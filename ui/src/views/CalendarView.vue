@@ -60,6 +60,7 @@
               <div class="cal-task-info">
                 <div class="cal-task-name">{{ locale === 'pl' ? task.name_pl : task.name }}</div>
                 <div v-if="task.amount" class="cal-task-amount">{{ task.amount }}</div>
+                <div v-if="task.notes_pl" class="cal-task-notes">{{ task.notes_pl }}</div>
               </div>
               <button
                 class="cal-task-done-btn"
