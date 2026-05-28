@@ -115,33 +115,125 @@ DEFAULT_MAINTENANCE_TASKS = [
 ]
 
 CALENDAR_TASKS = [
+    # ── Daily morning check ───────────────────────────────────────────────────
     {
-        # Every day: morning check + phased evening feeding
-        "name": "Daily Check & Feeding",
-        "name_pl": "Dzienny Przegląd i Karmienie",
+        "name": "Morning Check",
+        "name_pl": "Sprawdzenie Poranne",
         "color": "#4fc3f7",
         "recurrence_type": "daily",
         "interval_days": None,
         "recurrence_days": [],
         "start_date": "2026-05-28",
         "end_date": None,
-        "amount": "rano + wieczór",
-        "notes_pl": (
-            "Codziennie rano: sprawdź temp 25-26°C, pracę filtra i bąbelki — czy wszystkie ryby widoczne?\n\n"
-            "FAZA 1 (29 maja – 11 czerwca) — wieczorem:\n"
-            "Dni parzyste (pt, nd, wt…): 1 tabletka JBL Pronovo Corydoras Tab M → na piasek, przy kirysach.\n"
-            "Dni nieparzyste (sb, pn, śr…): 1 wafel Tropical Green Algae Wafers → na piasek, dla otosków i krewetek.\n\n"
-            "FAZA 2 (od 12 czerwca) — karmisz 2× dziennie:\n"
-            "Rano (przed pracą): mała szczypta JBL Pronovo Bel MOCNO roztarta w palcach → do toni wodnej (skalary, ławica).\n"
-            "Wieczór parzyste: 3 tabletki JBL Pronovo Corydoras → na piasek (kiryski + piskorki).\n"
-            "Wieczór nieparzyste: 2 wafle Tropical Green Algae Wafers → na piasek (otoski + phantom).\n"
-            "Niedziela wieczór (przysmak): zamiast tabletek/waflów — 1/4 kostki mrożonej artemii dla wszystkich.\n\n"
-            "Seachem Stability: 25 ml wieczorem 28 maja, 25 ml rano 29/30/31 maja. Od 1 czerwca STOP.\n"
-            "Jednorazowe dawki Stability 25 ml: 11 czerwca (Krok 2) i 25 czerwca (Krok 3)."
-        ),
+        "amount": "temp + filtr + ryby",
+        "notes_pl": "Sprawdź temp 25-26°C, pracę filtra i bąbelki z tyłu. Czy wszystkie ryby widoczne i aktywne?",
     },
+    # ── Even-day evening: Corydoras tablets (28, 30, 1 Jun, 3…) ──────────────
     {
-        # Every Thursday: water change, Prime, glass cleaning, plant trimming
+        "name": "Evening: JBL Corydoras Tablets",
+        "name_pl": "Wieczór: Tabletki JBL Corydoras",
+        "color": "#29b6f6",
+        "recurrence_type": "every_n_days",
+        "interval_days": 2,
+        "recurrence_days": [],
+        "start_date": "2026-05-28",
+        "end_date": None,
+        "amount": "tabletka → piasek",
+        "notes_pl": "Wciśnij w piasek/muł przy kirysach.\nDo 11 czerwca: 1 tabletka.\nOd 12 czerwca: 3 tabletki (kiryski + piskorki).\nW niedzielę: pomiń — zamiast tego podaj artemię.",
+    },
+    # ── Odd-day evening: algae wafers (29, 31, 2 Jun, 4…) ────────────────────
+    {
+        "name": "Evening: Green Algae Wafers",
+        "name_pl": "Wieczór: Zielone Wafle",
+        "color": "#00b4d8",
+        "recurrence_type": "every_n_days",
+        "interval_days": 2,
+        "recurrence_days": [],
+        "start_date": "2026-05-29",
+        "end_date": None,
+        "amount": "wafel → piasek",
+        "notes_pl": "Połóż na piasku dla otosków i krewetek.\nDo 11 czerwca: 1 wafel.\nOd 12 czerwca: 2 wafle (otoski + Green Phantom).\nW niedzielę: pomiń — zamiast tego podaj artemię.",
+    },
+    # ── Morning flakes — Phase 2 only (from 12 Jun) ───────────────────────────
+    {
+        "name": "Morning: JBL Pronovo Bel Flakes",
+        "name_pl": "Rano: JBL Pronovo Bel Płatki",
+        "color": "#4dd0e1",
+        "recurrence_type": "daily",
+        "interval_days": None,
+        "recurrence_days": [],
+        "start_date": "2026-06-12",
+        "end_date": None,
+        "amount": "szczypta (roztarte)",
+        "notes_pl": "Mała szczypta JBL Pronovo Bel MOCNO roztarta w palcach → do toni wodnej. Dla skalarów i ławicy.",
+    },
+    # ── Sunday artemia treat — Phase 2 only (from 14 Jun) ────────────────────
+    {
+        "name": "Sunday Treat: Artemia",
+        "name_pl": "Niedziela: Artemia (Przysmak)",
+        "color": "#ff8a65",
+        "recurrence_type": "weekdays",
+        "interval_days": None,
+        "recurrence_days": [6],  # Sunday
+        "start_date": "2026-06-14",
+        "end_date": None,
+        "amount": "¼ kostki mrożonej",
+        "notes_pl": "Rozmrożona ¼ kostki mrożonej artemii dla wszystkich ryb. Zamiast tabletek i waflów wieczorem.",
+    },
+    # ── Seachem Stability — startup 28–31 May ─────────────────────────────────
+    {
+        "name": "Seachem Stability 25ml",
+        "name_pl": "Seachem Stability 25ml",
+        "color": "#aed581",
+        "recurrence_type": "daily",
+        "interval_days": None,
+        "recurrence_days": [],
+        "start_date": "2026-05-28",
+        "end_date": "2026-05-31",
+        "amount": "25 ml",
+        "notes_pl": "28 maja: wieczorem po wpuszczeniu ryb.\n29–31 maja: rano przed pracą.\nOd 1 czerwca STOP.",
+    },
+    # ── Seachem Stability — Step 2 fish addition (11 Jun) ─────────────────────
+    {
+        "name": "Seachem Stability 25ml",
+        "name_pl": "Seachem Stability 25ml",
+        "color": "#aed581",
+        "recurrence_type": "daily",
+        "interval_days": None,
+        "recurrence_days": [],
+        "start_date": "2026-06-11",
+        "end_date": "2026-06-11",
+        "amount": "25 ml",
+        "notes_pl": "Jednorazowo po wpuszczeniu Kroku 2 (Phantom, Piskorki, Ławica): wlej 25 ml Seachem Stability.",
+    },
+    # ── Seachem Stability — Step 3 fish addition (25 Jun) ─────────────────────
+    {
+        "name": "Seachem Stability 25ml",
+        "name_pl": "Seachem Stability 25ml",
+        "color": "#aed581",
+        "recurrence_type": "daily",
+        "interval_days": None,
+        "recurrence_days": [],
+        "start_date": "2026-06-25",
+        "end_date": "2026-06-25",
+        "amount": "25 ml",
+        "notes_pl": "Jednorazowo po wpuszczeniu Kroku 3 (Skalary, Pielęgniczki): wlej 25 ml Seachem Stability.",
+    },
+    # ── ProFito — every Friday from 12 Jun (day after water change) ───────────
+    {
+        "name": "Easy-Life ProFito Fertiliser",
+        "name_pl": "Nawóz: Easy-Life ProFito",
+        "color": "#81c784",
+        "recurrence_type": "weekdays",
+        "interval_days": None,
+        "recurrence_days": [4],  # Friday
+        "start_date": "2026-06-12",
+        "end_date": None,
+        "amount": "½ dawki",
+        "notes_pl": "Wlej połowę dawki zalecanej przez producenta na opakowaniu. Zawsze dzień po podmianie wody (piątek).",
+    },
+    # ── Weekly water change — every Thursday ──────────────────────────────────
+    {
         "name": "Weekly Water Change",
         "name_pl": "Tygodniowa Wymiana Wody",
         "color": "#29b6f6",
@@ -153,14 +245,11 @@ CALENDAR_TASKS = [
         "amount": "3 wiadra (~30L)",
         "notes_pl": (
             "Co czwartek: spuść 3 wiadra (~30L). Do każdego wiadra świeżej wody z kranu: 2-3 krople Seachem Prime. Wyrównaj temp do zbiornika (±1°C).\n"
-            "Przed nalaniem: przetarcie przedniej szyby od środka czystą gąbką. Obcięcie żółtych/zniszczonych liści Żabienicy.\n\n"
-            "Pierwsza podmiana: czwartek, 4 czerwca 2026.\n\n"
-            "Od 11 czerwca (Piątek po podmianie): Easy-Life ProFito — połowa dawki zalecanej na opakowaniu.\n"
-            "Seachem Stability (jednorazowo): 25 ml w czwartek 11 czerwca (wpuszczenie Kroku 2) i 25 ml 25 czerwca (Krok 3)."
+            "Przed nalaniem: przetarcie przedniej szyby od środka czystą gąbką. Obcięcie żółtych/zniszczonych liści Żabienicy."
         ),
     },
+    # ── Monthly substrate vacuum — last Saturday of month ─────────────────────
     {
-        # Last Saturday of month: substrate vacuum over white sand
         "name": "Monthly Substrate Vacuum",
         "name_pl": "Miesięczne Odmulanie Podłoża",
         "color": "#66bb6a",
@@ -175,8 +264,8 @@ CALENDAR_TASKS = [
             "Nie kopaj głęboko — tylko zbieraj brud z wierzchu. Nie ruszaj korzeni ani roślin."
         ),
     },
+    # ── Fluval 307 full service — every 3 months, NEVER water-change day ──────
     {
-        # Every 3 months: Fluval 307 full service — NEVER same day as water change
         "name": "Fluval 307 Filter Service",
         "name_pl": "Serwis Filtra Fluval 307",
         "color": "#ffa726",
@@ -189,15 +278,15 @@ CALENDAR_TASKS = [
         "notes_pl": (
             "⚠️ NIGDY tego samego dnia co podmiana wody — czekaj min. 2-3 dni!\n"
             "Najbliższy termin: sobota, 29 sierpnia 2026.\n\n"
-            "Czarne gąbki wstępne (intake strainer): przepłucz pod letnią wodą z kranu.\n"
-            "Ceramika koszyki 1+2: NIGDY pod kranówką — przepłucz wyłącznie w wodzie ze zbiornika w misce.\n"
+            "Czarne gąbki wstępne: przepłucz pod letnią wodą z kranu.\n"
+            "Ceramika koszyki 1+2: NIGDY pod kranówką — tylko w wodzie ze zbiornika w misce.\n"
             "Kosz 3: wymień węgiel aktywny + pochłaniacz fosforanów.\n"
             "Kosz 4: przepłucz lub wymień gąbkę polerującą Quick-Clear.\n"
             "Złóż filtr, uruchom. Przez 7 kolejnych dni dodawaj dawkę Seachem Stability."
         ),
     },
+    # ── Biannual: filter tubes + substrate capsules ────────────────────────────
     {
-        # Every 6 months: filter tubes + substrate fertilizer capsules
         "name": "Biannual Maintenance",
         "name_pl": "Konserwacja Półroczna/Roczna",
         "color": "#ab47bc",
