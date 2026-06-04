@@ -3,7 +3,8 @@
     "schedule": "Schedule",
     "live": "Live",
     "tests": "Tests",
-    "calendar": "Calendar"
+    "calendar": "Calendar",
+    "livestock": "Livestock"
   },
   "schedule": {
     "title": "Schedule",
@@ -61,7 +62,11 @@
     "off": "OFF",
     "unavailable": "N/A",
     "supplyWarnings": "Supply Warnings",
-    "orderSoon": "order soon"
+    "orderSoon": "order soon",
+    "manualTempBadge": "Manual input — sensor not connected",
+    "manualTempPlaceholder": "Enter temperature °C",
+    "manualTempToggle": "Enter temp manually",
+    "useSensor": "Use sensor"
   },
   "tests": {
     "title": "Water Tests",
@@ -77,7 +82,8 @@
     "daysAgo": "{days}d ago",
     "ok": "OK",
     "outOfRange": "OUT OF RANGE",
-    "trend": "Trend"
+    "trend": "Trend",
+    "advice": "What to do"
   },
   "common": {
     "loading": "Loading...",

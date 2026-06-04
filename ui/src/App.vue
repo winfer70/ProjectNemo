@@ -19,6 +19,7 @@
       <LiveView v-if="activeTab === 'live'" />
       <WaterTestsView v-if="activeTab === 'tests'" />
       <CalendarView v-if="activeTab === 'calendar'" />
+      <LivestockView v-if="activeTab === 'livestock'" />
     </main>
 
     <!-- Bottom tab bar -->
@@ -54,6 +55,14 @@
         </svg>
         {{ $t('nav.calendar') }}
       </button>
+      <button class="tab-btn" :class="{ active: activeTab === 'livestock' }" @click="activeTab = 'livestock'">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M2 8L7 12L2 16"/>
+          <path d="M7 12C7 12 11 6 17 6C20 6 22 9 22 12C22 15 20 18 17 18C11 18 7 12 7 12Z"/>
+          <circle cx="17" cy="11" r="1" fill="currentColor" stroke="none"/>
+        </svg>
+        {{ $t('nav.livestock') }}
+      </button>
     </nav>
   </div>
 </template>
@@ -65,6 +74,7 @@ import ScheduleView from './views/ScheduleView.vue'
 import LiveView from './views/LiveView.vue'
 import WaterTestsView from './views/WaterTestsView.vue'
 import CalendarView from './views/CalendarView.vue'
+import LivestockView from './views/LivestockView.vue'
 import { useSensorsStore } from './stores/sensors'
 import { useWaterTestsStore } from './stores/waterTests'
 import { useMaintenanceStore } from './stores/maintenance'

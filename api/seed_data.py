@@ -17,18 +17,18 @@ from models.orm import (
 
 
 WATER_TEST_PARAMS = [
-    # key            name_en                          name_pl                      unit    min_safe  max_safe  category
-    ("temp",        "Temperature",                   "Temperatura",               "°C",   24.5,     27.5,     "continuous"),
-    ("ph",          "pH",                            "pH",                        "",     7.2,      7.6,      "manual"),
-    ("tds",         "TDS / Conductivity",            "TDS / Przewodność",         "ppm",  100,      500,      "continuous"),
-    ("orp",         "ORP",                           "ORP",                       "mV",   150,      450,      "continuous"),
-    ("kh",          "KH / Total Alkalinity",         "KH / Twardość Węglanowa",   "dKH",  3,        12,       "manual"),
-    ("nitrate",     "Nitrate (NO3)",                 "Azotany (NO3)",             "mg/L", None,     30.0,     "manual"),
-    ("nitrite",     "Nitrite (NO2)",                 "Azotyny (NO2)",             "mg/L", None,     0.0,      "manual"),
-    ("ammonia",     "Ammonia (NH3/NH4+)",            "Amoniak (NH3/NH4+)",        "mg/L", None,     0.0,      "manual"),
-    ("copper",      "Copper (Cu)",                   "Miedź (Cu)",                "mg/L", None,     0.05,     "manual"),
-    ("iron",        "Iron (Fe)",                     "Żelazo (Fe)",               "mg/L", 0.05,     0.3,      "manual"),
-    ("chlorine",    "Free Chlorine",                 "Chlor Wolny",               "mg/L", None,     0.0,      "manual"),
+    # key               name_en                          name_pl                           unit    min_safe  max_safe  category
+    # Strip params: read at 30S — except ammonia (3 min)
+    ("temp",            "Temperature",                   "Temperatura",                    "°C",   24.5,     27.5,     "continuous"),
+    ("ph",              "pH",                            "pH",                             "",     7.2,      7.6,      "manual"),
+    ("kh",              "KH / Total Alkalinity",         "KH / Twardość Węglanowa",        "ppm",  40,       120,      "manual"),
+    ("gh",              "Hardness (GH)",                 "Twardość Ogólna (GH)",           "ppm",  125,      250,      "manual"),
+    ("total_alkalinity","Total Alkalinity (TAL)",        "Zasadowość Całkowita (TAL)",     "ppm",  80,       120,      "manual"),
+    ("nitrate",         "Nitrate (NO3)",                 "Azotany (NO3)",                  "mg/L", None,     30.0,     "manual"),
+    ("nitrite",         "Nitrite (NO2)",                 "Azotyny (NO2)",                  "mg/L", None,     0.0,      "manual"),
+    ("ammonia",         "Ammonia Nitrogen (NH3/NH4)",    "Azot Amonowy (NH3/NH4)",         "mg/L", None,     0.0,      "manual"),
+    ("copper",          "Copper (Cu)",                   "Miedź (Cu)",                     "mg/L", None,     0.2,      "manual"),
+    ("free_chlorine",   "Free Chlorine (Cl)",            "Wolny Chlor (Cl)",               "mg/L", None,     0.0,      "manual"),
 ]
 
 DEFAULT_SUPPLIES = [

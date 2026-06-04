@@ -3,7 +3,8 @@
     "schedule": "Harmonogram",
     "live": "Na Żywo",
     "tests": "Testy",
-    "calendar": "Kalendarz"
+    "calendar": "Kalendarz",
+    "livestock": "Obsada"
   },
   "schedule": {
     "title": "Harmonogram",
@@ -61,7 +62,11 @@
     "off": "WYŁĄCZ",
     "unavailable": "N/D",
     "supplyWarnings": "Niski Stan Zapasów",
-    "orderSoon": "zamów wkrótce"
+    "orderSoon": "zamów wkrótce",
+    "manualTempBadge": "Ręczny wpis — czujnik niedostępny",
+    "manualTempPlaceholder": "Wpisz temperaturę °C",
+    "manualTempToggle": "Wpisz temp ręcznie",
+    "useSensor": "Użyj czujnika"
   },
   "tests": {
     "title": "Testy Wody",
@@ -77,7 +82,8 @@
     "daysAgo": "{days}d temu",
     "ok": "OK",
     "outOfRange": "POZA NORMĄ",
-    "trend": "Trend"
+    "trend": "Trend",
+    "advice": "Co zrobić"
   },
   "common": {
     "loading": "Ładowanie...",

@@ -14,11 +14,36 @@
       <div class="card">
         <div class="card-title">{{ $t('live.temperature') }}</div>
         <div class="gauge-value">
-          {{ sensorsStore.current.temperature?.toFixed(1) ?? '—' }}
+          {{ effectiveTemp?.toFixed(1) ?? '—' }}
           <span class="gauge-unit">°C</span>
         </div>
         <div class="gauge-range">24.5 – 27.5°C</div>
         <span class="badge" :class="tempBadge">{{ tempStatus }}</span>
+
+        <!-- Manual temperature override -->
+        <div v-if="useManual" style="margin-top:10px;">
+          <span style="display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;background:#f59e0b;color:#000;margin-bottom:6px;">
+            {{ $t('live.manualTempBadge') }}
+          </span>
+          <input
+            type="number"
+            step="0.1"
+            v-model.number="manualTemp"
+            style="width:100%;background:var(--bg);border:1px solid #f59e0b;border-radius:6px;color:var(--text);padding:8px;font-size:14px;box-sizing:border-box;"
+            :placeholder="$t('live.manualTempPlaceholder')"
+          />
+          <button v-if="sensorsStore.current.temperature !== null"
+                  class="btn btn-sm btn-secondary"
+                  style="margin-top:6px;font-size:11px;"
+                  @click="useManual = false">
+            {{ $t('live.useSensor') }}
+          </button>
+        </div>
+        <div v-else style="margin-top:8px;">
+          <button class="btn btn-sm btn-secondary" style="font-size:11px;" @click="useManual = true">
+            🌡️ {{ $t('live.manualTempToggle') }}
+          </button>
+        </div>
       </div>
 
       <!-- pH -->
@@ -69,29 +94,49 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useSensorsStore } from '../stores/sensors'
 
 const { locale } = useI18n()
 const sensorsStore = useSensorsStore()
 
+const manualTemp = ref(
+  localStorage.getItem('nemo_manual_temp')
+    ? parseFloat(localStorage.getItem('nemo_manual_temp'))
+    : null
+)
+const useManual = ref(sensorsStore.current.temperature === null)
+
+const effectiveTemp = computed(() =>
+  useManual.value ? manualTemp.value : sensorsStore.current.temperature
+)
+
 const phReading = ref(false)
 const phSecsLeft = ref(300)
 let phTimer = null
 
 const tempBadge = computed(() => {
-  const t = sensorsStore.current.temperature
-  if (t === null) return 'badge-warn'
+  const t = effectiveTemp.value
+  if (t === null || t === undefined) return 'badge-warn'
   if (t < 24.5 || t > 27.5) return 'badge-danger'
   return 'badge-ok'
 })
 const tempStatus = computed(() => {
   const { t } = useI18n()
-  const temp = sensorsStore.current.temperature
-  if (temp === null) return t('live.unavailable')
+  const temp = effectiveTemp.value
+  if (temp === null || temp === undefined) return t('live.unavailable')
   if (temp < 24.5 || temp > 27.5) return t('tests.outOfRange')
   return t('tests.ok')
+})
+
+watch(() => sensorsStore.current.temperature, (val) => {
+  if (val === null) useManual.value = true
+})
+watch(manualTemp, (val) => {
+  if (val !== null && val !== undefined) {
+    localStorage.setItem('nemo_manual_temp', String(val))
+  }
 })
 
 function startPhReading() {

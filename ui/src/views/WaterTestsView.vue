@@ -42,6 +42,16 @@
                 style="margin-top:4px;">
             {{ latestReading(param.key)?.out_of_range ? $t('tests.outOfRange') : $t('tests.ok') }}
           </span>
+          <div style="font-size:10px;color:var(--text-muted);margin-top:2px;">({{ readTime(param.key) }})</div>
+          <details v-if="latestReading(param.key)?.out_of_range"
+                   style="margin-top:6px;border:1px solid #f59e0b;border-radius:6px;padding:6px 8px;">
+            <summary style="font-size:11px;cursor:pointer;color:#f59e0b;font-weight:600;">
+              {{ $t('tests.advice') }}
+            </summary>
+            <div style="font-size:12px;margin-top:6px;line-height:1.5;color:var(--text);">
+              {{ getRemediation(param, latestReading(param.key)) }}
+            </div>
+          </details>
         </div>
       </div>
     </div>
@@ -107,6 +117,71 @@ import { useWaterTestsStore } from '../stores/waterTests'
 
 const { locale } = useI18n()
 const waterTestsStore = useWaterTestsStore()
+
+const REMEDIATION = {
+  ph: {
+    high: 'pH > 7.8: Do 30% water change. Add driftwood or peat to filter for natural tannins. Reduce aeration temporarily.',
+    low: 'pH < 7.2: Do 30% water change with tap water (Meath pH ~7.6). Check KH — low KH causes pH swings.',
+    high_pl: 'pH > 7.8: Podmień 30% wody. Dodaj korzeń lub torf do filtra. Ogranicz napowietrzanie.',
+    low_pl: 'pH < 7.2: Podmień 30% wody kranową (Meath pH ~7.6). Sprawdź KH — niski KH powoduje wahania pH.',
+  },
+  nitrate: {
+    high: 'NO3 > 30 ppm: Do 30–50% water change. Reduce feeding. More plants absorb nitrates. Vacuum substrate.',
+    high_pl: 'NO3 > 30 ppm: Podmień 30–50% wody. Zmniejsz karmienie. Więcej roślin pochłania azotany. Wysyfonuj dno.',
+  },
+  nitrite: {
+    high: 'NO2 > 0: URGENT — add 5 ml Seachem Prime directly to tank (neutralises NO2 for 24–48h). Dose 25 ml Stability. Do 30% water change. Increase aeration to max.',
+    high_pl: 'NO2 > 0: PILNE — dodaj 5 ml Seachem Prime bezpośrednio do akwarium. Dodaj 25 ml Stability. Podmień 30% wody. Napowietrzanie na max.',
+  },
+  ammonia: {
+    high: 'NH3 > 0: URGENT — add 5 ml Seachem Prime. Do 30% water change immediately. Stop feeding for 48h. Dose 25 ml Stability daily until ammonia = 0.',
+    high_pl: 'NH3 > 0: PILNE — dodaj 5 ml Seachem Prime. Natychmiast podmień 30% wody. Nie karm przez 48h. Dodawaj 25 ml Stability codziennie aż amoniak = 0.',
+  },
+  free_chlorine: {
+    high: 'Chlorine > 0: Always add Seachem Prime to new water before adding to tank. If already in tank, add 5 ml Prime now.',
+    high_pl: 'Chlor > 0: Zawsze dodawaj Seachem Prime do nowej wody przed wlaniem do akwarium. Jeśli już w zbiorniku, dodaj 5 ml Prime.',
+  },
+  copper: {
+    high: 'Cu > 0.2 ppm: Dangerous for shrimp and invertebrates. Do 50% water change immediately. Check for copper pipes or copper-containing products.',
+    high_pl: 'Cu > 0.2 ppm: Niebezpieczne dla krewetek. Natychmiast podmień 50% wody. Sprawdź miedziane rury lub produkty zawierające miedź.',
+  },
+  kh: {
+    low: 'KH < 40 ppm: pH will be unstable. Add crushed coral to filter or use KH buffer. Do not change drastically.',
+    high: 'KH > 180 ppm: Partial water change with softer water. For Meath tap water this is normal — County Meath KH is 120–180 ppm.',
+    low_pl: 'KH < 40 ppm: pH będzie niestabilne. Dodaj pokruszony koral do filtra lub bufor KH.',
+    high_pl: 'KH > 180 ppm: Podmień część wody miękkiejszą wodą. Dla wody z Meath to normalne — KH 120–180 ppm.',
+  },
+  gh: {
+    low: 'GH < 125 ppm: Add mineral supplements (GH booster). Fish may show stress.',
+    high: 'GH > 250 ppm: Partial water change with RO or rainwater to dilute.',
+    low_pl: 'GH < 125 ppm: Dodaj minerały (GH booster). Ryby mogą być zestresowane.',
+    high_pl: 'GH > 250 ppm: Podmień część wody z wodą RO lub deszczówką.',
+  },
+  total_alkalinity: {
+    low: 'TAL < 80 ppm: pH buffering capacity is low. Add alkalinity buffer or crushed coral.',
+    high: 'TAL > 180 ppm: Partial water change. Add peat to filter.',
+    low_pl: 'TAL < 80 ppm: Niska zdolność buforowania pH. Dodaj bufor zasadowości lub koral.',
+    high_pl: 'TAL > 180 ppm: Podmień część wody. Dodaj torf do filtra.',
+  },
+}
+
+const READ_TIME = { ammonia: '3 min' }
+
+function readTime(key) {
+  return READ_TIME[key] || '30s'
+}
+
+function getRemediation(param, reading) {
+  if (!reading?.out_of_range) return null
+  const rem = REMEDIATION[param.key]
+  if (!rem) return null
+  const isHigh = param.max_safe !== null && reading.value > param.max_safe
+  const isLow = param.min_safe !== null && reading.value < param.min_safe
+  const lang = locale.value === 'pl' ? '_pl' : ''
+  if (isHigh) return rem[`high${lang}`] ?? rem.high ?? null
+  if (isLow) return rem[`low${lang}`] ?? rem.low ?? null
+  return null
+}
 
 const showForm = ref(false)
 const formValues = ref({})
