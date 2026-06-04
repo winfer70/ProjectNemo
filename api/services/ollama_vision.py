@@ -11,21 +11,9 @@ from config import settings
 
 MAX_PX = 1024  # LLaVA doesn't benefit from higher res; keeps payload small
 
-STRIP_PROMPT = """This photo shows an aquarium water test strip next to its reference color chart.
-
-Match each pad's color to the closest value on the reference chart. Return ONLY a valid JSON object with these exact keys and numeric values (no units, no extra text, use null if a pad is unreadable):
-
-{
-  "copper": <mg/L — nearest: 0, 0.05, 0.2, 0.5, 1.0>,
-  "nitrate": <mg/L — nearest: 0, 20, 40, 80, 160, 200>,
-  "nitrite": <mg/L — nearest: 0, 0.5, 1, 3, 5, 10>,
-  "free_chlorine": <mg/L — nearest: 0, 0.5, 1, 2, 4>,
-  "gh": <ppm — nearest: 0, 25, 50, 125, 250, 500>,
-  "total_alkalinity": <ppm — nearest: 0, 40, 80, 120, 180, 240>,
-  "kh": <ppm — nearest: 0, 40, 80, 120, 180, 240>,
-  "ph": <nearest: 6.2, 6.8, 7.2, 7.6, 8.0, 8.4>,
-  "ammonia": <mg/L — nearest: 0, 0.25, 0.5, 1.0, 3.0, 6.0>
-}"""
+STRIP_PROMPT = """This photo shows an aquarium water test strip next to its color reference chart. Read each pad color against the chart and return ONLY a JSON object with these keys and numeric values (null if unreadable):
+{"copper":0,"nitrate":0,"nitrite":0,"free_chlorine":0,"gh":0,"total_alkalinity":0,"kh":0,"ph":0,"ammonia":0}
+copper mg/L: 0,0.05,0.2,0.5,1.0 | nitrate mg/L: 0,20,40,80,160,200 | nitrite mg/L: 0,0.5,1,3,5,10 | free_chlorine mg/L: 0,0.5,1,2,4 | gh ppm: 0,25,50,125,250,500 | total_alkalinity ppm: 0,40,80,120,180,240 | kh ppm: 0,40,80,120,180,240 | ph: 6.2,6.8,7.2,7.6,8.0,8.4 | ammonia mg/L: 0,0.25,0.5,1.0,3.0,6.0"""
 
 
 def _resize(image_bytes: bytes) -> bytes:
@@ -41,7 +29,7 @@ async def analyze_strip(image_bytes: bytes) -> dict[str, float | None]:
     resized = _resize(image_bytes)
     b64 = base64.b64encode(resized).decode()
     payload = {
-        "model": "llava:13b",
+        "model": "moondream",
         "prompt": STRIP_PROMPT,
         "images": [b64],
         "stream": False,
