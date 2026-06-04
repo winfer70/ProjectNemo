@@ -16,11 +16,11 @@ MAX_PX = 1024
 
 STRIP_PROMPT = (
     "This image shows an aquarium water test strip on the left and a color reference chart on the right. "
-    "Compare each strip pad color to the corresponding row in the chart and pick the closest matching number. "
+    "Compare each pad color on the strip to the corresponding row in the reference chart. "
+    "Pick the closest matching value for each pad. "
     "The 9 pads from top to bottom are: copper, nitrate, nitrite, free_chlorine, gh, total_alkalinity, kh, ph, ammonia. "
-    "Most pads will be white or near-zero — only pick a non-zero value if the color clearly matches. "
-    "Reply with ONLY a JSON object using these exact keys. "
-    "Valid values for each key: "
+    "Most pads will be white or near-zero — only pick a non-zero value if the color clearly matches a non-zero column. "
+    "Valid values for each parameter: "
     "copper: 0, 0.2, 0.5, 1, 2, 5 | "
     "nitrate: 0, 10, 25, 50, 100, 250 | "
     "nitrite: 0, 1, 5, 10 | "
@@ -29,7 +29,9 @@ STRIP_PROMPT = (
     "total_alkalinity: 0, 40, 80, 120, 180, 240 | "
     "kh: 0, 40, 80, 120, 180, 300 | "
     "ph: 6.2, 6.8, 7.2, 7.6, 7.8, 8.4 | "
-    "ammonia: 0, 0.5, 1, 3, 5, 10"
+    "ammonia: 0, 0.5, 1, 3, 5, 10. "
+    "Respond with ONLY a JSON object. Start your response with { and end with }. "
+    'Example format: {"copper": 0, "nitrate": 25, "nitrite": 0, "free_chlorine": 0, "gh": 125, "total_alkalinity": 80, "kh": 40, "ph": 7.2, "ammonia": 0}'
 )
 
 
@@ -46,7 +48,7 @@ async def analyze_strip(image_bytes: bytes) -> dict[str, float | None]:
     resized = _resize(image_bytes)
     b64 = base64.b64encode(resized).decode()
     payload = {
-        "model": "moondream",
+        "model": "llava:7b",
         "prompt": STRIP_PROMPT,
         "images": [b64],
         "stream": False,
