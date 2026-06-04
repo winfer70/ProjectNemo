@@ -4,7 +4,7 @@ Tank: 252L | Temp: 25.5°C | Location: Kitchen
 
 ---
 
-## Final Stocking (64 animals total)
+## Final Stocking (58 fish + 6 shrimp = 64 animals)
 
 | Species (EN / PL) | Qty | Zone | Role |
 |---|---|---|---|
@@ -21,14 +21,15 @@ Tank: 252L | Temp: 25.5°C | Location: Kitchen
 
 ## Purchase Timeline
 
-| Step | Date | Animals | Notes |
+| Step | Date | Animals | Count |
 |---|---|---|---|
-| Step 1 | Tue 2 June 2026 ✅ | 2× Pearl Gourami, 12× Five-Banded Barb, 6× Amano Shrimp | In tank |
-| Step 2 | Tue 16 June 2026 | 18× Cardinal Tetra, 2× Red Apistogramma Double Red | ~20 fish |
-| Step 3 | Tue 30 June 2026 | 6× Five-Banded Barb (top-up to 18), 8× Corydoras Sterbai, 6× Otocinclus | ~20 fish |
-| Step 4 | Tue 14 July 2026 | 4× Panda Garra | Final step — needs natural biofilm on rocks first |
+| Step 1 | Tue 2 June 2026 ✅ | 2× Pearl Gourami, 12× Five-Banded Barb, 6× Amano Shrimp | 20 |
+| Step 2A | Tue 16 June 2026 | 6× Five-Banded Barb (top-up to 18), 12× Cardinal Tetra, 2× Panda Garra | 20 |
+| Step 2B | Tue 30 June 2026 | 6× Cardinal Tetra (top-up to 18), 2× Panda Garra (top-up to 4), 2× Red Apistogramma Double Red, 8× Corydoras Sterbai | 18 |
+| Step 3 | Tue 14 July 2026 | 6× Otocinclus | 6 |
 
-> Rule: Always bring a jar of tank water to Seahorse Aquariums for free test. Confirm NO2 = 0 before buying.
+> Rule: Always bring jar of tank water to Seahorse Aquariums for free test. Confirm NO2 = 0 before buying.
+> Rule: All fish purchased young — filter load remains low for 6–9 months while they grow.
 
 ---
 
@@ -64,11 +65,11 @@ Tank: 252L | Temp: 25.5°C | Location: Kitchen
 
 ---
 
-## Acclimatisation Protocol
+## Acclimation Protocol
 
 1. Do NOT turn on lights — keep Fluval Aquasky completely OFF that night
-2. Float sealed store bags on surface for 20 minutes (temp equalisation to 25.5°C)
-3. Open bags; add half a glass of tank water; wait 10 minutes
+2. Float sealed store bags on surface for 15 minutes (temperature equalisation)
+3. Open bags; begin **drip acclimation** — attach airline tube with knot to slow drip into bags; drip tank water for **45–60 minutes** until bag volume doubles
 4. Net fish out; release into tank
 5. Pour store water down the sink — never add to tank
 6. Pour 25 ml Seachem Stability over filter outlet
@@ -86,3 +87,15 @@ Tank: 252L | Temp: 25.5°C | Location: Kitchen
 | Coconut 2 | Behind left Dragon Stone island, near Limnophila | Apistogramma (female) / Kuhli Loach group |
 | Coconut 3 | Behind right Dragon Stone island, near Amazon Sword | Apistogramma (male) |
 | Coconut 4 | Back centre, behind root | Reserve — Kuhli Loach base / Amano Shrimp |
+
+---
+
+## Future Equipment
+
+| Item | Purpose | When to Add |
+|---|---|---|
+| Fluval CP1 powerhead (~35–45€) | Circulation support — 1000 l/h adjustable; supplements Fluval 307 as fish reach adult size | Add in 4–6 months when fish start to grow. Mount behind Dragon Stone on right side, aim along front glass left. |
+| Frozen Artemia / Cyclops blisters | Weekly treat | Before Step 2A, Jun 16 |
+
+> Fluval 307 at ~1.2× turnover is borderline for full adult stocking. 2× airstones (Fluval A400, positioned at rear) provide adequate oxygenation for juvenile fish. Add Fluval CP1 when fish appREDACTED-HOST adult size. Signs it's needed: fish hovering near surface, sluggish filter flow.
+> Available at Seahorse Aquariums Dublin or Amazon.co.uk.

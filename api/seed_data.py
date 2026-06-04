@@ -199,7 +199,7 @@ CALENDAR_TASKS = [
         "amount": "¼ kostki mrożonej",
         "notes_pl": "Rozmrożona ¼ kostki mrożonej artemii dla wszystkich ryb. Zamiast tabletek i waflów wieczorem.",
     },
-    # ── Even evenings: Corydoras tablets — starts Step 3 (Tue 30 Jun 2026) ────────────
+    # ── Even evenings: Corydoras tablets — starts Step 2B (Tue 30 Jun 2026) ───────────
     {
         "name": "Evening: JBL Corydoras Tablets",
         "name_pl": "Wieczór: Tabletki JBL Corydoras",
@@ -225,7 +225,7 @@ CALENDAR_TASKS = [
         "amount": "30 ml",
         "notes_pl": "Po dodaniu ryb Krok 1 (2 cze): 30 ml/dzień od czwartku 4 cze do niedzieli 7 cze, następnie STOP.",
     },
-    # ── Seachem Stability — Step 2 fish addition (Tue 16 Jun) ─────────────────────────
+    # ── Seachem Stability — Step 2A fish addition (Tue 16 Jun) ────────────────────────
     {
         "name": "Seachem Stability 25ml",
         "name_pl": "Seachem Stability 25ml",
@@ -236,9 +236,9 @@ CALENDAR_TASKS = [
         "start_date": "2026-06-16",
         "end_date": "2026-06-16",
         "amount": "25 ml",
-        "notes_pl": "Jednorazowo po wpuszczeniu Kroku 2 (Tetra Kardynał ×18, Apistogramma Double Red ×2): wlej 25 ml Seachem Stability.",
+        "notes_pl": "Jednorazowo po wpuszczeniu Kroku 2A (Penta Barb ×6, Tetra Kardynał ×12, Panda Garra ×2): wlej 25 ml Seachem Stability.",
     },
-    # ── Seachem Stability — Step 3 fish addition (Tue 30 Jun) ─────────────────────────
+    # ── Seachem Stability — Step 2B fish addition (Tue 30 Jun) ────────────────────────
     {
         "name": "Seachem Stability 25ml",
         "name_pl": "Seachem Stability 25ml",
@@ -249,9 +249,9 @@ CALENDAR_TASKS = [
         "start_date": "2026-06-30",
         "end_date": "2026-06-30",
         "amount": "25 ml",
-        "notes_pl": "Jednorazowo po wpuszczeniu Kroku 3 (Kiryski Sterbai ×8, Otoinkluzy ×6, Penta Barb top-up ×6): wlej 25 ml Seachem Stability.",
+        "notes_pl": "Jednorazowo po wpuszczeniu Kroku 2B (Tetra Kardynał ×6, Panda Garra ×2, Apistogramma Double Red ×2, Kiryski Sterbai ×8): wlej 25 ml Seachem Stability.",
     },
-    # ── Seachem Stability — Step 4 fish addition (Tue 14 Jul) ─────────────────────────
+    # ── Seachem Stability — Step 3 fish addition (Tue 14 Jul) ─────────────────────────
     {
         "name": "Seachem Stability 25ml",
         "name_pl": "Seachem Stability 25ml",
@@ -262,7 +262,7 @@ CALENDAR_TASKS = [
         "start_date": "2026-07-14",
         "end_date": "2026-07-14",
         "amount": "25 ml",
-        "notes_pl": "Jednorazowo po wpuszczeniu Kroku 4 (Panda Garra ×4): wlej 25 ml Seachem Stability.",
+        "notes_pl": "Jednorazowo po wpuszczeniu Kroku 3 (Otoinkluzy ×6): wlej 25 ml Seachem Stability.",
     },
     # ── ProFito — every Friday from mid-July (Fri 17 Jul, day after Step 4) ──────────
     {
