@@ -9,6 +9,7 @@ from database import get_db
 from models.orm import FeedingLog, FeedingSchedule
 from models.schemas import FeedingLogOut, FeedingScheduleCreate, FeedingScheduleOut
 from services.ha_client import ha_client
+from services.websocket_manager import broadcast_change
 
 router = APIRouter(prefix="/api", tags=["schedule"])
 
@@ -24,6 +25,7 @@ async def create_feeding(data: FeedingScheduleCreate, db: AsyncSession = Depends
     feeding = FeedingSchedule(**data.model_dump())
     db.add(feeding)
     await db.commit()
+    await broadcast_change("schedule")
     await db.refresh(feeding)
     return feeding
 
@@ -35,6 +37,7 @@ async def delete_feeding(feeding_id: int, db: AsyncSession = Depends(get_db)):
         raise HTTPException(404, "Feeding schedule not found")
     await db.delete(feeding)
     await db.commit()
+    await broadcast_change("schedule")
     return {"ok": True}
 
 
@@ -53,4 +56,5 @@ async def feed_now(db: AsyncSession = Depends(get_db)):
     log = FeedingLog(manual=True, timestamp=datetime.utcnow(), notes="Feed Now button")
     db.add(log)
     await db.commit()
+    await broadcast_change("schedule")
     return {"ok": True, "filter_pause_minutes": 10}

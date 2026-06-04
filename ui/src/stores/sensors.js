@@ -40,6 +40,8 @@ export const useSensorsStore = defineStore('sensors', () => {
       if (data.type === 'live') {
         current.value = data.sensors
         devices.value = data.devices
+      } else if (data.type === 'invalidate') {
+        window.dispatchEvent(new CustomEvent('nemo:invalidate', { detail: { domain: data.domain } }))
       }
     }
     ws.onclose = () => setTimeout(connectWs, 5000)

@@ -9,6 +9,7 @@ import axios from 'axios'
 export const useCalendarStore = defineStore('calendar', () => {
   // monthData keyed by "YYYY-M" → { year, month, days: [...] }
   const monthData = ref({})
+  const currentMonth = ref({ year: new Date().getFullYear(), month: new Date().getMonth() + 1 })
 
   /**
    * Fetch all days for a given month from the API.
@@ -19,6 +20,7 @@ export const useCalendarStore = defineStore('calendar', () => {
     const key = `${year}-${month}`
     const r = await axios.get(`/api/calendar/month/${year}/${month}`)
     monthData.value[key] = r.data
+    currentMonth.value = { year, month }
   }
 
   /**
@@ -41,5 +43,9 @@ export const useCalendarStore = defineStore('calendar', () => {
     task.completed_at = r.data.completed ? new Date().toISOString() : null
   }
 
-  return { monthData, fetchMonth, toggleComplete }
+  async function refetchCurrent() {
+    await fetchMonth(currentMonth.value.year, currentMonth.value.month)
+  }
+
+  return { monthData, currentMonth, fetchMonth, refetchCurrent, toggleComplete }
 })

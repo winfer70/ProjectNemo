@@ -9,6 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from database import get_db
 from models.orm import CalendarTask, CalendarCompletion
+from services.websocket_manager import broadcast_change
 
 router = APIRouter(prefix="/api/calendar", tags=["calendar"])
 
@@ -121,8 +122,10 @@ async def toggle_complete(req: CompleteRequest, db: AsyncSession = Depends(get_d
     if comp:
         await db.delete(comp)
         await db.commit()
+        await broadcast_change("calendar")
         return {"completed": False}
     else:
         db.add(CalendarCompletion(task_id=req.task_id, date=req.date))
         await db.commit()
+        await broadcast_change("calendar")
         return {"completed": True}

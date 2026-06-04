@@ -16,6 +16,7 @@ from models.schemas import (
     SensorHistoryPoint,
 )
 from services.n8n_client import n8n_client
+from services.websocket_manager import broadcast_change
 
 router = APIRouter(prefix="/api/water-tests", tags=["water-tests"])
 
@@ -124,6 +125,7 @@ async def create_session(
             out_of_range_alerts.append((param, reading_in.value))
 
     await db.commit()
+    await broadcast_change("water_tests")
 
     # fire Telegram alerts for out-of-range readings
     for param, value in out_of_range_alerts:

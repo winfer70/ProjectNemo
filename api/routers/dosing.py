@@ -8,6 +8,7 @@ from database import get_db
 from models.orm import DoseLog, DosingTask, Supply
 from models.schemas import DoseCompleteRequest, DosingTaskOut, RestockRequest
 from services.ha_client import ha_client
+from services.websocket_manager import broadcast_change
 
 router = APIRouter(prefix="/api/dosing", tags=["dosing"])
 
@@ -64,6 +65,8 @@ async def complete_dose(
     log = DoseLog(supply_id=supply.id, amount=task.dose_amount, notes=body.notes)
     db.add(log)
     await db.commit()
+    await broadcast_change("dosing")
+    await broadcast_change("supplies")
 
     # fire supply warning if now below threshold
     if supply.current_amount <= supply.min_threshold:

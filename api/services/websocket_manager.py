@@ -41,6 +41,11 @@ async def _broadcast(data: dict):
     _connections.difference_update(dead)
 
 
+async def broadcast_change(domain: str):
+    """Notify all WS clients that a domain's data changed so they re-fetch."""
+    await _broadcast({"type": "invalidate", "domain": domain})
+
+
 async def live_push_loop():
     """Push sensor + device data to all connected clients every 30 s."""
     while True:

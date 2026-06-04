@@ -10,6 +10,7 @@ from database import get_db
 from models.orm import MaintenanceLog, MaintenanceTask, Supply
 from models.schemas import MaintenanceCompleteRequest, MaintenanceTaskOut
 from services.n8n_client import n8n_client
+from services.websocket_manager import broadcast_change
 
 router = APIRouter(prefix="/api/maintenance", tags=["maintenance"])
 
@@ -82,6 +83,7 @@ async def complete_maintenance(
     log.parts_replaced = body.parts_replaced
     db.add(log)
     await db.commit()
+    await broadcast_change("maintenance")
 
     await n8n_client.maintenance_completed(task)
 

@@ -65,14 +65,46 @@ import ScheduleView from './views/ScheduleView.vue'
 import LiveView from './views/LiveView.vue'
 import WaterTestsView from './views/WaterTestsView.vue'
 import CalendarView from './views/CalendarView.vue'
+import { useSensorsStore } from './stores/sensors'
+import { useWaterTestsStore } from './stores/waterTests'
+import { useMaintenanceStore } from './stores/maintenance'
+import { useScheduleStore } from './stores/schedule'
+import { useCalendarStore } from './stores/calendar'
 
 const { locale } = useI18n()
+const sensorsStore = useSensorsStore()
+const waterTestsStore = useWaterTestsStore()
+const maintenanceStore = useMaintenanceStore()
+const scheduleStore = useScheduleStore()
+const calendarStore = useCalendarStore()
 const activeTab = ref('calendar')
 
 const now = ref(new Date())
 let clockTimer
-onMounted(() => { clockTimer = setInterval(() => { now.value = new Date() }, 1000) })
-onUnmounted(() => clearInterval(clockTimer))
+
+const _refreshMap = {
+  water_tests: () => { waterTestsStore.fetchLatest(); waterTestsStore.fetchSessions() },
+  maintenance: () => maintenanceStore.fetchTasks(),
+  schedule:    () => { scheduleStore.fetchFeedings(); scheduleStore.fetchHistory(); scheduleStore.fetchDosing() },
+  supplies:    () => { sensorsStore.fetchSupplies(); scheduleStore.fetchDosing() },
+  dosing:      () => { scheduleStore.fetchDosing(); sensorsStore.fetchSupplies() },
+  calendar:    () => calendarStore.refetchCurrent(),
+}
+function _handleInvalidate(evt) {
+  const fn = _refreshMap[evt.detail?.domain]
+  if (fn) fn()
+}
+
+onMounted(() => {
+  clockTimer = setInterval(() => { now.value = new Date() }, 1000)
+  sensorsStore.connectWs()
+  window.addEventListener('nemo:invalidate', _handleInvalidate)
+})
+onUnmounted(() => {
+  clearInterval(clockTimer)
+  sensorsStore.disconnectWs()
+  window.removeEventListener('nemo:invalidate', _handleInvalidate)
+})
 
 const currentTime = computed(() => {
   return now.value.toLocaleTimeString(locale.value === 'pl' ? 'pl-PL' : 'en-IE', {
