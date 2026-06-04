@@ -1,11 +1,15 @@
 """Test strip analysis via LLaVA on REDACTED-HOST Ollama."""
 import base64
+import io
 import json
 import re
 
 import httpx
+from PIL import Image
 
 from config import settings
+
+MAX_PX = 1024  # LLaVA doesn't benefit from higher res; keeps payload small
 
 STRIP_PROMPT = """This photo shows an aquarium water test strip next to its reference color chart.
 
@@ -24,8 +28,18 @@ Match each pad's color to the closest value on the reference chart. Return ONLY 
 }"""
 
 
+def _resize(image_bytes: bytes) -> bytes:
+    img = Image.open(io.BytesIO(image_bytes))
+    img = img.convert("RGB")
+    img.thumbnail((MAX_PX, MAX_PX), Image.LANCZOS)
+    buf = io.BytesIO()
+    img.save(buf, format="JPEG", quality=85)
+    return buf.getvalue()
+
+
 async def analyze_strip(image_bytes: bytes) -> dict[str, float | None]:
-    b64 = base64.b64encode(image_bytes).decode()
+    resized = _resize(image_bytes)
+    b64 = base64.b64encode(resized).decode()
     payload = {
         "model": "llava:13b",
         "prompt": STRIP_PROMPT,

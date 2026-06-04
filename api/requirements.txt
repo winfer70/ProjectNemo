@@ -10,3 +10,5 @@ apscheduler==3.10.4
 websockets==12.0
 pydantic==2.7.1
 pydantic-settings==2.2.1
+Pillow==10.3.0
+python-multipart==0.0.9
