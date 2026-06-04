@@ -219,7 +219,11 @@ async function handleFileSelected(event) {
     const fd = new FormData()
     fd.append('file', file)
     const res = await fetch('/api/water-tests/analyze_strip', { method: 'POST', body: fd })
-    if (!res.ok) throw new Error(`${res.status}`)
+    if (!res.ok) {
+      let detail = res.status
+      try { detail = (await res.json()).detail ?? res.status } catch {}
+      throw new Error(String(detail))
+    }
     const { prefill } = await res.json()
     for (const [id, value] of Object.entries(prefill)) {
       formValues.value[parseInt(id)] = value

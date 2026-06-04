@@ -19,7 +19,13 @@ from services.n8n_client import n8n_client
 from services.websocket_manager import broadcast_change
 from services import ollama_vision
 
-router = APIRouter(prefix="/api/water-tests", tags=["water-tests"])
+import logging
+import traceback
+
+logger = logging.getLogger(__name__)
+
+
+
 
 
 def _reading_out(r: WaterTestReading) -> WaterTestReadingOut:
@@ -46,7 +52,8 @@ async def analyze_strip(
     try:
         results = await ollama_vision.analyze_strip(image_bytes)
     except Exception as e:
-        raise HTTPException(502, f"Vision analysis failed: {e}")
+        logger.error("analyze_strip failed: %s: %s\n%s", type(e).__name__, e, traceback.format_exc())
+        raise HTTPException(502, f"Vision analysis failed: {type(e).__name__}: {e}")
 
     params_result = await db.execute(select(WaterTestParameter))
     params_by_key = {p.key: p for p in params_result.scalars().all()}
