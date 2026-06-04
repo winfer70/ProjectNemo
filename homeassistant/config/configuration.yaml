@@ -16,15 +16,6 @@ http:
   server_host: 0.0.0.0
   server_port: 8123
 
-# ── MQTT (Zigbee2MQTT bridge) ─────────────────────────────────────────────────
-mqtt:
-  broker: mosquitto
-  port: 1883
-  username: nemo
-  password: !secret mqtt_password
-  discovery: true
-  discovery_prefix: homeassistant
-
 # ── InfluxDB v2 — write all sensor + energy data ──────────────────────────────
 influxdb:
   api_version: 2

@@ -55,9 +55,9 @@ class HAClient:
             {"entity_id": settings.tapo_filter_entity},
         )
 
-    async def set_fluval_channels(self, r: int, g: int, b: int, w: int):
+    async def set_fluval_channels(self, r: int, g: int, b: int, w: int, ch5: int = 0):
         """Set Fluval RGBW via HA number entities (0–100 each)."""
-        for channel, value in [("r", r), ("g", g), ("b", b), ("w", w)]:
+        for channel, value in [("r", r), ("g", g), ("b", b), ("w", w), ("ch5", ch5)]:
             entity = f"number.fluval_shaker_{channel}"
             await self.call_service(
                 "number", "set_value",

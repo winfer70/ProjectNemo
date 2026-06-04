@@ -28,8 +28,8 @@ export const useSensorsStore = defineStore('sensors', () => {
     await fetchDevices()
   }
 
-  async function setFluvalChannels(r, g, b, w) {
-    await axios.put('/api/devices/fluval/channels', { r, g, b, w })
+  async function setFluvalChannels(r, g, b, w, ch5 = 0) {
+    await axios.put('/api/devices/fluval/channels', { r, g, b, w, ch5 })
   }
 
   function connectWs() {

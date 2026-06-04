@@ -185,3 +185,4 @@ class FluvalChannels(BaseModel):
     g: int
     b: int
     w: int
+    ch5: int = 0

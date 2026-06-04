@@ -36,6 +36,7 @@ services:
       - "80:80"               # emulated_hue Alexa discovery (must be port 80)
     volumes:
       - ./homeassistant/config:/config
+      - /run/dbus:/run/dbus:ro
     depends_on:
       - mosquitto
       - influxdb

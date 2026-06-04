@@ -43,8 +43,8 @@ async def toggle_device(entity_id: str):
 
 @router.put("/fluval/channels")
 async def set_fluval_channels(channels: FluvalChannels):
-    for val in (channels.r, channels.g, channels.b, channels.w):
+    for val in (channels.r, channels.g, channels.b, channels.w, channels.ch5):
         if not 0 <= val <= 100:
             raise HTTPException(422, "Channel values must be 0–100")
-    await ha_client.set_fluval_channels(channels.r, channels.g, channels.b, channels.w)
+    await ha_client.set_fluval_channels(channels.r, channels.g, channels.b, channels.w, channels.ch5)
     return {"ok": True, **channels.model_dump()}

@@ -30,7 +30,8 @@
     "red": "R",
     "green": "G",
     "blue": "B",
-    "white": "W"
+    "white": "W",
+    "ch5": "UV"
   },
   "maintenance": {
     "due": "Due in {days} days",

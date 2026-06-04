@@ -74,6 +74,7 @@
       <div class="grid-4">
         <div v-for="device in sensorsStore.devices" :key="device.entity_id"
              class="card plug-card" style="margin-bottom:0;background:var(--bg-card2);"
+             :style="device.role === 'light' ? { borderTop: '2px solid #aa44ff' } : {}"
              @click="sensorsStore.toggleDevice(device.entity_id)">
           <div style="font-size:12px;font-weight:600;">
             {{ locale === 'pl' ? device.name_pl : device.name }}
