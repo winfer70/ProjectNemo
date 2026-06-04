@@ -48,7 +48,7 @@ async def analyze_strip(image_bytes: bytes) -> dict[str, float | None]:
     resized = _resize(image_bytes)
     b64 = base64.b64encode(resized).decode()
     payload = {
-        "model": "llava:7b",
+        "model": "llava-phi3",
         "prompt": STRIP_PROMPT,
         "images": [b64],
         "stream": False,
