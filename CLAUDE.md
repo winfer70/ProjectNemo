@@ -13,7 +13,9 @@ Aquarium monitoring and automation system. Built, not yet deployed.
 
 ## Current State
 
-Built and working locally. Not deployed to any server. Next action: deploy to a server (likely REDACTED-HOST or REDACTED-HOST).
+Deployed and running on **REDACTED-HOST** (`10.0.0.103` wired / `10.0.0.102` WiFi, SSH alias `REDACTED-HOST`).
+Code lives at `/home/kamilo/nemo/ProjectNemo/`. Services: nemo-ui :3000, nemo-api :8000, nemo-homeassistant :8123, nemo-influxdb :8086, nemo-mosquitto :1883.
+Next action: Tapo P110 HA integration (add in HA UI → get entity IDs → update `.env` TAPO_*).
 
 ## Key Files
 
