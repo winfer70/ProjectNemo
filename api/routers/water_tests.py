@@ -24,6 +24,8 @@ import traceback
 
 logger = logging.getLogger(__name__)
 
+router = APIRouter(prefix="/api/water-tests", tags=["water-tests"])
+
 
 
 
