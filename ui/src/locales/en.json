@@ -83,7 +83,10 @@
     "ok": "OK",
     "outOfRange": "OUT OF RANGE",
     "trend": "Trend",
-    "advice": "What to do"
+    "advice": "What to do",
+    "scanStrip": "Scan test strip photo",
+    "scanning": "Scanning…",
+    "scanFilled": "{n} fields filled from photo"
   },
   "common": {
     "loading": "Loading...",

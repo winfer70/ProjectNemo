@@ -33,6 +33,8 @@ class Settings(BaseSettings):
     esphome_temp_entity: str = "sensor.nemo_sensor_temperature"
     esphome_ph_entity: str = "sensor.nemo_sensor_ph"
 
+    ollama_url: str = "http://10.0.0.101:11434"
+
     api_secret_key: str = "dev_secret"
     log_level: str = "info"
 

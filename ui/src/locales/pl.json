@@ -83,7 +83,10 @@
     "ok": "OK",
     "outOfRange": "POZA NORMĄ",
     "trend": "Trend",
-    "advice": "Co zrobić"
+    "advice": "Co zrobić",
+    "scanStrip": "Zeskanuj zdjęcie paska",
+    "scanning": "Skanowanie…",
+    "scanFilled": "{n} pól wypełniono ze zdjęcia"
   },
   "common": {
     "loading": "Ładowanie...",

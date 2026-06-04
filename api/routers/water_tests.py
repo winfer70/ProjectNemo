@@ -1,7 +1,7 @@
 """Water test sessions + readings + trends."""
 from datetime import datetime
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from sqlalchemy import select, desc
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -17,6 +17,7 @@ from models.schemas import (
 )
 from services.n8n_client import n8n_client
 from services.websocket_manager import broadcast_change
+from services import ollama_vision
 
 router = APIRouter(prefix="/api/water-tests", tags=["water-tests"])
 
@@ -34,6 +35,28 @@ def _reading_out(r: WaterTestReading) -> WaterTestReadingOut:
         out_of_range=r.out_of_range,
         notes=r.notes,
     )
+
+
+@router.post("/analyze_strip")
+async def analyze_strip(
+    file: UploadFile = File(...),
+    db: AsyncSession = Depends(get_db),
+):
+    image_bytes = await file.read()
+    try:
+        results = await ollama_vision.analyze_strip(image_bytes)
+    except Exception as e:
+        raise HTTPException(502, f"Vision analysis failed: {e}")
+
+    params_result = await db.execute(select(WaterTestParameter))
+    params_by_key = {p.key: p for p in params_result.scalars().all()}
+
+    prefill = {
+        params_by_key[key].id: value
+        for key, value in results.items()
+        if value is not None and key in params_by_key
+    }
+    return {"raw": results, "prefill": prefill}
 
 
 @router.get("/parameters", response_model=list[WaterTestParameterOut])

@@ -77,15 +77,33 @@
     <div v-if="showForm" class="modal-overlay" @click.self="showForm = false">
       <div class="modal-sheet">
         <div class="modal-title">{{ $t('tests.newSession') }}</div>
+
+        <!-- Strip scan button -->
+        <div style="margin-bottom:14px;">
+          <input ref="fileInput" type="file" accept="image/*" capture="environment"
+                 style="display:none" @change="handleFileSelected" />
+          <button class="btn btn-secondary" style="width:100%;position:relative;"
+                  :disabled="scanning" @click="fileInput.click()">
+            <span v-if="scanning">⏳ {{ $t('tests.scanning') }}</span>
+            <span v-else>📷 {{ $t('tests.scanStrip') }}</span>
+          </button>
+          <div v-if="scanError" style="font-size:11px;color:var(--danger);margin-top:4px;">{{ scanError }}</div>
+          <div v-if="scannedKeys.size" style="font-size:11px;color:var(--ok);margin-top:4px;">
+            ✓ {{ $t('tests.scanFilled', { n: scannedKeys.size }) }}
+          </div>
+        </div>
+
         <div v-for="param in manualParams" :key="param.key" style="margin-bottom:12px;">
           <label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:4px;">
             {{ locale === 'pl' ? param.name_pl : param.name_en }} ({{ param.unit }})
+            <span v-if="scannedKeys.has(param.id)"
+                  style="color:var(--ok);font-size:10px;margin-left:4px;">✓ scanned</span>
           </label>
           <input
             type="number"
             step="0.01"
             v-model.number="formValues[param.id]"
-            style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:8px;font-size:14px;"
+            :style="`width:100%;background:var(--bg);border:1px solid ${scannedKeys.has(param.id) ? 'var(--ok)' : 'var(--border)'};border-radius:6px;color:var(--text);padding:8px;font-size:14px;`"
             :placeholder="paramRange(param)"
           />
         </div>
@@ -186,6 +204,34 @@ function getRemediation(param, reading) {
 const showForm = ref(false)
 const formValues = ref({})
 const formNotes = ref('')
+const fileInput = ref(null)
+const scanning = ref(false)
+const scanError = ref('')
+const scannedKeys = ref(new Set())
+
+async function handleFileSelected(event) {
+  const file = event.target.files?.[0]
+  if (!file) return
+  scanning.value = true
+  scanError.value = ''
+  scannedKeys.value = new Set()
+  try {
+    const fd = new FormData()
+    fd.append('file', file)
+    const res = await fetch('/api/water-tests/analyze_strip', { method: 'POST', body: fd })
+    if (!res.ok) throw new Error(`${res.status}`)
+    const { prefill } = await res.json()
+    for (const [id, value] of Object.entries(prefill)) {
+      formValues.value[parseInt(id)] = value
+      scannedKeys.value.add(parseInt(id))
+    }
+  } catch (e) {
+    scanError.value = `Scan failed: ${e.message}`
+  } finally {
+    scanning.value = false
+    event.target.value = ''
+  }
+}
 
 const manualParams = computed(() =>
   waterTestsStore.parameters.filter(p => p.category === 'manual')
@@ -228,6 +274,8 @@ async function submitSession() {
   await waterTestsStore.createSession(null, formNotes.value || null, readings)
   formValues.value = {}
   formNotes.value = ''
+  scannedKeys.value = new Set()
+  scanError.value = ''
   showForm.value = false
 }
 
