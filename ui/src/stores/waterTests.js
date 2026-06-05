@@ -1,3 +1,10 @@
+/**
+ * Pinia store for water test UI — calls backend routers/water_tests.py via axios.
+ *
+ * Manages parameters, sessions, and trends state. Provides fetchParameters(),
+ * fetchLatest(), fetchSessions(), createSession(), fetchTrend(), and isCycled()
+ * computed check. All API calls proxied to nemo-api:8000 via vite.config.js.
+ */
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import axios from 'axios'

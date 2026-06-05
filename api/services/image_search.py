@@ -1,4 +1,9 @@
-"""Species image search — Wikipedia REST API first, SearXNG fallback."""
+"""Species image and metadata search client — imported by routers/obsada.py.
+
+Queries Wikipedia REST API first for species summaries and thumbnail images, falls back
+to SearXNG (settings.searxng_url) for additional image results. Exports search_species()
+used by GET /api/obsada/search endpoint.
+"""
 import logging
 import urllib.parse
 

@@ -1,4 +1,11 @@
-"""FastAPI application entry point."""
+"""FastAPI application orchestrator for the ProjectNemo aquarium monitoring system.
+
+Registers all routers (calendar, dosing, supplies, water_tests, sensors, devices,
+obsada, schedule, maintenance), configures CORS, manages WebSocket endpoints
+(/ws/ble for BLE gateway via ble_manager, /ws/live for live push via websocket_manager),
+initializes SQLite database via database.init_db, seeds reference data via seed_data.seed,
+and manages APScheduler lifecycle via services.scheduler.
+"""
 import asyncio
 import logging
 

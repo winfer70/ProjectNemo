@@ -1,4 +1,9 @@
-"""Seeds water_test_parameters and default maintenance tasks + supplies on first run."""
+"""Database seeder for ProjectNemo reference data — called once by main.py on startup.
+
+Populates SQLite with water test parameters, supplies, dosing/feeding/maintenance tasks,
+calendar events, livestock species (Fish), and plants (Plant). Imports all ORM models
+from models.orm. Only seeds tables when empty to preserve manual edits.
+"""
 from datetime import datetime, timedelta
 
 from sqlalchemy import select

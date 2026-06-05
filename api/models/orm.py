@@ -1,4 +1,10 @@
-"""SQLAlchemy ORM models — maps to SQLite tables."""
+"""SQLAlchemy ORM model definitions — imported by all routers and seed_data.py.
+
+Defines mapped classes for Supply, DosingTask, DoseLog, MaintenanceTask, CalendarTask,
+Fish, Plant, FeedingSchedule, WaterTestParameter, WaterTestSession, and WaterTestReading.
+All routers (calendar, dosing, maintenance, obsada, schedule, sensors, supplies,
+water_tests) and seed_data.py query these models against the SQLite database.
+"""
 import json
 from datetime import datetime
 

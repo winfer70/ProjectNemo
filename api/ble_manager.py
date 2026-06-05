@@ -1,11 +1,8 @@
-"""BLE gateway WebSocket connection manager.
+"""BLE gateway WebSocket connection manager bridging main.py and ha_client.py.
 
-The Samsung tablet placed beside the aquarium connects here and executes
-GATT writes locally, bridging the ~5 m floor gap between REDACTED-HOST and the
-Fluval Aquasky 2.0 light where direct Bluetooth is not reachable.
-
-Both main.py (endpoint registration) and services/ha_client.py (broadcast
-calls) import the singleton from this module, avoiding a circular import.
+The Samsung tablet placed beside the aquarium connects here and executes GATT writes
+locally, broadcasting Fluval RGBW light commands. Exports singleton ble_manager used
+by main.py (endpoint registration) and services/ha_client.py (broadcast calls).
 """
 import logging
 
