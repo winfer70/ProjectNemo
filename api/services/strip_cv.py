@@ -121,6 +121,39 @@ def _roi_median_hsv(hsv: np.ndarray, x: int, y: int, w: int, h: int) -> tuple:
     )
 
 
+def _sample_at_strip_x(
+    img_hsv: np.ndarray,
+    strip_x: float,
+    row_cells: list,
+    sample_w: int = 50,
+) -> tuple[tuple | None, tuple | None]:
+    """Sample pad HSV at strip column x using row y-centre derived from all row cells.
+
+    Decouples pad colour sampling from pad contour detection — works even when
+    a pale pad (white/cream) produces no contour.  The reference chart cells in
+    the same row (reliably detected, printed colours) anchor the y-position.
+
+    Returns (hsv_tuple, (x, y, w, h) sample bbox) or (None, None).
+    """
+    if not row_cells:
+        return None, None
+    ys = [c[1] + c[3] / 2.0 for c in row_cells]
+    hs = [c[3] for c in row_cells]
+    y_center = int(np.median(ys))
+    sample_h = max(20, int(np.median(hs) * 0.55))
+    x0 = max(0, int(strip_x - sample_w // 2))
+    y0 = max(0, int(y_center - sample_h // 2))
+    roi = img_hsv[y0: y0 + sample_h, x0: x0 + sample_w]
+    if roi.size == 0:
+        return None, None
+    hsv = (
+        float(np.median(roi[:, :, 0])),
+        float(np.median(roi[:, :, 1])),
+        float(np.median(roi[:, :, 2])),
+    )
+    return hsv, (x0, y0, sample_w, sample_h)
+
+
 # ── Detection ─────────────────────────────────────────────────────────────────
 
 def _find_cells(img_bgr: np.ndarray) -> list[tuple[int, int, int, int]]:
@@ -386,33 +419,49 @@ def debug_analyze_strip(image_bytes: bytes) -> tuple[bytes, list[dict]]:
     for x, y, w, h in cells:
         cv2.rectangle(debug_img, (x, y), (x + w, y + h), (200, 100, 0), 1)
 
+    strip_x = _find_strip_column_x(rows)
 
     for row_idx, (param_key, row_cells, (pad_cell, ref_cells)) in enumerate(
         zip(PAD_ORDER, rows, splits)
     ):
-        if not row_cells or pad_cell is None:
+        if not row_cells:
             row_debug.append({"row": row_idx, "param": param_key, "error": "no cells"})
             continue
 
-        # Pad: thick green
-        x, y, w, h = pad_cell
-        cv2.rectangle(debug_img, (x, y), (x + w, y + h), (0, 230, 0), 2)
-        cv2.putText(
-            debug_img, f"{row_idx}:{param_key[:4]}",
-            (x, max(y - 4, 12)), cv2.FONT_HERSHEY_SIMPLEX, 0.38, (0, 230, 0), 1,
-        )
+        # Sample at strip column x (works even when pale pad wasn't detected)
+        if strip_x is not None:
+            pad_hsv, sample_bbox = _sample_at_strip_x(img_hsv, strip_x, row_cells)
+        else:
+            pad_hsv, sample_bbox = None, None
+
+        # Fallback to detected pad cell if strip sample failed
+        if pad_hsv is None and pad_cell is not None:
+            pad_hsv = _roi_median_hsv(img_hsv, *pad_cell)
+            sample_bbox = pad_cell
+
+        if pad_hsv is None:
+            row_debug.append({"row": row_idx, "param": param_key, "error": "no sample"})
+            continue
+
+        # Draw sample box: thick green
+        if sample_bbox:
+            sx, sy, sw, sh = sample_bbox
+            cv2.rectangle(debug_img, (sx, sy), (sx + sw, sy + sh), (0, 230, 0), 2)
+            cv2.putText(
+                debug_img, f"{row_idx}:{param_key[:4]}",
+                (sx, max(sy - 4, 12)), cv2.FONT_HERSHEY_SIMPLEX, 0.38, (0, 230, 0), 1,
+            )
 
         # Ref cells: thin orange
         for rx, ry, rw, rh in ref_cells:
             cv2.rectangle(debug_img, (rx, ry), (rx + rw, ry + rh), (0, 165, 255), 1)
 
-        pad_hsv = _roi_median_hsv(img_hsv, *pad_cell)
         white = param_key not in _NO_WHITE_ZERO and pad_hsv[1] < WHITE_S_THRESH and pad_hsv[2] > WHITE_V_MIN
 
         row_debug.append({
             "row": row_idx,
             "param": param_key,
-            "pad_bbox": list(pad_cell),
+            "pad_bbox": list(sample_bbox) if sample_bbox else None,
             "pad_hsv": {"H": round(pad_hsv[0], 1), "S": round(pad_hsv[1], 1), "V": round(pad_hsv[2], 1)},
             "n_refs": len(ref_cells),
             "white_check": white,
@@ -450,21 +499,29 @@ def analyze_strip(
     else:
         splits = splits_provisional
 
+    strip_x = _find_strip_column_x(rows)
+    if strip_x is None:
+        raise CVDetectionError("Cannot locate strip pad column")
+
     results: dict[str, dict] = {}
     confidences: list[float] = []
 
-    for row_idx, (param_key, row_cells, (pad_cell, ref_cells)) in enumerate(
+    for row_idx, (param_key, row_cells, (_, ref_cells)) in enumerate(
         zip(PAD_ORDER, rows, splits)
     ):
         values = PARAM_VALUES[param_key]
         param = params_by_key.get(param_key, {})
 
-        if not row_cells or pad_cell is None:
-            logger.warning("strip_cv: no cells in row %d (%s)", row_idx, param_key)
+        if not row_cells:
+            logger.warning("strip_cv: row %d (%s) no cells at all", row_idx, param_key)
             results[param_key] = {"value": None, "out_of_range": False, "confidence": 0.0}
             continue
 
-        pad_hsv = _roi_median_hsv(img_hsv, *pad_cell)
+        pad_hsv, _ = _sample_at_strip_x(img_hsv, strip_x, row_cells)
+        if pad_hsv is None:
+            logger.warning("strip_cv: row %d (%s) strip sample failed", row_idx, param_key)
+            results[param_key] = {"value": None, "out_of_range": False, "confidence": 0.0}
+            continue
 
         logger.info(
             "strip_cv: row%d %-16s H=%3.0f S=%3.0f V=%3.0f refs=%d",
