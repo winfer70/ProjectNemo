@@ -63,7 +63,7 @@
                 :style="{ color: lightOn ? 'var(--ok)' : 'var(--text-muted)' }">
             {{ lightOn ? $t('lighting.on') : $t('lighting.off') }}
           </span>
-          <button class="btn btn-sm btn-secondary" @click="sensorsStore.toggleDevice(lightEntity)">
+          <button class="btn btn-sm btn-secondary" @click="toggleLight" :disabled="!sensorsStore.bleConnected">
             {{ $t('lighting.toggle') }}
           </button>
         </div>
@@ -142,17 +142,13 @@ const maintenanceStore = useMaintenanceStore()
 const bleError = ref(null)
 
 const channels = ref({ r: 60, g: 40, b: 100, w: 80 })
+const savedChannels = ref({ r: 60, g: 40, b: 100, w: 80 })
 const channelColors = { r: '#ff4444', g: '#44ff88', b: '#4488ff', w: '#ffffaa' }
 const maintModalTask = ref(null)
 
-const lightEntity = computed(() => {
-  const dev = sensorsStore.devices.find(d => d.role === 'light')
-  return dev?.entity_id
-})
-const lightOn = computed(() => {
-  const dev = sensorsStore.devices.find(d => d.role === 'light')
-  return dev?.state === 'on'
-})
+const lightOn = computed(() =>
+  channels.value.r > 0 || channels.value.g > 0 || channels.value.b > 0 || channels.value.w > 0
+)
 const nextFeeding = computed(() => Array.isArray(scheduleStore.feedings) ? scheduleStore.feedings.find(f => f.active) : undefined)
 const lastFed = computed(() => scheduleStore.feedingHistory[0])
 const recentFeedings = computed(() => scheduleStore.feedingHistory.slice(0, 3))
@@ -197,7 +193,21 @@ function dueProgressPct(days, interval) {
 }
 
 async function pushChannels() {
-  await sensorsStore.setFluvalChannels(channels.value.r, channels.value.g, channels.value.b, channels.value.w)
+  if (!bleService.isConnected()) return
+  const { r, g, b, w } = channels.value
+  if (r > 0 || g > 0 || b > 0 || w > 0) savedChannels.value = { r, g, b, w }
+  await bleService.setChannels(r, g, b, w)
+}
+
+async function toggleLight() {
+  if (!bleService.isConnected()) return
+  if (lightOn.value) {
+    savedChannels.value = { ...channels.value }
+    channels.value = { r: 0, g: 0, b: 0, w: 0 }
+  } else {
+    channels.value = { ...savedChannels.value }
+  }
+  await pushChannels()
 }
 
 async function handleBleConnect() {
