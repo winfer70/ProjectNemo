@@ -1,6 +1,7 @@
 """SHA256 + perceptual hash cache for strip scan results."""
 import hashlib
 import io
+import logging
 
 import imagehash
 from PIL import Image
@@ -9,6 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from models.orm import StripScanCache
 
+logger = logging.getLogger(__name__)
 PHASH_THRESHOLD = 10
 
 
@@ -27,6 +29,7 @@ async def lookup(db: AsyncSession, image_bytes: bytes) -> tuple[StripScanCache |
     )
     row = result.scalar_one_or_none()
     if row:
+        logger.info("cache hit sha256 id=%s corrected=%s", row.id, row._corrected_result is not None)
         return row, sha256, phash
 
     result = await db.execute(select(StripScanCache))
@@ -34,8 +37,10 @@ async def lookup(db: AsyncSession, image_bytes: bytes) -> tuple[StripScanCache |
     img_phash = imagehash.hex_to_hash(phash)
     for row in rows:
         if img_phash - imagehash.hex_to_hash(row.image_phash) <= PHASH_THRESHOLD:
+            logger.info("cache hit phash id=%s corrected=%s", row.id, row._corrected_result is not None)
             return row, sha256, phash
 
+    logger.info("cache miss sha256=%s", sha256[:12])
     return None, sha256, phash
 
 
@@ -55,4 +60,6 @@ async def save_correction(db: AsyncSession, cache_id: int, corrected: dict) -> N
     row = result.scalar_one_or_none()
     if row:
         row.corrected_result = corrected
+        logger.info("save_correction id=%s data=%s", cache_id, corrected)
         await db.commit()
+        logger.info("save_correction committed")
