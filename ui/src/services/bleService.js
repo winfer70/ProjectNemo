@@ -1,19 +1,21 @@
 /**
  * Fluval Roma/Shaker 2.0 — Web Bluetooth singleton service.
  *
- * Same XOR protocol as Aquasky 2.0 (Roma is hardware-compatible):
- *   Service:    00001001-0000-1000-8000-00805f9b34fb
- *   Write char: 00001002-0000-1000-8000-00805f9b34fb
- *   XOR key:    0x0E
+ * Confirmed UUIDs from nRF Connect (XX:XX:XX:XX:XX:XX):
+ *   Service:    0000fff0-0000-1000-8000-00805f9b34fb  (0xFFF0)
+ *   Write char: 0000fff2-0000-1000-8000-00805f9b34fb  (0xFFF2, WRITE + WRITE NO RESPONSE)
+ *   Notify:     0000fff1-0000-1000-8000-00805f9b34fb  (0xFFF1, responses)
  *
- * Per-channel packet: [0x54, 0x03, 0x5A, ch, val>>8, val&0xFF]  (then XOR each byte)
+ * Packet format (Aquasky 2.0 XOR protocol — unconfirmed for Roma, best known guess):
+ *   XOR key: 0x0E
+ *   Per-channel: [0x54, 0x03, 0x5A, ch, val>>8, val&0xFF]  (then XOR each byte)
  *   where val = clamp(percent, 0-100) * 10  (0–1000 scale)
  *   Channels: R=1, G=2, B=3, W=4
  */
 
 const XOR_KEY      = 0x0E
-const SERVICE_UUID = '00001001-0000-1000-8000-00805f9b34fb'
-const WRITE_UUID   = '00001002-0000-1000-8000-00805f9b34fb'
+const SERVICE_UUID = '0000fff0-0000-1000-8000-00805f9b34fb'
+const WRITE_UUID   = '0000fff2-0000-1000-8000-00805f9b34fb'
 
 const CH_R = 1
 const CH_G = 2
