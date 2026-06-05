@@ -168,6 +168,28 @@ def _cluster_rows(cells: list, n: int) -> list[list]:
     return rows
 
 
+def _is_strip_inverted(rows: list[list], img_h: int) -> bool:
+    """Detect upside-down strip: handle (blank plastic) causes a larger gap at one end.
+
+    If more blank space sits ABOVE the pad cluster than below, the handle is at the
+    top of the image — strip is inverted and rows must be reversed before mapping
+    to PAD_ORDER.
+    """
+    all_cells = [c for row in rows for c in row]
+    if not all_cells:
+        return False
+    ys = [c[1] + c[3] / 2.0 for c in all_cells]
+    top_gap = min(ys)
+    bottom_gap = img_h - max(ys)
+    inverted = top_gap > bottom_gap * 1.2
+    if inverted:
+        logger.info(
+            "strip_cv: inversion detected top_gap=%.0f bottom_gap=%.0f — reversing rows",
+            top_gap, bottom_gap,
+        )
+    return inverted
+
+
 def _split_pad_chart(row: list) -> tuple[tuple | None, list]:
     """Per-row initial split: pad = isolated cell, chart = tight group."""
     if not row:
@@ -278,6 +300,8 @@ def debug_analyze_strip(image_bytes: bytes) -> tuple[bytes, list[dict]]:
     try:
         cells = _find_cells(img_bgr)
         rows = _cluster_rows(cells, N_PADS)
+        if _is_strip_inverted(rows, img_bgr.shape[0]):
+            rows = rows[::-1]
     except CVDetectionError as e:
         cv2.putText(debug_img, str(e), (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
         _, jpeg = cv2.imencode(".jpg", debug_img, [cv2.IMWRITE_JPEG_QUALITY, 85])
@@ -346,6 +370,8 @@ def analyze_strip(
     logger.info("strip_cv: %d candidate cells", len(cells))
 
     rows = _cluster_rows(cells, N_PADS)
+    if _is_strip_inverted(rows, img_bgr.shape[0]):
+        rows = rows[::-1]
 
     splits = [_split_pad_chart(row) for row in rows]
     splits = _enforce_pad_x_consistency(rows, splits)
