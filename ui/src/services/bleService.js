@@ -5,16 +5,19 @@
  *   Service:    0000fff0-0000-1000-8000-00805f9b34fb
  *   FFF1: NOTIFY, FFF2: WRITE, FFF3: NOTIFY+WRITE
  *
- * Protocol: bare application frames — NO 0x54 encryption wrapper.
+ * Protocol: still unknown — probing.
+ * FFF3 is NOTIFY+WRITE (writable), suspicious for a "response only" char.
+ * Trying FFF3 as the actual command channel in addition to FFF2.
  *
- * Frames tried (watch FFF1/FFF3 notify in console to see which gets a response):
- *   Frame A-8:  [0x68, CMD, R, G, B, W, XOR_CRC]           — 8-bit 0-255
- *   Frame AL-8: [0x68, LEN, CMD, R, G, B, W, XOR_CRC]      — 8-bit with length byte
- *   Frame A-16: [0x68, CMD, R_H,R_L, G_H,G_L, B_H,B_L, W_H,W_L, XOR_CRC]  — 16-bit 0-1000
- *   Frame B:    [LEN, SEQ, 0x11, 0x02, R, G, B, W, XOR_CRC] — Telink SDK template
+ * Frame variants sent on each setChannels():
+ *   FFF2 A-8bit:   [0x68, 0x04, R, G, B, W, XOR_CRC]                 8-bit 0-255
+ *   FFF2 A-16bit:  [0x68, 0x04, R_H,R_L, G_H,G_L, B_H,B_L, W_H,W_L, XOR] 16-bit 0-1000
+ *   FFF2 MH:       [0x56, R, G, B, W, 0x00, 0xF0, 0xAA]              Magic Home / Zengge
+ *   FFF3 A-8bit:   same A-8bit frame → FFF3
+ *   FFF3 MH:       same MH frame → FFF3
  *
- *   CMD 0x02 = manual mode (sent once on first setChannels call)
- *   CMD 0x04 = set brightness
+ * Watch console for FFF1/FFF3 notify lines — that identifies the working frame+char combo.
+ * Once found, prune the rest and hardcode the winner.
  *
  * Write queue serializes all GATT writes — prevents "already in progress" errors.
  * setChannels is debounced 60ms to absorb rapid slider events.
@@ -25,12 +28,12 @@ const FFF1_UUID     = '0000fff1-0000-1000-8000-00805f9b34fb'
 const FFF2_UUID     = '0000fff2-0000-1000-8000-00805f9b34fb'
 const FFF3_UUID     = '0000fff3-0000-1000-8000-00805f9b34fb'
 
-let _device       = null
-let _fff2         = null
-let _fff3         = null
-let _seq          = 0
-let _modeSet      = false
-let _writeChain   = Promise.resolve()
+let _device        = null
+let _fff2          = null
+let _fff3          = null
+let _seq           = 0
+let _modeSet       = false
+let _writeChain    = Promise.resolve()
 let _debounceTimer = null
 
 // ---------------------------------------------------------------------------
@@ -48,14 +51,6 @@ function _frameA(cmd, data) {
   return new Uint8Array(frame)
 }
 
-/** [0x68, LEN, CMD, ...data, XOR_CRC] where LEN = bytes after LEN (cmd+data+crc) */
-function _frameAL(cmd, data) {
-  const lenByte = 1 + data.length + 1
-  const frame = [0x68, lenByte, cmd, ...data]
-  frame.push(_xorCrc(frame))
-  return new Uint8Array(frame)
-}
-
 /** [LEN, SEQ, CMD_H, CMD_L, ...data, XOR_CRC] — Telink SDK template */
 function _frameB(cmdH, cmdL, data) {
   const body = [_seq & 0xFF, cmdH, cmdL, ...data]
@@ -63,6 +58,11 @@ function _frameB(cmdH, cmdL, data) {
   const crc  = _xorCrc(body)
   _seq = (_seq + 1) & 0xFF
   return new Uint8Array([len, ...body, crc])
+}
+
+/** [0x56, R, G, B, W, 0x00, 0xF0, 0xAA] — Magic Home / Zengge protocol */
+function _frameMH(r, g, b, w) {
+  return new Uint8Array([0x56, r, g, b, w, 0x00, 0xF0, 0xAA])
 }
 
 // ---------------------------------------------------------------------------
@@ -121,7 +121,7 @@ export async function connect() {
   _modeSet    = false
   _seq        = 0
   _writeChain = Promise.resolve()
-  console.log('[fluval] connected — FFF1/FFF3 subscribed')
+  console.log('[fluval] connected — FFF1/FFF3 subscribed, probing FFF2+FFF3')
 
   device.addEventListener('gattserverdisconnected', () => {
     _device = _fff2 = _fff3 = null
@@ -144,13 +144,14 @@ export function setChannels(r, g, b, w) {
 function _doSetChannels(r, g, b, w) {
   if (!_fff2) return
 
-  const clamp = v => Math.max(0, Math.min(100, Math.round(v)))
+  const clamp  = v => Math.max(0, Math.min(100, Math.round(v)))
   const to255  = v => Math.round(clamp(v) * 2.55)
   const to1000 = v => clamp(v) * 10
 
   if (!_modeSet) {
-    _enqueue(_fff2, _frameA(0x02, [0x00]),  'FFF2 mode:A')
-    _enqueue(_fff2, _frameAL(0x02, [0x00]), 'FFF2 mode:AL')
+    // manual mode on both chars
+    _enqueue(_fff2, _frameA(0x02, [0x00]), 'FFF2 mode')
+    _enqueue(_fff3, _frameA(0x02, [0x00]), 'FFF3 mode')
     _modeSet = true
   }
 
@@ -163,10 +164,14 @@ function _doSetChannels(r, g, b, w) {
     (wv >> 8) & 0xFF, wv & 0xFF,
   ]
 
+  // FFF2 probes
   _enqueue(_fff2, _frameA(0x04, [r8, g8, b8, w8]), 'FFF2 A-8bit')
-  _enqueue(_fff2, _frameAL(0x04, [r8, g8, b8, w8]), 'FFF2 AL-8bit')
   _enqueue(_fff2, _frameA(0x04, data16),             'FFF2 A-16bit')
-  _enqueue(_fff2, _frameB(0x11, 0x02, [r8, g8, b8, w8]), 'FFF2 B')
+  _enqueue(_fff2, _frameMH(r8, g8, b8, w8),          'FFF2 MH')
+
+  // FFF3 probes — same frames to the writable NOTIFY+WRITE char
+  _enqueue(_fff3, _frameA(0x04, [r8, g8, b8, w8]), 'FFF3 A-8bit')
+  _enqueue(_fff3, _frameMH(r8, g8, b8, w8),          'FFF3 MH')
 }
 
 export function disconnect() {
