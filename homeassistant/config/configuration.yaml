@@ -65,7 +65,7 @@ emulated_hue:
 # ── REST commands (called by Nemo API → n8n webhooks) ────────────────────────
 rest_command:
   nemo_alert:
-    url: "{{ n8n_url }}/webhook/{{ webhook_id }}"
+    url: "https://n8n.kamilon8n.win/webhook/nemo-alert"
     method: POST
     content_type: "application/json"
     payload: '{"message_en": "{{ message_en }}", "message_pl": "{{ message_pl }}", "lang": "{{ lang }}"}'
