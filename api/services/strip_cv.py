@@ -270,10 +270,13 @@ def _detect_orientation(
 def _find_strip_column_x(rows: list[list], bin_width: int = 80, min_rows: int = 4) -> float | None:
     """Find x-centre of the strip pad column.
 
-    The strip is a narrow vertical column of pads on one side of the image.
-    The reference chart occupies the rest of the width.
-    Strategy: bin all cells into x-columns; the LEFTMOST bin whose cells span
-    at least min_rows different k-means rows is the strip column.
+    The strip is a narrow vertical column placed to the LEFT or RIGHT of the
+    reference chart. Try both edges and pick whichever is closest to the
+    extremes of all detected cells (i.e. truly at the edge, not chart interior).
+
+    Returns None if no valid column found.
+    Raises CVDetectionError if a column is found but it sits in the interior
+    of detected cells — indicates the strip was not photographed correctly.
     """
     from collections import defaultdict
     x_row_presence: dict[int, set] = defaultdict(set)
@@ -288,10 +291,37 @@ def _find_strip_column_x(rows: list[list], bin_width: int = 80, min_rows: int = 
     valid = {b: rows for b, rows in x_row_presence.items() if len(rows) >= min_rows}
     if not valid:
         return None
+
+    all_x = [x for xs in x_bin_centers.values() for x in xs]
+    x_min, x_max = min(all_x), max(all_x)
+    x_range = x_max - x_min
+
     leftmost_bin = min(valid.keys())
-    strip_x = float(np.median(x_bin_centers[leftmost_bin]))
-    logger.info("strip_cv: strip column x=%.0f (bin=%d, rows=%d)",
-                strip_x, leftmost_bin, len(valid[leftmost_bin]))
+    rightmost_bin = max(valid.keys())
+    strip_x_left = float(np.median(x_bin_centers[leftmost_bin]))
+    strip_x_right = float(np.median(x_bin_centers[rightmost_bin]))
+
+    dist_left = strip_x_left - x_min
+    dist_right = x_max - strip_x_right
+
+    if dist_right < dist_left:
+        strip_x = strip_x_right
+        chosen_bin = rightmost_bin
+        edge_dist = dist_right
+    else:
+        strip_x = strip_x_left
+        chosen_bin = leftmost_bin
+        edge_dist = dist_left
+
+    edge_margin = x_range * 0.25
+    if edge_dist > edge_margin:
+        raise CVDetectionError(
+            "Test strip not found at image edge. "
+            "Place strip vertically alongside the chart so each pad aligns with its row."
+        )
+
+    logger.info("strip_cv: strip column x=%.0f (bin=%d, rows=%d, edge_dist=%.0f)",
+                strip_x, chosen_bin, len(valid[chosen_bin]), edge_dist)
     return strip_x
 
 

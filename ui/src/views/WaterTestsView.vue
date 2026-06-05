@@ -80,6 +80,9 @@
 
         <!-- Strip scan buttons -->
         <div style="margin-bottom:14px;">
+          <div style="font-size:11px;color:var(--text-muted);background:var(--bg-alt,var(--bg));border:1px solid var(--border);border-radius:6px;padding:7px 9px;margin-bottom:8px;line-height:1.5;">
+            📐 {{ $t('tests.scanTip') }}
+          </div>
           <input ref="fileInput" type="file" accept="image/*"
                  style="display:none" @change="handleFileSelected" />
           <input ref="fileInputAmmonia" type="file" accept="image/*"

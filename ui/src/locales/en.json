@@ -86,6 +86,7 @@
     "outOfRange": "OUT OF RANGE",
     "trend": "Trend",
     "advice": "What to do",
+    "scanTip": "Place strip VERTICALLY alongside the chart — each pad must align with its row. Do NOT lay it flat below the card.",
     "scanStrip": "Scan 30s (all pads)",
     "scanning": "Scanning…",
     "scanFilled": "{n} fields filled from photo",

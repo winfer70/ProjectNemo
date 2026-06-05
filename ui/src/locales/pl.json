@@ -86,6 +86,7 @@
     "outOfRange": "POZA NORMĄ",
     "trend": "Trend",
     "advice": "Co zrobić",
+    "scanTip": "Połóż pasek PIONOWO obok tabeli — każdy pad musi być na równi z jego rzędem. NIE kładź paska płasko poniżej karty.",
     "scanStrip": "Skanuj 30s (wszystkie pady)",
     "scanning": "Skanowanie…",
     "scanFilled": "{n} pól wypełniono ze zdjęcia",
