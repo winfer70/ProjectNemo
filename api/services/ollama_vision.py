@@ -25,9 +25,13 @@ _SYSTEM = (
 
 _USER = (
     "Analyze this test strip image. Compare each pad to the reference chart.\n\n"
-    "The 9 pads from top to bottom are:\n"
-    "1. copper\n2. nitrate\n3. nitrite\n4. free_chlorine\n"
-    "5. gh\n6. total_alkalinity\n7. kh\n8. ph\n9. ammonia\n\n"
+    "ORIENTATION: The test strip has a blank white plastic HANDLE at the BOTTOM. "
+    "Count pads starting from the TOP of the strip (furthest from the handle).\n\n"
+    "The 9 pads from TOP to BOTTOM (top = away from handle, bottom = near handle):\n"
+    "1. copper  (TOP pad, furthest from handle)\n"
+    "2. nitrate\n3. nitrite\n4. free_chlorine\n"
+    "5. gh\n6. total_alkalinity\n7. kh\n8. ph\n"
+    "9. ammonia (BOTTOM pad, closest to handle)\n\n"
     "WHITE or pale pad = 0. Only non-zero if CLEARLY colored differently from white.\n\n"
     "Valid values:\n"
     "copper: 0, 0.2, 0.5, 1, 2, 5\n"
