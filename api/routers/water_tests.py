@@ -1,7 +1,9 @@
 """Water test sessions + readings + trends."""
+import base64
 from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
+from fastapi.responses import JSONResponse
 from sqlalchemy import select, desc
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -122,6 +124,25 @@ async def analyze_strip(
 
     cache_row = await scan_cache.store(db, sha256, phash, results)
     return _build_scan_response(results, params_by_key, cache_row.id, False, cv_results)
+
+
+@router.post("/debug_strip")
+async def debug_strip(file: UploadFile = File(...)):
+    """Return annotated JPEG + per-row HSV debug data.
+
+    Response JSON:
+      image_b64: base64 JPEG — green=pad, orange=ref, blue=all cells
+      rows: list of {row, param, pad_bbox, pad_hsv, n_refs, white_check}
+    """
+    image_bytes = await file.read()
+    try:
+        annotated_bytes, row_debug = strip_cv.debug_analyze_strip(image_bytes)
+    except Exception as e:
+        raise HTTPException(500, f"debug_strip failed: {e}")
+    return JSONResponse({
+        "image_b64": base64.b64encode(annotated_bytes).decode(),
+        "rows": row_debug,
+    })
 
 
 @router.get("/parameters", response_model=list[WaterTestParameterOut])

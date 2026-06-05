@@ -6,11 +6,14 @@ photographed together.
 Pipeline:
   1. Find all coloured rectangular cells in the image.
   2. K-means cluster cells into N_PADS horizontal row-bands by y-centre.
-  3. Per row: split strip pad from chart reference cells by the largest x-gap.
-  4. Low-saturation pad (white/cream) → value 0 (skipped for pH).
-  5. Otherwise: match pad HSV to reference cell HSV by weighted Euclidean distance.
+  3. Initial per-row pad/chart split by largest x-gap.
+  4. Global x-consistency pass: if any pad x-centre deviates > 2σ from median,
+     re-assign using the cell in that row closest to the median x. This prevents
+     one noisy row from index-shifting the entire strip.
+  5. Low-saturation pad (white/cream) → value 0 (skipped for pH).
+  6. Otherwise: match pad HSV to reference cell HSV by weighted Euclidean distance.
      Uses cells detected from the chart if ≥ 2 found, else static fallback table.
-  6. Annotate each result with out_of_range using the supplied safe-range dict.
+  7. Annotate each result with out_of_range using the supplied safe-range dict.
 
 Raises CVDetectionError when the pipeline cannot confidently identify pads.
 """
@@ -41,9 +44,9 @@ PARAM_VALUES = {
     "ammonia":          [0, 0.5, 1, 3, 5, 10],
 }
 
-# Approximate HSV reference colours (H:0-180, S:0-255, V:0-255).
-# Used only when the reference chart cannot be detected in the image.
-# Tuned for typical indoor lighting — may need adjustment per strip brand.
+# Static HSV reference (H:0-180, S:0-255, V:0-255).
+# Used only when reference chart cells cannot be detected in the image.
+# Approximate — needs calibration from real strip photos with known values.
 _STATIC_HSV_REF: dict[str, list[tuple]] = {
     "copper": [
         (0, 8, 240), (22, 55, 225), (22, 110, 215),
@@ -82,12 +85,8 @@ _STATIC_HSV_REF: dict[str, list[tuple]] = {
     ],
 }
 
-# Saturation threshold: below this the pad is treated as white → value 0.
-# pH is excluded (all pH pads have colour — lowest pH is yellow-green not white).
 WHITE_S_THRESH = 45
 _NO_WHITE_ZERO = {"ph"}
-
-# Minimum average confidence to trust CV results; below this → fall back to LLM.
 MIN_AVG_CONFIDENCE = 0.35
 
 
@@ -103,7 +102,6 @@ def _to_bgr(image_bytes: bytes) -> np.ndarray:
 
 
 def _hsv_dist(a: tuple, b: tuple) -> float:
-    """Weighted Euclidean distance in OpenCV HSV space. H is circular [0-180]."""
     dh = min(abs(float(a[0]) - float(b[0])), 180 - abs(float(a[0]) - float(b[0])))
     ds = abs(float(a[1]) - float(b[1]))
     dv = abs(float(a[2]) - float(b[2]))
@@ -111,7 +109,6 @@ def _hsv_dist(a: tuple, b: tuple) -> float:
 
 
 def _roi_median_hsv(hsv: np.ndarray, x: int, y: int, w: int, h: int) -> tuple:
-    """Median HSV of the inner 60% of a bounding box (avoids edge artefacts)."""
     px, py = max(1, w // 5), max(1, h // 5)
     roi = hsv[y + py: y + h - py, x + px: x + w - px]
     if roi.size == 0:
@@ -126,7 +123,6 @@ def _roi_median_hsv(hsv: np.ndarray, x: int, y: int, w: int, h: int) -> tuple:
 # ── Detection ─────────────────────────────────────────────────────────────────
 
 def _find_cells(img_bgr: np.ndarray) -> list[tuple[int, int, int, int]]:
-    """Detect candidate rectangular cells (strip pads + chart cells)."""
     h_img, w_img = img_bgr.shape[:2]
     min_a = max(40 * 40, int(h_img * w_img * 0.0004))
     max_a = int(h_img * w_img * 0.12)
@@ -156,7 +152,6 @@ def _find_cells(img_bgr: np.ndarray) -> list[tuple[int, int, int, int]]:
 
 
 def _cluster_rows(cells: list, n: int) -> list[list]:
-    """K-means cluster cells into n row-bands by y-centre."""
     if len(cells) < n:
         raise CVDetectionError(f"Only {len(cells)} cells detected, need ≥ {n}")
     y_cents = np.array([[c[1] + c[3] / 2.0] for c in cells], dtype=np.float32)
@@ -172,12 +167,10 @@ def _cluster_rows(cells: list, n: int) -> list[list]:
     return rows
 
 
-def _split_pad_chart(row: list) -> tuple[tuple, list]:
-    """Split a row's cells into (strip pad, chart reference cells).
-
-    Heuristic: the strip pad is isolated from the chart group.
-    Find the largest x-gap; the smaller side of that gap = the pad.
-    """
+def _split_pad_chart(row: list) -> tuple[tuple | None, list]:
+    """Per-row initial split: pad = isolated cell, chart = tight group."""
+    if not row:
+        return None, []
     if len(row) == 1:
         return row[0], []
     row_s = sorted(row, key=lambda c: c[0])
@@ -191,15 +184,53 @@ def _split_pad_chart(row: list) -> tuple[tuple, list]:
     return right[0], left
 
 
+def _enforce_pad_x_consistency(
+    rows: list[list], splits: list[tuple]
+) -> list[tuple]:
+    """Global pass: all strip pads should share a consistent x-centre.
+
+    If a row's identified pad deviates > 2σ from the median pad x-centre,
+    re-assign it to the cell in that row closest to the median x.
+    This corrects single-row index shifts caused by background noise cells.
+    """
+    pad_xs = []
+    for pad_cell, _ in splits:
+        if pad_cell is not None:
+            pad_xs.append(pad_cell[0] + pad_cell[2] / 2.0)
+
+    if len(pad_xs) < 5:
+        return splits  # not enough data for meaningful correction
+
+    median_x = float(np.median(pad_xs))
+    std_x = float(np.std(pad_xs))
+    threshold = max(2.0 * std_x, 60.0)  # at least 60px threshold
+
+    corrected = []
+    for i, (row_cells, (pad_cell, ref_cells)) in enumerate(zip(rows, splits)):
+        if pad_cell is None or not row_cells:
+            corrected.append((pad_cell, ref_cells))
+            continue
+
+        pad_x = pad_cell[0] + pad_cell[2] / 2.0
+        if abs(pad_x - median_x) > threshold:
+            best = min(row_cells, key=lambda c: abs(c[0] + c[2] / 2.0 - median_x))
+            new_refs = [c for c in row_cells if c != best]
+            logger.info(
+                "strip_cv: row %d (%s) x-consistency fix: pad_x=%.0f → %.0f (median=%.0f σ=%.0f)",
+                i, PAD_ORDER[i], pad_x, best[0] + best[2] / 2.0, median_x, std_x,
+            )
+            corrected.append((best, new_refs))
+        else:
+            corrected.append((pad_cell, ref_cells))
+
+    return corrected
+
+
 # ── Matching ──────────────────────────────────────────────────────────────────
 
 def _match_to_ref(
     pad_hsv: tuple, ref_hsvs: list, values: list
 ) -> tuple[float, float]:
-    """Return (matched_value, confidence 0–1).
-
-    Confidence is derived from the gap between the best and second-best distances.
-    """
     best_val = values[0]
     best_dist = float("inf")
     second_dist = float("inf")
@@ -226,6 +257,73 @@ def _is_oor(value: float, param: dict) -> bool:
     return False
 
 
+# ── Debug visualisation ───────────────────────────────────────────────────────
+
+def debug_analyze_strip(image_bytes: bytes) -> tuple[bytes, list[dict]]:
+    """Return (annotated_jpeg_bytes, per_row_debug_list).
+
+    Annotated image:
+      - All detected cells: thin blue outline
+      - Identified pad cells: thick green outline + row label
+      - Reference chart cells: thin orange outline
+
+    Debug list per row: param, pad_bbox, pad_hsv (H/S/V), n_refs, white_check
+    """
+    img_bgr = _to_bgr(image_bytes)
+    img_hsv = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2HSV)
+    debug_img = img_bgr.copy()
+    row_debug: list[dict] = []
+
+    try:
+        cells = _find_cells(img_bgr)
+        rows = _cluster_rows(cells, N_PADS)
+    except CVDetectionError as e:
+        cv2.putText(debug_img, str(e), (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
+        _, jpeg = cv2.imencode(".jpg", debug_img, [cv2.IMWRITE_JPEG_QUALITY, 85])
+        return jpeg.tobytes(), [{"error": str(e)}]
+
+    # All cells: thin blue
+    for x, y, w, h in cells:
+        cv2.rectangle(debug_img, (x, y), (x + w, y + h), (200, 100, 0), 1)
+
+    splits = [_split_pad_chart(row) for row in rows]
+    splits = _enforce_pad_x_consistency(rows, splits)
+
+    for row_idx, (param_key, row_cells, (pad_cell, ref_cells)) in enumerate(
+        zip(PAD_ORDER, rows, splits)
+    ):
+        if not row_cells or pad_cell is None:
+            row_debug.append({"row": row_idx, "param": param_key, "error": "no cells"})
+            continue
+
+        # Pad: thick green
+        x, y, w, h = pad_cell
+        cv2.rectangle(debug_img, (x, y), (x + w, y + h), (0, 230, 0), 2)
+        cv2.putText(
+            debug_img, f"{row_idx}:{param_key[:4]}",
+            (x, max(y - 4, 12)), cv2.FONT_HERSHEY_SIMPLEX, 0.38, (0, 230, 0), 1,
+        )
+
+        # Ref cells: thin orange
+        for rx, ry, rw, rh in ref_cells:
+            cv2.rectangle(debug_img, (rx, ry), (rx + rw, ry + rh), (0, 165, 255), 1)
+
+        pad_hsv = _roi_median_hsv(img_hsv, *pad_cell)
+        white = param_key not in _NO_WHITE_ZERO and pad_hsv[1] < WHITE_S_THRESH
+
+        row_debug.append({
+            "row": row_idx,
+            "param": param_key,
+            "pad_bbox": list(pad_cell),
+            "pad_hsv": {"H": round(pad_hsv[0], 1), "S": round(pad_hsv[1], 1), "V": round(pad_hsv[2], 1)},
+            "n_refs": len(ref_cells),
+            "white_check": white,
+        })
+
+    _, jpeg = cv2.imencode(".jpg", debug_img, [cv2.IMWRITE_JPEG_QUALITY, 85])
+    return jpeg.tobytes(), row_debug
+
+
 # ── Public API ────────────────────────────────────────────────────────────────
 
 def analyze_strip(
@@ -233,10 +331,6 @@ def analyze_strip(
     params_by_key: dict,
 ) -> dict[str, dict]:
     """Analyse a test strip photo.
-
-    Args:
-        image_bytes: raw image file bytes.
-        params_by_key: {param_key: {min_safe, max_safe}} from DB.
 
     Returns:
         {param_key: {value: float|None, out_of_range: bool, confidence: float}}
@@ -252,31 +346,33 @@ def analyze_strip(
 
     rows = _cluster_rows(cells, N_PADS)
 
+    splits = [_split_pad_chart(row) for row in rows]
+    splits = _enforce_pad_x_consistency(rows, splits)
+
     results: dict[str, dict] = {}
     confidences: list[float] = []
 
-    for row_idx, (param_key, row_cells) in enumerate(zip(PAD_ORDER, rows)):
+    for row_idx, (param_key, row_cells, (pad_cell, ref_cells)) in enumerate(
+        zip(PAD_ORDER, rows, splits)
+    ):
         values = PARAM_VALUES[param_key]
         param = params_by_key.get(param_key, {})
 
-        if not row_cells:
+        if not row_cells or pad_cell is None:
             logger.warning("strip_cv: no cells in row %d (%s)", row_idx, param_key)
             results[param_key] = {"value": None, "out_of_range": False, "confidence": 0.0}
             continue
 
-        pad_cell, ref_cells = _split_pad_chart(row_cells)
         pad_hsv = _roi_median_hsv(img_hsv, *pad_cell)
 
-        logger.debug(
-            "strip_cv: %s pad_hsv H=%.0f S=%.0f V=%.0f refs=%d",
-            param_key, *pad_hsv, len(ref_cells),
+        logger.info(
+            "strip_cv: row%d %-16s H=%3.0f S=%3.0f V=%3.0f refs=%d",
+            row_idx, param_key, *pad_hsv, len(ref_cells),
         )
 
-        # White-check: very low saturation → value 0 (except pH, which is always coloured)
         if param_key not in _NO_WHITE_ZERO and pad_hsv[1] < WHITE_S_THRESH:
             value, confidence = 0.0, 0.80
         else:
-            # Use chart cells from image when enough are detected; else static table
             if len(ref_cells) >= 2:
                 ref_cells_s = sorted(ref_cells, key=lambda c: c[0])
                 ref_hsvs = [_roi_median_hsv(img_hsv, *c) for c in ref_cells_s]
@@ -292,7 +388,7 @@ def analyze_strip(
 
             value, confidence = _match_to_ref(pad_hsv, ref_hsvs, values[:len(ref_hsvs)])
             if using_static:
-                confidence *= 0.6  # penalise static fallback confidence
+                confidence *= 0.6
 
         oor = _is_oor(value, param) if value is not None else False
         results[param_key] = {"value": value, "out_of_range": oor, "confidence": confidence}
