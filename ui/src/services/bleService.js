@@ -1,24 +1,24 @@
 /**
  * Fluval Roma/Shaker 2.0 — Web Bluetooth singleton service.
  *
- * Actual service/char UUIDs determined by discoverServices() at first connect.
- * Once confirmed, SERVICE_UUID / WRITE_UUID / REGISTER_UUID can be hardcoded.
+ * Same XOR protocol as Aquasky 2.0 (Roma is hardware-compatible):
+ *   Service:    00001001-0000-1000-8000-00805f9b34fb
+ *   Write char: 00001002-0000-1000-8000-00805f9b34fb
+ *   XOR key:    0x0E
  *
- * Color packet: [0x54, r, g, b, w]  values 0-100, no XOR.
+ * Per-channel packet: [0x54, 0x03, 0x5A, ch, val>>8, val&0xFF]  (then XOR each byte)
+ *   where val = clamp(percent, 0-100) * 10  (0–1000 scale)
+ *   Channels: R=1, G=2, B=3, W=4
  */
 
-// Candidate service UUIDs — all must be in optionalServices at requestDevice time.
-const CANDIDATE_SERVICES = [
-  '00001001-0000-1000-8000-00805f9b34fb', // Aquasky 2.0 (most likely match)
-  '00001000-0000-1000-8000-00805f9b34fb', // Roma AI claim (wrong, kept for fallback)
-  '0000180a-0000-1000-8000-00805f9b34fb', // Device Information
-  '0000ffe0-0000-1000-8000-00805f9b34fb', // Generic custom
-  '0000fff0-0000-1000-8000-00805f9b34fb', // Generic custom
-]
+const XOR_KEY      = 0x0E
+const SERVICE_UUID = '00001001-0000-1000-8000-00805f9b34fb'
+const WRITE_UUID   = '00001002-0000-1000-8000-00805f9b34fb'
 
-// Known char UUIDs inside the control service
-const WRITE_UUID    = '00001002-0000-1000-8000-00805f9b34fb' // Aquasky write char
-const REGISTER_UUID = '00001005-0000-1000-8000-00805f9b34fb'
+const CH_R = 1
+const CH_G = 2
+const CH_B = 3
+const CH_W = 4
 
 let _device    = null
 let _writeChar = null
@@ -27,85 +27,13 @@ let _writeChar = null
 // Internal helpers
 // ---------------------------------------------------------------------------
 
-function _clamp(v) {
-  return Math.max(0, Math.min(100, Math.round(v)))
+function _xor(bytes) {
+  return bytes.map(b => b ^ XOR_KEY)
 }
 
-/**
- * Walk all primary services, log their UUIDs + char UUIDs, return a
- * human-readable string. Used for diagnostics when init fails.
- */
-async function _dumpServices(server) {
-  try {
-    const services = await server.getPrimaryServices()
-    const lines = []
-    for (const svc of services) {
-      let charList = ''
-      try {
-        const chars = await svc.getCharacteristics()
-        charList = chars.map(c => c.uuid).join(', ')
-      } catch (_) { charList = '(no access)' }
-      lines.push(`SVC ${svc.uuid} → [${charList}]`)
-    }
-    return lines.join('\n') || 'no services found'
-  } catch (e) {
-    return `getPrimaryServices failed: ${e.message}`
-  }
-}
-
-async function _initSession(server) {
-  // Try each candidate service until one exists on this device.
-  let service = null
-  let foundUUID = null
-  for (const uuid of CANDIDATE_SERVICES) {
-    try {
-      service = await server.getPrimaryService(uuid)
-      foundUUID = uuid
-      break
-    } catch (_) { /* not present */ }
-  }
-
-  if (!service) {
-    const dump = await _dumpServices(server)
-    throw new Error(`No matching service found.\n${dump}`)
-  }
-
-  console.log(`[BLE] Connected via service ${foundUUID}`)
-
-  // Try register char (optional — not all firmware versions need it)
-  try {
-    const regChar = await service.getCharacteristic(REGISTER_UUID)
-    await regChar.writeValue(new Uint8Array([0x0F]))
-  } catch (_) { /* char may not exist on this model */ }
-
-  // Locate write characteristic
-  let writeChar = null
-  try {
-    writeChar = await service.getCharacteristic(WRITE_UUID)
-  } catch (_) {
-    // Fallback: use first writable characteristic in the service
-    const chars = await service.getCharacteristics()
-    writeChar = chars.find(c => c.properties.write || c.properties.writeWithoutResponse)
-    if (!writeChar) throw new Error(`No writable char in service ${foundUUID}`)
-    console.log(`[BLE] Using fallback write char ${writeChar.uuid}`)
-  }
-
-  // Time sync
-  const now = new Date()
-  await writeChar.writeValue(new Uint8Array([
-    now.getFullYear() % 100,
-    now.getMonth() + 1,
-    now.getDate(),
-    now.getDay(),
-    now.getHours(),
-    now.getMinutes(),
-    now.getSeconds(),
-  ]))
-
-  // Switch to manual mode (override Pro/Auto schedule)
-  await writeChar.writeValue(new Uint8Array([0x52, 0x00]))
-
-  return writeChar
+function _buildPacket(channelId, percent) {
+  const val = Math.max(0, Math.min(100, Math.round(percent))) * 10
+  return new Uint8Array(_xor([0x54, 0x03, 0x5A, channelId, (val >> 8) & 0xFF, val & 0xFF]))
 }
 
 // ---------------------------------------------------------------------------
@@ -119,11 +47,12 @@ export async function connect() {
       { namePrefix: 'Roma' },
       { namePrefix: 'Fluval' },
     ],
-    optionalServices: CANDIDATE_SERVICES,
+    optionalServices: [SERVICE_UUID],
   })
 
   const server = await device.gatt.connect()
-  _writeChar = await _initSession(server)
+  const service = await server.getPrimaryService(SERVICE_UUID)
+  _writeChar = await service.getCharacteristic(WRITE_UUID)
   _device = device
 
   device.addEventListener('gattserverdisconnected', () => {
@@ -137,11 +66,18 @@ export function isConnected() {
   return _device !== null && _device.gatt.connected && _writeChar !== null
 }
 
-/** r, g, b, w are 0–100 percent. Matches FluvalConnect: Red, Green, Blue, White. */
+/** r, g, b, w are 0–100 percent. */
 export async function setChannels(r, g, b, w) {
   if (!_writeChar) throw new Error('BLE not connected — call connect() first')
-  const packet = new Uint8Array([0x54, _clamp(r), _clamp(g), _clamp(b), _clamp(w)])
-  await _writeChar.writeValue(packet)
+
+  for (const [ch, val] of [[CH_R, r], [CH_G, g], [CH_B, b], [CH_W, w]]) {
+    const pkt = _buildPacket(ch, val)
+    if (_writeChar.writeValueWithoutResponse) {
+      await _writeChar.writeValueWithoutResponse(pkt)
+    } else {
+      await _writeChar.writeValue(pkt)
+    }
+  }
 }
 
 export async function disconnect() {
