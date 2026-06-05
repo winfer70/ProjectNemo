@@ -17,7 +17,7 @@ from models.schemas import (
 )
 from services.n8n_client import n8n_client
 from services.websocket_manager import broadcast_change
-from services import ollama_vision, scan_cache
+from services import ollama_vision, scan_cache, strip_cv
 
 import logging
 import traceback
@@ -45,6 +45,41 @@ def _reading_out(r: WaterTestReading) -> WaterTestReadingOut:
     )
 
 
+def _build_scan_response(
+    results: dict,
+    params_by_key: dict,
+    cache_id: int,
+    cache_hit: bool,
+    cv_results: dict | None = None,
+) -> dict:
+    """Build the analyze_strip JSON response including out_of_range flags."""
+    prefill: dict[int, float] = {}
+    out_of_range: dict[int, bool] = {}
+    for key, value in results.items():
+        if value is None:
+            continue
+        param = params_by_key.get(key)
+        if not param:
+            continue
+        prefill[param.id] = value
+        if cv_results and key in cv_results:
+            oor = cv_results[key]["out_of_range"]
+        else:
+            oor = False
+            if param.min_safe is not None and value < param.min_safe:
+                oor = True
+            if param.max_safe is not None and value > param.max_safe:
+                oor = True
+        out_of_range[param.id] = oor
+    return {
+        "raw": results,
+        "prefill": prefill,
+        "out_of_range": out_of_range,
+        "cache_id": cache_id,
+        "cache_hit": cache_hit,
+    }
+
+
 @router.post("/analyze_strip")
 async def analyze_strip(
     file: UploadFile = File(...),
@@ -52,34 +87,41 @@ async def analyze_strip(
 ):
     image_bytes = await file.read()
 
+    params_result = await db.execute(select(WaterTestParameter))
+    params_list = params_result.scalars().all()
+    params_by_key = {p.key: p for p in params_list}
+
     cached, sha256, phash = await scan_cache.lookup(db, image_bytes)
     if cached:
         results = cached.corrected_result or cached.ai_result
-        params_result = await db.execute(select(WaterTestParameter))
-        params_by_key = {p.key: p for p in params_result.scalars().all()}
-        prefill = {
-            params_by_key[key].id: value
-            for key, value in results.items()
-            if value is not None and key in params_by_key
-        }
-        return {"raw": results, "prefill": prefill, "cache_id": cached.id, "cache_hit": True}
+        return _build_scan_response(results, params_by_key, cached.id, True)
 
+    # Try OpenCV strip reader first
+    cv_results = None
     try:
-        results = await ollama_vision.analyze_strip(image_bytes)
+        cv_params = {k: {"min_safe": p.min_safe, "max_safe": p.max_safe} for k, p in params_by_key.items()}
+        cv_raw = strip_cv.analyze_strip(image_bytes, cv_params)
+        cv_results = cv_raw
+        results = {k: v["value"] for k, v in cv_raw.items() if v["value"] is not None}
+        logger.info("strip_cv succeeded for %d params", len(results))
+    except strip_cv.CVDetectionError as e:
+        logger.warning("strip_cv failed (%s), falling back to LLM", e)
+        cv_results = None
+        results = None
     except Exception as e:
-        logger.error("analyze_strip failed: %s: %s\n%s", type(e).__name__, e, traceback.format_exc())
-        raise HTTPException(502, f"Vision analysis failed: {type(e).__name__}: {e}")
+        logger.warning("strip_cv unexpected error (%s: %s), falling back to LLM", type(e).__name__, e)
+        cv_results = None
+        results = None
+
+    if results is None:
+        try:
+            results = await ollama_vision.analyze_strip(image_bytes)
+        except Exception as e:
+            logger.error("analyze_strip LLM failed: %s: %s\n%s", type(e).__name__, e, traceback.format_exc())
+            raise HTTPException(502, f"Vision analysis failed: {type(e).__name__}: {e}")
 
     cache_row = await scan_cache.store(db, sha256, phash, results)
-
-    params_result = await db.execute(select(WaterTestParameter))
-    params_by_key = {p.key: p for p in params_result.scalars().all()}
-    prefill = {
-        params_by_key[key].id: value
-        for key, value in results.items()
-        if value is not None and key in params_by_key
-    }
-    return {"raw": results, "prefill": prefill, "cache_id": cache_row.id, "cache_hit": False}
+    return _build_scan_response(results, params_by_key, cache_row.id, False, cv_results)
 
 
 @router.get("/parameters", response_model=list[WaterTestParameterOut])

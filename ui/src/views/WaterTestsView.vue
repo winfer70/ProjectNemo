@@ -96,14 +96,16 @@
         <div v-for="param in manualParams" :key="param.key" style="margin-bottom:12px;">
           <label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:4px;">
             {{ locale === 'pl' ? param.name_pl : param.name_en }} ({{ param.unit }})
-            <span v-if="scannedKeys.has(param.id)"
+            <span v-if="scannedKeys.has(param.id) && scanOutOfRange[param.id]"
+                  style="color:var(--danger);font-size:10px;margin-left:4px;">⚠ high</span>
+            <span v-else-if="scannedKeys.has(param.id)"
                   style="color:var(--ok);font-size:10px;margin-left:4px;">✓ scanned</span>
           </label>
           <input
             type="number"
             step="0.01"
             v-model.number="formValues[param.id]"
-            :style="`width:100%;background:var(--bg);border:1px solid ${scannedKeys.has(param.id) ? 'var(--ok)' : 'var(--border)'};border-radius:6px;color:var(--text);padding:8px;font-size:14px;`"
+            :style="`width:100%;background:var(--bg);border:1px solid ${scanOutOfRange[param.id] ? 'var(--danger)' : scannedKeys.has(param.id) ? 'var(--ok)' : 'var(--border)'};border-radius:6px;color:var(--text);padding:8px;font-size:14px;`"
             :placeholder="paramRange(param)"
           />
         </div>
@@ -209,6 +211,7 @@ const scanning = ref(false)
 const scanError = ref('')
 const scannedKeys = ref(new Set())
 const scanCacheId = ref(null)
+const scanOutOfRange = ref({})
 
 async function handleFileSelected(event) {
   const file = event.target.files?.[0]
@@ -217,6 +220,7 @@ async function handleFileSelected(event) {
   scanError.value = ''
   scannedKeys.value = new Set()
   scanCacheId.value = null
+  scanOutOfRange.value = {}
   try {
     const fd = new FormData()
     fd.append('file', file)
@@ -226,9 +230,10 @@ async function handleFileSelected(event) {
       try { detail = (await res.json()).detail ?? res.status } catch {}
       throw new Error(String(detail))
     }
-    const { prefill, cache_id, cache_hit } = await res.json()
+    const { prefill, cache_id, out_of_range, cache_hit } = await res.json()
     scanCacheId.value = cache_id
     if (cache_hit) scanError.value = ''
+    scanOutOfRange.value = out_of_range || {}
     for (const [id, value] of Object.entries(prefill)) {
       formValues.value[parseInt(id)] = value
       scannedKeys.value.add(parseInt(id))
@@ -285,6 +290,7 @@ async function submitSession() {
   scannedKeys.value = new Set()
   scanError.value = ''
   scanCacheId.value = null
+  scanOutOfRange.value = {}
   showForm.value = false
 }
 
