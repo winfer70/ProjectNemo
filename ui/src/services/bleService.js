@@ -1,41 +1,78 @@
 /**
  * Fluval Roma/Shaker 2.0 — Web Bluetooth singleton service.
  *
- * Confirmed UUIDs from nRF Connect (XX:XX:XX:XX:XX:XX):
- *   Service:    0000fff0-0000-1000-8000-00805f9b34fb  (0xFFF0)
- *   Write char: 0000fff2-0000-1000-8000-00805f9b34fb  (0xFFF2, WRITE + WRITE NO RESPONSE)
- *   Notify:     0000fff1-0000-1000-8000-00805f9b34fb  (0xFFF1, responses)
+ * Confirmed UUIDs (nRF Connect, XX:XX:XX:XX:XX:XX):
+ *   Service:    0000fff0-0000-1000-8000-00805f9b34fb
+ *   Write char: 0000fff2-0000-1000-8000-00805f9b34fb  (WRITE NO RESPONSE)
+ *   Notify:     0000fff1-0000-1000-8000-00805f9b34fb
  *
- * Packet format (Aquasky 2.0 XOR protocol — unconfirmed for Roma, best known guess):
- *   XOR key: 0x0E
- *   Per-channel: [0x54, 0x03, 0x5A, ch, val>>8, val&0xFF]  (then XOR each byte)
- *   where val = clamp(percent, 0-100) * 10  (0–1000 scale)
- *   Channels: R=1, G=2, B=3, W=4
+ * Fluval application frame protocol (from APK DEX analysis):
+ *   App frame:  [0x68, CMD, ...data, CRC]  — CRC = XOR of all bytes
+ *   Encryption: [0x54, (len+1)^0x54, keyByte, ...payload]
+ *     rand=0 (newer, Roma/Shaker 2.0): keyByte=0x54, no XOR on payload
+ *     old (Aquasky 2.0):               keyByte=0x5A, payload XOR 0x0E
+ *
+ *   CMD 0x02 = set mode:   data=[0x00] → manual (must send before brightness)
+ *   CMD 0x03 = on/off:     data=[0x00]=off, [0x01]=on
+ *   CMD 0x04 = brightness: data=[ch1_H, ch1_L, ch2_H, ch2_L, ch3_H, ch3_L, ch4_H, ch4_L]
+ *              channel order: R=ch1, G=ch2, B=ch3, W=ch4
+ *              values 0–1000 (percent × 10), 16-bit big-endian
  */
 
-const XOR_KEY      = 0x0E
 const SERVICE_UUID = '0000fff0-0000-1000-8000-00805f9b34fb'
 const WRITE_UUID   = '0000fff2-0000-1000-8000-00805f9b34fb'
 
-const CH_R = 1
-const CH_G = 2
-const CH_B = 3
-const CH_W = 4
-
-let _device    = null
-let _writeChar = null
+let _device     = null
+let _writeChar  = null
+let _modeSet    = false   // track whether we've sent manual mode this session
 
 // ---------------------------------------------------------------------------
-// Internal helpers
+// Protocol helpers
 // ---------------------------------------------------------------------------
 
-function _xor(bytes) {
-  return bytes.map(b => b ^ XOR_KEY)
+function _crc(bytes) {
+  return bytes.reduce((acc, b) => acc ^ b, 0)
 }
 
-function _buildPacket(channelId, percent) {
-  const val = Math.max(0, Math.min(100, Math.round(percent))) * 10
-  return new Uint8Array(_xor([0x54, 0x03, 0x5A, channelId, (val >> 8) & 0xFF, val & 0xFF]))
+/** Build Fluval application frame: [0x68, cmd, ...data, CRC] */
+function _buildFrame(cmd, data) {
+  const frame = [0x68, cmd, ...data]
+  frame.push(_crc(frame))
+  return frame
+}
+
+/**
+ * Encrypt payload into wire packet.
+ * useOldXor=false → rand=0 variant (Roma/Shaker 2.0, newer devices)
+ * useOldXor=true  → 0x0E XOR variant (Aquasky 2.0, older devices)
+ */
+function _encrypt(payload, useOldXor = false) {
+  const keyByte = useOldXor ? 0x5A : 0x54
+  const xorKey  = useOldXor ? 0x0E : 0x00
+  const encrypted = xorKey ? payload.map(b => b ^ xorKey) : [...payload]
+  const lenByte = ((payload.length + 1) ^ 0x54) & 0xFF
+  return new Uint8Array([0x54, lenByte, keyByte, ...encrypted])
+}
+
+async function _write(bytes) {
+  if (!_writeChar) throw new Error('BLE not connected — call connect() first')
+  const pkt = _encrypt(_buildFrame(...bytes))
+  if (_writeChar.writeValueWithoutResponse) {
+    await _writeChar.writeValueWithoutResponse(pkt)
+  } else {
+    await _writeChar.writeValue(pkt)
+  }
+}
+
+async function _sendFrame(cmd, data) {
+  const frame = _buildFrame(cmd, data)
+  const pkt   = _encrypt(frame)
+  if (!_writeChar) throw new Error('BLE not connected — call connect() first')
+  if (_writeChar.writeValueWithoutResponse) {
+    await _writeChar.writeValueWithoutResponse(pkt)
+  } else {
+    await _writeChar.writeValue(pkt)
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -52,14 +89,16 @@ export async function connect() {
     optionalServices: [SERVICE_UUID],
   })
 
-  const server = await device.gatt.connect()
+  const server  = await device.gatt.connect()
   const service = await server.getPrimaryService(SERVICE_UUID)
   _writeChar = await service.getCharacteristic(WRITE_UUID)
-  _device = device
+  _device    = device
+  _modeSet   = false
 
   device.addEventListener('gattserverdisconnected', () => {
-    _device = null
+    _device    = null
     _writeChar = null
+    _modeSet   = false
     window.dispatchEvent(new CustomEvent('ble:disconnected'))
   })
 }
@@ -68,24 +107,36 @@ export function isConnected() {
   return _device !== null && _device.gatt.connected && _writeChar !== null
 }
 
-/** r, g, b, w are 0–100 percent. */
+/**
+ * Set all four channels (R, G, B, W) in one CMD 0x04 packet.
+ * Automatically sends CMD 0x02 manual-mode override on first call.
+ * r, g, b, w are 0–100 percent.
+ */
 export async function setChannels(r, g, b, w) {
   if (!_writeChar) throw new Error('BLE not connected — call connect() first')
 
-  for (const [ch, val] of [[CH_R, r], [CH_G, g], [CH_B, b], [CH_W, w]]) {
-    const pkt = _buildPacket(ch, val)
-    if (_writeChar.writeValueWithoutResponse) {
-      await _writeChar.writeValueWithoutResponse(pkt)
-    } else {
-      await _writeChar.writeValue(pkt)
-    }
+  // Ensure device is in manual mode (overrides Pro/Auto schedule)
+  if (!_modeSet) {
+    await _sendFrame(0x02, [0x00])
+    _modeSet = true
   }
+
+  const toVal = pct => Math.max(0, Math.min(100, Math.round(pct))) * 10
+  const vals  = [r, g, b, w].map(toVal)
+
+  const data = []
+  for (const v of vals) {
+    data.push((v >> 8) & 0xFF, v & 0xFF)
+  }
+
+  await _sendFrame(0x04, data)
 }
 
 export async function disconnect() {
   if (_device && _device.gatt.connected) {
     _device.gatt.disconnect()
   }
-  _device = null
+  _device    = null
   _writeChar = null
+  _modeSet   = false
 }
