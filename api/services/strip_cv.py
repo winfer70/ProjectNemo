@@ -127,20 +127,26 @@ def _sample_at_strip_x(
     row_cells: list,
     sample_w: int = 50,
 ) -> tuple[tuple | None, tuple | None]:
-    """Sample pad HSV at strip column x using row y-centre derived from all row cells.
+    """Sample pad HSV at strip column x.
 
-    Decouples pad colour sampling from pad contour detection — works even when
-    a pale pad (white/cream) produces no contour.  The reference chart cells in
-    the same row (reliably detected, printed colours) anchor the y-position.
+    y-centre is derived from cells near strip_x (the pad itself, when detected).
+    Falls back to all row cells when no pad cell is close (white/undetected pad).
+    This ensures coloured pads (GH/TAL/KH) use their own y-anchor rather than
+    being pulled off-centre by the reference chart cells on the opposite side.
 
     Returns (hsv_tuple, (x, y, w, h) sample bbox) or (None, None).
     """
     if not row_cells:
         return None, None
-    ys = [c[1] + c[3] / 2.0 for c in row_cells]
-    hs = [c[3] for c in row_cells]
+
+    # Prefer cells near strip_x (the actual pad) for y and height estimation
+    near = [c for c in row_cells if abs(c[0] + c[2] / 2.0 - strip_x) <= sample_w]
+    anchor = near if near else row_cells
+
+    ys = [c[1] + c[3] / 2.0 for c in anchor]
+    hs = [c[3] for c in anchor]
     y_center = int(np.median(ys))
-    sample_h = max(20, int(np.median(hs) * 0.55))
+    sample_h = max(20, int(np.median(hs) * 0.6))
     x0 = max(0, int(strip_x - sample_w // 2))
     y0 = max(0, int(y_center - sample_h // 2))
     roi = img_hsv[y0: y0 + sample_h, x0: x0 + sample_w]
