@@ -24,8 +24,8 @@
 
 const SERVICE_UUID  = '0000fff0-0000-1000-8000-00805f9b34fb'
 const FFF1_UUID     = '0000fff1-0000-1000-8000-00805f9b34fb'
-const FFF2_UUID     = '0000fff2-0000-1000-8000-00805f9b34fb'
-const FFF3_UUID     = '0000fff3-0000-1000-8000-00805f9b34fb'
+const FFF2_UUID     = '0000fff2-0000-1000-8000-00805f9b34fb'  // app only uses FFF2
+const FFF3_UUID     = '0000fff3-0000-1000-8000-00805f9b34fb'  // kept for notify sub only
 
 let _device    = null
 let _fff2      = null
@@ -65,10 +65,11 @@ async function _write(char, pkt, label) {
   const hex = Array.from(pkt).map(b => b.toString(16).padStart(2,'0')).join(' ')
   console.log(`[fluval] ${label} → ${hex}`)
   try {
-    if (char.writeValueWithoutResponse) {
-      await char.writeValueWithoutResponse(pkt)
+    // FFF2 has WRITE (with response) property — must use writeValueWithResponse, not Without
+    if (char.writeValueWithResponse) {
+      await char.writeValueWithResponse(pkt)
     } else {
-      await char.writeValue(pkt)
+      await char.writeValue(pkt)  // older Web BT API — also sends Write Request
     }
   } catch (err) {
     console.warn(`[fluval] write error on ${label}:`, err.message)
@@ -132,34 +133,27 @@ export function isConnected() {
  * Once we confirm which works (from notify logs), prune the rest.
  */
 export async function setChannels(r, g, b, w) {
-  if (!_fff2 && !_fff3) throw new Error('BLE not connected')
+  if (!_fff2) throw new Error('BLE not connected')
 
   const toVal  = pct => Math.max(0, Math.min(100, Math.round(pct))) * 10
-  const to255  = pct => Math.round(Math.max(0, Math.min(100, pct)) * 2.55)
-  const [rv, gv, bv, wv] = [r, g, b, w].map(toVal)
 
-  // --- Frame A: 0x68-header, values 0–1000 ---
   if (!_modeSet) {
-    const modeA = _frameA(0x02, [0x00])
-    if (_fff2) await _write(_fff2, modeA, 'FFF2 modeA')
-    if (_fff3) await _write(_fff3, modeA, 'FFF3 modeA')
+    await _write(_fff2, _frameA(0x02, [0x00]), 'FFF2 modeA')
     _modeSet = true
   }
 
-  const brightnessA = _frameA(0x04, [
+  const [rv, gv, bv, wv] = [r, g, b, w].map(toVal)
+  const data = [
     (rv >> 8) & 0xFF, rv & 0xFF,
     (gv >> 8) & 0xFF, gv & 0xFF,
     (bv >> 8) & 0xFF, bv & 0xFF,
     (wv >> 8) & 0xFF, wv & 0xFF,
-  ])
-  if (_fff2) await _write(_fff2, brightnessA, 'FFF2 frameA')
-  if (_fff3) await _write(_fff3, brightnessA, 'FFF3 frameA')
+  ]
+  await _write(_fff2, _frameA(0x04, data), 'FFF2 frameA')
 
-  // --- Frame B: Telink [LEN,SEQ,0x11,0x02,R,G,B,W,CRC], values 0–255 ---
-  const [r8, g8, b8, w8] = [r, g, b, w].map(to255)
-  const brightnessB = _frameB(0x11, 0x02, [r8, g8, b8, w8])
-  if (_fff2) await _write(_fff2, brightnessB, 'FFF2 frameB')
-  if (_fff3) await _write(_fff3, brightnessB, 'FFF3 frameB')
+  // Frame B (Telink template) as fallback attempt — logs will show if device responds
+  const [r8, g8, b8, w8] = [r, g, b, w].map(p => Math.round(Math.max(0,Math.min(100,p)) * 2.55))
+  await _write(_fff2, _frameB(0x11, 0x02, [r8, g8, b8, w8]), 'FFF2 frameB')
 }
 
 export async function disconnect() {
