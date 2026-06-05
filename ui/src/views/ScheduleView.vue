@@ -196,7 +196,12 @@ async function pushChannels() {
   if (!bleService.isConnected()) return
   const { r, g, b, w } = channels.value
   if (r > 0 || g > 0 || b > 0 || w > 0) savedChannels.value = { r, g, b, w }
-  await bleService.setChannels(r, g, b, w)
+  try {
+    await bleService.setChannels(r, g, b, w)
+  } catch (err) {
+    bleError.value = err.message || String(err)
+    console.error('[nemo] BLE write failed:', err)
+  }
 }
 
 async function toggleLight() {

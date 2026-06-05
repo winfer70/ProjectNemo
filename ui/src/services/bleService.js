@@ -68,6 +68,8 @@ async function _sendFrame(cmd, data) {
   const frame = _buildFrame(cmd, data)
   const pkt   = _encrypt(frame)
   if (!_writeChar) throw new Error('BLE not connected — call connect() first')
+  const hex = Array.from(pkt).map(b => b.toString(16).padStart(2,'0')).join(' ')
+  console.log(`[fluval] cmd=0x${cmd.toString(16).padStart(2,'0')} raw=${hex}`)
   if (_writeChar.writeValueWithoutResponse) {
     await _writeChar.writeValueWithoutResponse(pkt)
   } else {
