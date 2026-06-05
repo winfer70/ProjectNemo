@@ -64,9 +64,9 @@ async function _write(bytes) {
   }
 }
 
-async function _sendFrame(cmd, data) {
+async function _sendFrame(cmd, data, useOldXor = false) {
   const frame = _buildFrame(cmd, data)
-  const pkt   = _encrypt(frame)
+  const pkt   = _encrypt(frame, useOldXor)
   if (!_writeChar) throw new Error('BLE not connected — call connect() first')
   const hex = Array.from(pkt).map(b => b.toString(16).padStart(2,'0')).join(' ')
   console.log(`[fluval] cmd=0x${cmd.toString(16).padStart(2,'0')} raw=${hex}`)
@@ -119,7 +119,7 @@ export async function setChannels(r, g, b, w) {
 
   // Ensure device is in manual mode (overrides Pro/Auto schedule)
   if (!_modeSet) {
-    await _sendFrame(0x02, [0x00])
+    await _sendFrame(0x02, [0x00], true)
     _modeSet = true
   }
 
@@ -131,7 +131,7 @@ export async function setChannels(r, g, b, w) {
     data.push((v >> 8) & 0xFF, v & 0xFF)
   }
 
-  await _sendFrame(0x04, data)
+  await _sendFrame(0x04, data, true)
 }
 
 export async function disconnect() {
