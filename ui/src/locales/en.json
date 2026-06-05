@@ -104,5 +104,20 @@
     "markUndone": "Mark as not done",
     "weekdays": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
     "months": ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+  },
+  "obsada": {
+    "addFish": "Add Fish",
+    "addPlant": "Add Plant",
+    "edit": "Edit",
+    "delete": "Delete",
+    "confirmDelete": "Remove this inhabitant?",
+    "search": "Search",
+    "searchPlaceholder": "Enter species name...",
+    "selectImage": "Change image",
+    "skipImage": "Skip image",
+    "qty": "Quantity",
+    "zone": "Zone",
+    "planned": "Planned",
+    "in_tank": "In tank"
   }
 }

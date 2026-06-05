@@ -149,3 +149,62 @@ automation:
           b: "{{ states('input_number.fluval_b') | int }}"
           w: "{{ states('input_number.fluval_w') | int }}"
           ch5: "{{ states('input_number.fluval_ch5') | int }}"
+
+  - alias: "Alert: Filter stopped while ON"
+    trigger:
+      - platform: numeric_state
+        entity_id: sensor.tapo_filter_current_power
+        below: 1
+        for: "00:10:00"
+    condition:
+      - condition: state
+        entity_id: switch.tapo_filter
+        state: "on"
+    action:
+      - service: rest_command.nemo_alert
+        data:
+          message_en: "ALERT: Filter appears stopped ({{ states('sensor.tapo_filter_current_power') }}W) but switch is ON. Check for blockage."
+          message_pl: "ALERT: Filtr wygląda na zatrzymany ({{ states('sensor.tapo_filter_current_power') }}W) a wyłącznik jest ON. Sprawdź blokadę."
+          lang: "both"
+
+  - alias: "Alert: Filter power spike"
+    trigger:
+      - platform: numeric_state
+        entity_id: sensor.tapo_filter_current_power
+        above: 50
+    action:
+      - service: rest_command.nemo_alert
+        data:
+          message_en: "ALERT: Filter power spike {{ trigger.to_state.state }}W (normal <20W). Possible blockage or motor fault."
+          message_pl: "ALERT: Skok mocy filtra {{ trigger.to_state.state }}W (norma <20W). Możliwa blokada lub awaria silnika."
+          lang: "both"
+
+  - alias: "Alert: Heater running 2h+ continuously"
+    trigger:
+      - platform: numeric_state
+        entity_id: sensor.tapo_heater_current_power
+        above: 10
+        for: "02:00:00"
+    action:
+      - service: rest_command.nemo_alert
+        data:
+          message_en: "ALERT: Heater running continuously for 2h! Check water temperature — possible thermostat failure."
+          message_pl: "ALERT: Grzałka działa nieprzerwanie od 2h! Sprawdź temperaturę wody — możliwa awaria termostatu."
+          lang: "both"
+
+  - alias: "Alert: Heater stopped while ON"
+    trigger:
+      - platform: numeric_state
+        entity_id: sensor.tapo_heater_current_power
+        below: 1
+        for: "00:30:00"
+    condition:
+      - condition: state
+        entity_id: switch.tapo_heater
+        state: "on"
+    action:
+      - service: rest_command.nemo_alert
+        data:
+          message_en: "ALERT: Heater switch is ON but drawing 0W for 30min. Heater may be broken or disconnected."
+          message_pl: "ALERT: Grzałka jest włączona ale nie pobiera prądu od 30 min. Może być uszkodzona lub odłączona."
+          lang: "both"

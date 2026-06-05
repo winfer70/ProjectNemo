@@ -187,3 +187,89 @@ class FluvalChannels(BaseModel):
     b: int
     w: int
     ch5: int = 0
+
+
+# ── Obsada (Livestock) ────────────────────────────────────────────────────────
+
+class FishCreate(BaseModel):
+    name_en: str
+    name_pl: str | None = None
+    latin: str | None = None
+    qty: int = 1
+    zone: str | None = None
+    status: str = "in_tank"
+    temp: str | None = None
+    notes_pl: str | None = None
+    img: str | None = None
+
+
+class FishUpdate(BaseModel):
+    name_en: str | None = None
+    name_pl: str | None = None
+    latin: str | None = None
+    qty: int | None = None
+    zone: str | None = None
+    status: str | None = None
+    temp: str | None = None
+    notes_pl: str | None = None
+    img: str | None = None
+
+
+class FishOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: int
+    name_en: str
+    name_pl: str | None
+    latin: str | None
+    qty: int
+    zone: str | None
+    status: str
+    temp: str | None
+    notes_pl: str | None
+    img: str | None
+    added_at: datetime
+
+
+class PlantCreate(BaseModel):
+    name_en: str
+    name_pl: str | None = None
+    latin: str | None = None
+    location: str | None = None
+    notes_pl: str | None = None
+    img: str | None = None
+
+
+class PlantUpdate(BaseModel):
+    name_en: str | None = None
+    name_pl: str | None = None
+    latin: str | None = None
+    location: str | None = None
+    notes_pl: str | None = None
+    img: str | None = None
+
+
+class PlantOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: int
+    name_en: str
+    name_pl: str | None
+    latin: str | None
+    location: str | None
+    notes_pl: str | None
+    img: str | None
+    added_at: datetime
+
+
+class ImageResult(BaseModel):
+    url: str
+    source: str
+    thumb: str | None = None
+
+
+class ImageSearchResult(BaseModel):
+    query: str
+    scientific_name: str | None = None
+    common_name: str | None = None
+    wiki_extract: str | None = None
+    wiki_url: str | None = None
+    images: list[ImageResult] = []

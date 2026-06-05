@@ -8,7 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from config import settings
 from database import init_db, AsyncSessionLocal
 from ble_manager import ble_manager
-from routers import calendar, devices, dosing, maintenance, schedule, sensors, supplies, water_tests
+from routers import calendar, devices, dosing, maintenance, obsada, schedule, sensors, supplies, water_tests
 from seed_data import seed
 from services.scheduler import scheduler
 from services.websocket_manager import live_push_loop, ws_endpoint
@@ -32,6 +32,7 @@ app.include_router(maintenance.router)
 app.include_router(water_tests.router)
 app.include_router(sensors.router)
 app.include_router(devices.router)
+app.include_router(obsada.router)
 
 
 @app.websocket("/ws/ble")

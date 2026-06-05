@@ -209,6 +209,35 @@ class CalendarCompletion(Base):
     task: Mapped["CalendarTask"] = relationship(back_populates="completions")
 
 
+class Fish(Base):
+    __tablename__ = "fish"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    name_en: Mapped[str] = mapped_column(String(100))
+    name_pl: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    latin: Mapped[str | None] = mapped_column(String(150), nullable=True)
+    qty: Mapped[int] = mapped_column(Integer, default=1)
+    zone: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    status: Mapped[str] = mapped_column(String(20), default="in_tank")
+    temp: Mapped[str | None] = mapped_column(String(30), nullable=True)
+    notes_pl: Mapped[str | None] = mapped_column(Text, nullable=True)
+    img: Mapped[str | None] = mapped_column(Text, nullable=True)
+    added_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+
+
+class Plant(Base):
+    __tablename__ = "plants"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    name_en: Mapped[str] = mapped_column(String(100))
+    name_pl: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    latin: Mapped[str | None] = mapped_column(String(150), nullable=True)
+    location: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    notes_pl: Mapped[str | None] = mapped_column(Text, nullable=True)
+    img: Mapped[str | None] = mapped_column(Text, nullable=True)
+    added_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+
+
 class StripScanCache(Base):
     __tablename__ = "strip_scan_cache"
 

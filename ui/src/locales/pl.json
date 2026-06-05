@@ -27,10 +27,13 @@
     "off": "WYŁĄCZONE",
     "toggle": "Włącz/Wyłącz",
     "schedule": "{on} → {off}",
+    "connect": "Połącz Oświetlenie",
+    "connected": "Oświetlenie Połączone",
     "red": "C",
     "green": "Z",
     "blue": "N",
-    "white": "B"
+    "white": "B",
+    "ch5": "UV"
   },
   "maintenance": {
     "due": "Za {days} dni",
@@ -101,5 +104,20 @@
     "markUndone": "Oznacz jako niewykonane",
     "weekdays": ["Pon", "Wt", "Śr", "Czw", "Pt", "Sob", "Nd"],
     "months": ["Styczeń", "Luty", "Marzec", "Kwiecień", "Maj", "Czerwiec", "Lipiec", "Sierpień", "Wrzesień", "Październik", "Listopad", "Grudzień"]
+  },
+  "obsada": {
+    "addFish": "Dodaj Rybę",
+    "addPlant": "Dodaj Roślinę",
+    "edit": "Edytuj",
+    "delete": "Usuń",
+    "confirmDelete": "Usunąć tego mieszkańca?",
+    "search": "Szukaj",
+    "searchPlaceholder": "Wpisz nazwę gatunku...",
+    "selectImage": "Zmień zdjęcie",
+    "skipImage": "Pomiń zdjęcie",
+    "qty": "Ilość",
+    "zone": "Strefa",
+    "planned": "Planowane",
+    "in_tank": "W akwarium"
   }
 }

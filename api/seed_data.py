@@ -8,7 +8,9 @@ from models.orm import (
     CalendarTask,
     DosingTask,
     FeedingSchedule,
+    Fish,
     MaintenanceTask,
+    Plant,
     Supply,
     WaterTestParameter,
     WaterTestSession,
@@ -348,6 +350,25 @@ CALENDAR_TASKS = [
     },
 ]
 
+DEFAULT_FISH = [
+    {"name_en": "Pearl Gourami",               "name_pl": "Gurami Mozaikowe",                 "latin": "Trichopodus leerii",                   "qty": 2,  "zone": "Top/Mid",      "status": "in_tank", "temp": "24–28°C", "notes_pl": "Para (1M+1F). Ryba labiryntowa — potrzebuje dostępu do powierzchni.",   "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/69/Trichopodus_leerii_Natural_History_Museum_University_of_Pisa.jpg/330px-Trichopodus_leerii_Natural_History_Museum_University_of_Pisa.jpg"},
+    {"name_en": "Five-Banded Barb",            "name_pl": "Brzanka Pięciopręga",              "latin": "Desmopuntius pentazona",               "qty": 18, "zone": "Mid",          "status": "in_tank", "temp": "23–26°C", "notes_pl": "Ławica. 12 już w akwarium + 6 dochodzi 16 czerwca.",                    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/Cyprinidae_Desmopuntius_pentazona_1.jpg/330px-Cyprinidae_Desmopuntius_pentazona_1.jpg"},
+    {"name_en": "Cardinal Tetra",              "name_pl": "Neon Czerwony",                    "latin": "Paracheirodon axelrodi",               "qty": 18, "zone": "Mid",          "status": "in_tank", "temp": "23–27°C", "notes_pl": "Ławica. 12 szt. przybywa 16 czerwca, 6 szt. 30 czerwca.",             "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/eb/Cardinal_Paracheirodon_axelrodi_%283%29.jpg/330px-Cardinal_Paracheirodon_axelrodi_%283%29.jpg"},
+    {"name_en": "Corydoras Sterbai",           "name_pl": "Kirysek Sterbai",                  "latin": "Corydoras sterbai",                    "qty": 8,  "zone": "Bottom",       "status": "in_tank", "temp": "25–28°C", "notes_pl": "Dno/piasek. Przybywa 30 czerwca.",                                      "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/Corydoras_Sterbai.jpg/330px-Corydoras_Sterbai.jpg"},
+    {"name_en": "Panda Garra",                 "name_pl": "Garra Panda",                      "latin": "Garra flavatra",                       "qty": 4,  "zone": "Rocks/Wood",   "status": "in_tank", "temp": "23–27°C", "notes_pl": "2 szt. 16 czerwca, 2 szt. 30 czerwca. Potrzebuje biofilmu na skałach.", "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/Panda_Garra.jpg/330px-Panda_Garra.jpg"},
+    {"name_en": "Red Apistogramma Double Red", "name_pl": "Pielęgniczka Agassiza Double Red", "latin": 'Apistogramma agassizii "Double Red"',  "qty": 2,  "zone": "Bottom/Caves", "status": "in_tank", "temp": "24–27°C", "notes_pl": "Para. Przybywa 30 czerwca. Zajmują kokosy.",                             "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/Apistogramma_agassizii_in_aquarium.jpg/330px-Apistogramma_agassizii_in_aquarium.jpg"},
+    {"name_en": "Otocinclus",                  "name_pl": "Otonek Pospolity",                 "latin": "Otocinclus vittatus",                  "qty": 6,  "zone": "Leaves/Glass", "status": "in_tank", "temp": "22–26°C", "notes_pl": "Przybywa 14 lipca. Czyści liście i szyby.",                             "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/Otocinclus_vittatus.jpg/330px-Otocinclus_vittatus.jpg"},
+    {"name_en": "Amano Shrimp",                "name_pl": "Krewetka Amano",                   "latin": "Caridina multidentata",                "qty": 6,  "zone": "Everywhere",   "status": "in_tank", "temp": "20–27°C", "notes_pl": "Już w akwarium. Czyści biofilm z korzenia.",                            "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0b/Amano_Garnele_%2885281493%29.jpeg/330px-Amano_Garnele_%2885281493%29.jpeg"},
+]
+
+DEFAULT_PLANTS = [
+    {"name_en": "Amazon Sword", "name_pl": "Żabienica (Echinodorus)", "latin": "Echinodorus bleheri",     "location": "Right island", "notes_pl": "Duże liście. Otocinclus poleruje liście. Nawóz kapsułkowy co 6 mies.", "img": "https://upload.wikimedia.org/wikipedia/commons/d/d0/Echinodorus_bleheri.jpg"},
+    {"name_en": "Limnophila",   "name_pl": "Limnofila",              "latin": "Limnophila sessiliflora", "location": "Left island",  "notes_pl": "Krzaczasta. Daje schronienie przy powierzchni dla Gurami.",           "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Limnophila_sessiliflora.jpg/330px-Limnophila_sessiliflora.jpg"},
+    {"name_en": "Cryptocoryne", "name_pl": "Kryptokoryna",           "latin": "Cryptocoryne sp.",        "location": "Midground",    "notes_pl": "Niska technika. Żywi się z podłoża i odpadów ryb.",                   "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/Cryptocoryne_wendtii_Green.jpg/330px-Cryptocoryne_wendtii_Green.jpg"},
+    {"name_en": "Anubias",      "name_pl": "Anubias",                "latin": "Anubias barteri",         "location": "On wood/rock", "notes_pl": "Przywiązana do korzenia lub Dragon Stone. Niska technika.",            "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/Anubias_barteri_var_glabra.jpg/330px-Anubias_barteri_var_glabra.jpg"},
+    {"name_en": "Ludwigia",     "name_pl": "Ludwigia",               "latin": "Ludwigia sp.",            "location": "Background",   "notes_pl": "Czerwienieje pod czerwonym światłem Aquasky.",                         "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0b/Ludwigia_repens.JPG/330px-Ludwigia_repens.JPG"},
+]
+
 
 async def seed(session: AsyncSession):
     """Seeds reference data if tables are empty."""
@@ -449,5 +470,17 @@ async def seed(session: AsyncSession):
                     out_of_range=oor,
                     notes=notes,
                 ))
+
+    # Fish
+    existing_fish = await session.scalar(select(Fish).limit(1))
+    if not existing_fish:
+        for f in DEFAULT_FISH:
+            session.add(Fish(**f))
+
+    # Plants
+    existing_plants = await session.scalar(select(Plant).limit(1))
+    if not existing_plants:
+        for p in DEFAULT_PLANTS:
+            session.add(Plant(**p))
 
     await session.commit()
