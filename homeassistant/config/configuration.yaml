@@ -69,6 +69,11 @@ rest_command:
     method: POST
     content_type: "application/json"
     payload: '{"message_en": "{{ message_en }}", "message_pl": "{{ message_pl }}", "lang": "{{ lang }}"}'
+  set_fluval_channels:
+    url: "http://nemo-api:8000/api/devices/fluval/channels"
+    method: PUT
+    content_type: "application/json"
+    payload: '{"r": {{ r }}, "g": {{ g }}, "b": {{ b }}, "w": {{ w }}, "ch5": {{ ch5 }}}'
 
 # ── Input number helpers for Fluval RGBW channels ────────────────────────────
 # These are set by the Nemo API and read by the fluvalble custom component
@@ -97,6 +102,12 @@ input_number:
     max: 100
     step: 1
     unit_of_measurement: "%"
+  fluval_ch5:
+    name: "Fluval UV"
+    min: 0
+    max: 100
+    step: 1
+    unit_of_measurement: "%"
 
 # ── Scripts ───────────────────────────────────────────────────────────────────
 script:
@@ -118,3 +129,23 @@ logger:
   logs:
     custom_components.fluvalble: debug
     homeassistant.components.esphome: info
+
+# ── Automation — Fluval BLE via tablet WebSocket gateway ─────────────────────
+automation:
+  - alias: "Fluval BLE via tablet"
+    trigger:
+      - platform: state
+        entity_id:
+          - input_number.fluval_r
+          - input_number.fluval_g
+          - input_number.fluval_b
+          - input_number.fluval_w
+          - input_number.fluval_ch5
+    action:
+      - service: rest_command.set_fluval_channels
+        data:
+          r: "{{ states('input_number.fluval_r') | int }}"
+          g: "{{ states('input_number.fluval_g') | int }}"
+          b: "{{ states('input_number.fluval_b') | int }}"
+          w: "{{ states('input_number.fluval_w') | int }}"
+          ch5: "{{ states('input_number.fluval_ch5') | int }}"

@@ -1,6 +1,7 @@
 """Home Assistant REST API client."""
 import httpx
 
+from ble_manager import ble_manager
 from config import settings
 
 
@@ -56,13 +57,10 @@ class HAClient:
         )
 
     async def set_fluval_channels(self, r: int, g: int, b: int, w: int, ch5: int = 0):
-        """Set Fluval RGBW via HA number entities (0–100 each)."""
-        for channel, value in [("r", r), ("g", g), ("b", b), ("w", w), ("ch5", ch5)]:
-            entity = f"number.fluval_shaker_{channel}"
-            await self.call_service(
-                "number", "set_value",
-                {"entity_id": entity, "value": value},
-            )
+        """Broadcast Fluval RGBW channel values to the tablet BLE gateway."""
+        await ble_manager.broadcast(
+            {"type": "fluval_channels", "r": r, "g": g, "b": b, "w": w, "ch5": ch5}
+        )
 
 
 ha_client = HAClient()

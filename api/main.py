@@ -2,11 +2,12 @@
 import asyncio
 import logging
 
-from fastapi import FastAPI, WebSocket
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 
 from config import settings
 from database import init_db, AsyncSessionLocal
+from ble_manager import ble_manager
 from routers import calendar, devices, dosing, maintenance, schedule, sensors, supplies, water_tests
 from seed_data import seed
 from services.scheduler import scheduler
@@ -31,6 +32,16 @@ app.include_router(maintenance.router)
 app.include_router(water_tests.router)
 app.include_router(sensors.router)
 app.include_router(devices.router)
+
+
+@app.websocket("/ws/ble")
+async def ble_ws(websocket: WebSocket):
+    await ble_manager.connect(websocket)
+    try:
+        while True:
+            await websocket.receive_text()  # keep-alive ping/pong
+    except WebSocketDisconnect:
+        ble_manager.disconnect(websocket)
 
 
 @app.websocket("/ws/live")

@@ -67,11 +67,21 @@
             {{ $t('lighting.toggle') }}
           </button>
         </div>
+        <button
+          class="btn btn-sm btn-full"
+          :class="sensorsStore.bleConnected ? 'btn-secondary' : 'btn-primary'"
+          style="margin-bottom:10px;"
+          @click="handleBleConnect"
+        >
+          <span v-if="!sensorsStore.bleConnected">{{ $t('lighting.connect') }}</span>
+          <span v-else>{{ $t('lighting.connected') }} <span style="color:var(--ok)">&#9679;</span></span>
+        </button>
         <div class="channel-slider" v-for="(ch, key) in channels" :key="key">
           <span class="channel-label" :style="{ color: channelColors[key] }">
             {{ $t('lighting.' + key) }}
           </span>
-          <input type="range" min="0" max="100" v-model.number="channels[key]" @change="pushChannels" />
+          <input type="range" min="0" max="100" v-model.number="channels[key]" @change="pushChannels"
+                 :disabled="!sensorsStore.bleConnected" />
           <span class="channel-value">{{ channels[key] }}%</span>
         </div>
       </div>
@@ -120,6 +130,7 @@ import { useScheduleStore } from '../stores/schedule'
 import { useSensorsStore } from '../stores/sensors'
 import { useMaintenanceStore } from '../stores/maintenance'
 import MaintenanceModal from '../components/MaintenanceModal.vue'
+import * as bleService from '../services/bleService'
 
 const { locale } = useI18n()
 const scheduleStore = useScheduleStore()
@@ -183,6 +194,15 @@ function dueProgressPct(days, interval) {
 
 async function pushChannels() {
   await sensorsStore.setFluvalChannels(channels.value.r, channels.value.g, channels.value.b, channels.value.w, channels.value.ch5)
+}
+
+async function handleBleConnect() {
+  try {
+    await bleService.connect()
+    sensorsStore.bleConnected = true
+  } catch (err) {
+    console.error('[nemo] BLE connect failed:', err)
+  }
 }
 
 function openMaintModal(task) { maintModalTask.value = task }

@@ -27,6 +27,8 @@
     "off": "OFF",
     "toggle": "Toggle Light",
     "schedule": "{on} → {off}",
+    "connect": "Connect Light",
+    "connected": "Light Connected",
     "red": "R",
     "green": "G",
     "blue": "B",
