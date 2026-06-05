@@ -86,9 +86,12 @@
     "outOfRange": "POZA NORMĄ",
     "trend": "Trend",
     "advice": "Co zrobić",
-    "scanStrip": "Zeskanuj zdjęcie paska",
+    "scanStrip": "Skanuj 30s (wszystkie pady)",
     "scanning": "Skanowanie…",
-    "scanFilled": "{n} pól wypełniono ze zdjęcia"
+    "scanFilled": "{n} pól wypełniono ze zdjęcia",
+    "scanAmmonia": "Skanuj Amoniak (3 min)",
+    "scanningAmmonia": "Skanowanie amoniaku…",
+    "scanAmmoniaFilled": "Amoniak wypełniony ze zdjęcia"
   },
   "common": {
     "loading": "Ładowanie...",

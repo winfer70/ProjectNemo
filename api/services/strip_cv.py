@@ -168,13 +168,52 @@ def _cluster_rows(cells: list, n: int) -> list[list]:
     return rows
 
 
-def _is_strip_inverted(rows: list[list], img_h: int) -> bool:
-    """Detect upside-down strip: handle (blank plastic) causes a larger gap at one end.
+def _detect_orientation(
+    rows: list[list],
+    splits: list[tuple],
+    img_hsv: np.ndarray,
+    img_h: int,
+) -> bool:
+    """Detect inverted strip via reference chart hue fingerprinting.
 
-    Normal hold: handle at TOP → large top_gap, small bottom_gap.
-    Inverted hold: handle at BOTTOM → large bottom_gap, small top_gap.
-    Reverse rows only when handle is at BOTTOM (bottom_gap >> top_gap).
+    Normal orientation  → rows[0]=copper  (ref H≈0–30,   brown/orange)
+                          rows[1]=nitrate  (ref H≈155–178, magenta — very distinctive)
+    Inverted orientation → rows[0]=ammonia (ref H≈50–100, blue-green)
+
+    Falls back to y-gap analysis when ref cells are absent or too unsaturated.
     """
+    def _max_sat_ref_hsv(row_idx: int) -> tuple | None:
+        if row_idx >= len(splits):
+            return None
+        _, ref_cells = splits[row_idx]
+        if not ref_cells:
+            return None
+        best = max(ref_cells, key=lambda c: _roi_median_hsv(img_hsv, *c)[1])
+        return _roi_median_hsv(img_hsv, *best)
+
+    # rows[1] magenta → nitrate → NORMAL; green/teal → not nitrate → likely INVERTED
+    row1 = _max_sat_ref_hsv(1)
+    if row1 and row1[1] > 70:
+        h = row1[0]
+        if 150 <= h <= 178:
+            logger.info("strip_cv: orientation row1 H=%.0f (magenta→nitrate) → NORMAL", h)
+            return False
+        if 50 <= h <= 100:
+            logger.info("strip_cv: orientation row1 H=%.0f (green/teal) → INVERTED", h)
+            return True
+
+    # rows[0] green → ammonia → INVERTED; orange/brown → copper → NORMAL
+    row0 = _max_sat_ref_hsv(0)
+    if row0 and row0[1] > 60:
+        h = row0[0]
+        if 50 <= h <= 100:
+            logger.info("strip_cv: orientation row0 H=%.0f (green→ammonia) → INVERTED", h)
+            return True
+        if (0 <= h <= 30) or (155 <= h <= 180):
+            logger.info("strip_cv: orientation row0 H=%.0f (orange/brown→copper) → NORMAL", h)
+            return False
+
+    # Fallback: y-gap (unreliable when background fills top of image)
     all_cells = [c for row in rows for c in row]
     if not all_cells:
         return False
@@ -183,7 +222,7 @@ def _is_strip_inverted(rows: list[list], img_h: int) -> bool:
     bottom_gap = img_h - max(ys)
     inverted = bottom_gap > top_gap * 1.2
     logger.info(
-        "strip_cv: orientation top_gap=%.0f bottom_gap=%.0f inverted=%s",
+        "strip_cv: orientation gap-fallback top_gap=%.0f bottom_gap=%.0f → inverted=%s",
         top_gap, bottom_gap, inverted,
     )
     return inverted
@@ -332,8 +371,12 @@ def debug_analyze_strip(image_bytes: bytes) -> tuple[bytes, list[dict]]:
     try:
         cells = _find_cells(img_bgr)
         rows = _cluster_rows(cells, N_PADS)
-        if _is_strip_inverted(rows, img_bgr.shape[0]):
+        splits_provisional = _assign_pads_by_column(rows)
+        if _detect_orientation(rows, splits_provisional, img_hsv, img_bgr.shape[0]):
             rows = rows[::-1]
+            splits = _assign_pads_by_column(rows)
+        else:
+            splits = splits_provisional
     except CVDetectionError as e:
         cv2.putText(debug_img, str(e), (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
         _, jpeg = cv2.imencode(".jpg", debug_img, [cv2.IMWRITE_JPEG_QUALITY, 85])
@@ -343,7 +386,6 @@ def debug_analyze_strip(image_bytes: bytes) -> tuple[bytes, list[dict]]:
     for x, y, w, h in cells:
         cv2.rectangle(debug_img, (x, y), (x + w, y + h), (200, 100, 0), 1)
 
-    splits = _assign_pads_by_column(rows)
 
     for row_idx, (param_key, row_cells, (pad_cell, ref_cells)) in enumerate(
         zip(PAD_ORDER, rows, splits)
@@ -401,10 +443,12 @@ def analyze_strip(
     logger.info("strip_cv: %d candidate cells", len(cells))
 
     rows = _cluster_rows(cells, N_PADS)
-    if _is_strip_inverted(rows, img_bgr.shape[0]):
+    splits_provisional = _assign_pads_by_column(rows)
+    if _detect_orientation(rows, splits_provisional, img_hsv, img_bgr.shape[0]):
         rows = rows[::-1]
-
-    splits = _assign_pads_by_column(rows)
+        splits = _assign_pads_by_column(rows)
+    else:
+        splits = splits_provisional
 
     results: dict[str, dict] = {}
     confidences: list[float] = []

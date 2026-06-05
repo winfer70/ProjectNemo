@@ -86,9 +86,12 @@
     "outOfRange": "OUT OF RANGE",
     "trend": "Trend",
     "advice": "What to do",
-    "scanStrip": "Scan test strip photo",
+    "scanStrip": "Scan 30s (all pads)",
     "scanning": "Scanning…",
-    "scanFilled": "{n} fields filled from photo"
+    "scanFilled": "{n} fields filled from photo",
+    "scanAmmonia": "Scan Ammonia (3 min)",
+    "scanningAmmonia": "Scanning ammonia…",
+    "scanAmmoniaFilled": "Ammonia filled from photo"
   },
   "common": {
     "loading": "Loading...",

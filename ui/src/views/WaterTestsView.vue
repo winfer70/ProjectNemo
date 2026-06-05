@@ -78,18 +78,28 @@
       <div class="modal-sheet">
         <div class="modal-title">{{ $t('tests.newSession') }}</div>
 
-        <!-- Strip scan button -->
+        <!-- Strip scan buttons -->
         <div style="margin-bottom:14px;">
-          <input ref="fileInput" type="file" accept="image/*" capture="environment"
+          <input ref="fileInput" type="file" accept="image/*"
                  style="display:none" @change="handleFileSelected" />
+          <input ref="fileInputAmmonia" type="file" accept="image/*"
+                 style="display:none" @change="handleAmmoniaFileSelected" />
           <button class="btn btn-secondary" style="width:100%;position:relative;"
                   :disabled="scanning" @click="fileInput.click()">
             <span v-if="scanning">⏳ {{ $t('tests.scanning') }}</span>
             <span v-else>📷 {{ $t('tests.scanStrip') }}</span>
           </button>
+          <button class="btn btn-secondary" style="width:100%;position:relative;margin-top:6px;"
+                  :disabled="scanningAmmonia" @click="fileInputAmmonia.click()">
+            <span v-if="scanningAmmonia">⏳ {{ $t('tests.scanningAmmonia') }}</span>
+            <span v-else>🟢 {{ $t('tests.scanAmmonia') }}</span>
+          </button>
           <div v-if="scanError" style="font-size:11px;color:var(--danger);margin-top:4px;">{{ scanError }}</div>
           <div v-if="scannedKeys.size" style="font-size:11px;color:var(--ok);margin-top:4px;">
             ✓ {{ $t('tests.scanFilled', { n: scannedKeys.size }) }}
+          </div>
+          <div v-if="ammoniaScanned" style="font-size:11px;color:var(--ok);margin-top:2px;">
+            ✓ {{ $t('tests.scanAmmoniaFilled') }}
           </div>
         </div>
 
@@ -207,9 +217,12 @@ const showForm = ref(false)
 const formValues = ref({})
 const formNotes = ref('')
 const fileInput = ref(null)
+const fileInputAmmonia = ref(null)
 const scanning = ref(false)
+const scanningAmmonia = ref(false)
 const scanError = ref('')
 const scannedKeys = ref(new Set())
+const ammoniaScanned = ref(false)
 const scanCacheId = ref(null)
 const scanOutOfRange = ref({})
 
@@ -234,14 +247,51 @@ async function handleFileSelected(event) {
     scanCacheId.value = cache_id
     if (cache_hit) scanError.value = ''
     scanOutOfRange.value = out_of_range || {}
+    const ammoniaId = manualParams.value.find(p => p.key === 'ammonia')?.id
     for (const [id, value] of Object.entries(prefill)) {
-      formValues.value[parseInt(id)] = value
-      scannedKeys.value.add(parseInt(id))
+      const numId = parseInt(id)
+      if (numId === ammoniaId) continue  // ammonia needs 3-min scan
+      formValues.value[numId] = value
+      scannedKeys.value.add(numId)
     }
   } catch (e) {
     scanError.value = `Scan failed: ${e.message}`
   } finally {
     scanning.value = false
+    event.target.value = ''
+  }
+}
+
+async function handleAmmoniaFileSelected(event) {
+  const file = event.target.files?.[0]
+  if (!file) return
+  scanningAmmonia.value = true
+  scanError.value = ''
+  try {
+    const fd = new FormData()
+    fd.append('file', file)
+    const res = await fetch('/api/water-tests/analyze_strip', { method: 'POST', body: fd })
+    if (!res.ok) {
+      let detail = res.status
+      try { detail = (await res.json()).detail ?? res.status } catch {}
+      throw new Error(String(detail))
+    }
+    const { prefill, out_of_range } = await res.json()
+    const ammoniaId = manualParams.value.find(p => p.key === 'ammonia')?.id
+    if (ammoniaId !== undefined && prefill[ammoniaId] !== undefined) {
+      formValues.value[ammoniaId] = prefill[ammoniaId]
+      scannedKeys.value = new Set([...scannedKeys.value, ammoniaId])
+      if (out_of_range?.[ammoniaId] !== undefined) {
+        scanOutOfRange.value = { ...scanOutOfRange.value, [ammoniaId]: out_of_range[ammoniaId] }
+      }
+      ammoniaScanned.value = true
+    } else {
+      scanError.value = 'Ammonia not detected in photo'
+    }
+  } catch (e) {
+    scanError.value = `Ammonia scan failed: ${e.message}`
+  } finally {
+    scanningAmmonia.value = false
     event.target.value = ''
   }
 }
@@ -291,6 +341,7 @@ async function submitSession() {
   scanError.value = ''
   scanCacheId.value = null
   scanOutOfRange.value = {}
+  ammoniaScanned.value = false
   showForm.value = false
 }
 
