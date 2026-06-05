@@ -3,78 +3,75 @@
  *
  * Confirmed UUIDs (nRF Connect, XX:XX:XX:XX:XX:XX):
  *   Service:    0000fff0-0000-1000-8000-00805f9b34fb
- *   Write char: 0000fff2-0000-1000-8000-00805f9b34fb  (WRITE NO RESPONSE)
- *   Notify:     0000fff1-0000-1000-8000-00805f9b34fb
+ *   FFF1: NOTIFY, FFF2: WRITE, FFF3: NOTIFY+WRITE
  *
- * Fluval application frame protocol (from APK DEX analysis):
- *   App frame:  [0x68, CMD, ...data, CRC]  — CRC = XOR of all bytes
- *   Encryption: [0x54, (len+1)^0x54, keyByte, ...payload]
- *     rand=0 (newer, Roma/Shaker 2.0): keyByte=0x54, no XOR on payload
- *     old (Aquasky 2.0):               keyByte=0x5A, payload XOR 0x0E
+ * Protocol: bare application frames — NO 0x54 encryption wrapper.
+ * The 0x54 wrapper is for older Aquasky firmware only (NUS-based devices).
+ * This device generation (Telink TLSR825x / 0xFFF0 service) uses raw frames.
  *
- *   CMD 0x02 = set mode:   data=[0x00] → manual (must send before brightness)
- *   CMD 0x03 = on/off:     data=[0x00]=off, [0x01]=on
- *   CMD 0x04 = brightness: data=[ch1_H, ch1_L, ch2_H, ch2_L, ch3_H, ch3_L, ch4_H, ch4_L]
- *              channel order: R=ch1, G=ch2, B=ch3, W=ch4
- *              values 0–1000 (percent × 10), 16-bit big-endian
+ * Frame A (0x68 header, from Aquasky protocol research):
+ *   [0x68, CMD, ...data, XOR_CRC]
+ *   CMD 0x02 = manual mode:  data=[0x00]
+ *   CMD 0x04 = brightness:   data=[R_H,R_L, G_H,G_L, B_H,B_L, W_H,W_L] (0–1000 per channel)
+ *
+ * Frame B (LEN/SEQ header, Telink SDK template):
+ *   [LEN, SEQ, 0x11, 0x02, R, G, B, W, XOR_CRC]
+ *   R/G/B/W = 0–255
+ *
+ * Both variants tried in setChannels(); first non-empty notify response determines
+ * which the device accepts.
  */
 
 const SERVICE_UUID  = '0000fff0-0000-1000-8000-00805f9b34fb'
-const WRITE_UUID    = '0000fff3-0000-1000-8000-00805f9b34fb'  // FFF3 = NOTIFY+WRITE
-const NOTIFY_UUID   = '0000fff1-0000-1000-8000-00805f9b34fb'  // FFF1 = NOTIFY (subscribe first)
+const FFF1_UUID     = '0000fff1-0000-1000-8000-00805f9b34fb'
+const FFF2_UUID     = '0000fff2-0000-1000-8000-00805f9b34fb'
+const FFF3_UUID     = '0000fff3-0000-1000-8000-00805f9b34fb'
 
-let _device     = null
-let _writeChar  = null
-let _modeSet    = false   // track whether we've sent manual mode this session
+let _device    = null
+let _fff2      = null
+let _fff3      = null
+let _seq       = 0
+let _modeSet   = false
 
 // ---------------------------------------------------------------------------
-// Protocol helpers
+// Frame builders
 // ---------------------------------------------------------------------------
 
-function _crc(bytes) {
+function _xorCrc(bytes) {
   return bytes.reduce((acc, b) => acc ^ b, 0)
 }
 
-/** Build Fluval application frame: [0x68, cmd, ...data, CRC] */
-function _buildFrame(cmd, data) {
+/** Frame A: bare 0x68 header frame, no encryption wrapper */
+function _frameA(cmd, data) {
   const frame = [0x68, cmd, ...data]
-  frame.push(_crc(frame))
-  return frame
+  frame.push(_xorCrc(frame))
+  return new Uint8Array(frame)
 }
 
-/**
- * Encrypt payload into wire packet.
- * useOldXor=false → rand=0 variant (Roma/Shaker 2.0, newer devices)
- * useOldXor=true  → 0x0E XOR variant (Aquasky 2.0, older devices)
- */
-function _encrypt(payload, useOldXor = false) {
-  const keyByte = useOldXor ? 0x5A : 0x54
-  const xorKey  = useOldXor ? 0x0E : 0x00
-  const encrypted = xorKey ? payload.map(b => b ^ xorKey) : [...payload]
-  const lenByte = ((payload.length + 1) ^ 0x54) & 0xFF
-  return new Uint8Array([0x54, lenByte, keyByte, ...encrypted])
+/** Frame B: Telink SDK [LEN, SEQ, CMD_H, CMD_L, ...data, CRC] */
+function _frameB(cmdH, cmdL, data) {
+  const body = [_seq & 0xFF, cmdH, cmdL, ...data]
+  const len  = body.length + 1  // +1 for LEN byte itself
+  const crc  = _xorCrc(body)
+  _seq = (_seq + 1) & 0xFF
+  return new Uint8Array([len, ...body, crc])
 }
 
-async function _write(bytes) {
-  if (!_writeChar) throw new Error('BLE not connected — call connect() first')
-  const pkt = _encrypt(_buildFrame(...bytes))
-  if (_writeChar.writeValueWithoutResponse) {
-    await _writeChar.writeValueWithoutResponse(pkt)
-  } else {
-    await _writeChar.writeValue(pkt)
-  }
-}
+// ---------------------------------------------------------------------------
+// Write helpers
+// ---------------------------------------------------------------------------
 
-async function _sendFrame(cmd, data, useOldXor = false) {
-  const frame = _buildFrame(cmd, data)
-  const pkt   = _encrypt(frame, useOldXor)
-  if (!_writeChar) throw new Error('BLE not connected — call connect() first')
+async function _write(char, pkt, label) {
   const hex = Array.from(pkt).map(b => b.toString(16).padStart(2,'0')).join(' ')
-  console.log(`[fluval] cmd=0x${cmd.toString(16).padStart(2,'0')} raw=${hex}`)
-  if (_writeChar.writeValueWithoutResponse) {
-    await _writeChar.writeValueWithoutResponse(pkt)
-  } else {
-    await _writeChar.writeValue(pkt)
+  console.log(`[fluval] ${label} → ${hex}`)
+  try {
+    if (char.writeValueWithoutResponse) {
+      await char.writeValueWithoutResponse(pkt)
+    } else {
+      await char.writeValue(pkt)
+    }
+  } catch (err) {
+    console.warn(`[fluval] write error on ${label}:`, err.message)
   }
 }
 
@@ -92,64 +89,81 @@ export async function connect() {
     optionalServices: [SERVICE_UUID],
   })
 
-  const server      = await device.gatt.connect()
-  const service     = await server.getPrimaryService(SERVICE_UUID)
+  const server  = await device.gatt.connect()
+  const service = await server.getPrimaryService(SERVICE_UUID)
 
-  // Subscribe to FFF1 notifications — required by some devices before accepting commands
-  const notifyChar  = await service.getCharacteristic(NOTIFY_UUID)
-  await notifyChar.startNotifications()
-  notifyChar.addEventListener('characteristicvaluechanged', (e) => {
+  // Subscribe FFF1 — some devices gate command processing until CCCD is written
+  const fff1 = await service.getCharacteristic(FFF1_UUID)
+  await fff1.startNotifications()
+  fff1.addEventListener('characteristicvaluechanged', (e) => {
     const bytes = Array.from(new Uint8Array(e.target.value.buffer))
-    console.log('[fluval] notify:', bytes.map(b => b.toString(16).padStart(2,'0')).join(' '))
+    console.log('[fluval] FFF1 notify:', bytes.map(b => b.toString(16).padStart(2,'0')).join(' '))
   })
 
-  _writeChar = await service.getCharacteristic(WRITE_UUID)
-  _device    = device
-  _modeSet   = false
-  console.log('[fluval] connected, write char:', WRITE_UUID)
+  // Subscribe FFF3 notifications too
+  _fff3 = await service.getCharacteristic(FFF3_UUID)
+  await _fff3.startNotifications()
+  _fff3.addEventListener('characteristicvaluechanged', (e) => {
+    const bytes = Array.from(new Uint8Array(e.target.value.buffer))
+    console.log('[fluval] FFF3 notify:', bytes.map(b => b.toString(16).padStart(2,'0')).join(' '))
+  })
+
+  _fff2    = await service.getCharacteristic(FFF2_UUID)
+  _device  = device
+  _modeSet = false
+  _seq     = 0
+  console.log('[fluval] connected — FFF1/FFF3 subscribed, will write to FFF2+FFF3')
 
   device.addEventListener('gattserverdisconnected', () => {
-    _device    = null
-    _writeChar = null
-    _modeSet   = false
+    _device = _fff2 = _fff3 = null
+    _modeSet = false
     window.dispatchEvent(new CustomEvent('ble:disconnected'))
   })
 }
 
 export function isConnected() {
-  return _device !== null && _device.gatt.connected && _writeChar !== null
+  return _device !== null && _device.gatt.connected
 }
 
 /**
- * Set all four channels (R, G, B, W) in one CMD 0x04 packet.
- * Automatically sends CMD 0x02 manual-mode override on first call.
- * r, g, b, w are 0–100 percent.
+ * Set all four channels (R, G, B, W), 0–100 percent.
+ * Sends both Frame A and Frame B variants to both FFF2 and FFF3 —
+ * one of the four combinations will be correct.
+ * Once we confirm which works (from notify logs), prune the rest.
  */
 export async function setChannels(r, g, b, w) {
-  if (!_writeChar) throw new Error('BLE not connected — call connect() first')
+  if (!_fff2 && !_fff3) throw new Error('BLE not connected')
 
-  // Ensure device is in manual mode (overrides Pro/Auto schedule)
+  const toVal  = pct => Math.max(0, Math.min(100, Math.round(pct))) * 10
+  const to255  = pct => Math.round(Math.max(0, Math.min(100, pct)) * 2.55)
+  const [rv, gv, bv, wv] = [r, g, b, w].map(toVal)
+
+  // --- Frame A: 0x68-header, values 0–1000 ---
   if (!_modeSet) {
-    await _sendFrame(0x02, [0x00])
+    const modeA = _frameA(0x02, [0x00])
+    if (_fff2) await _write(_fff2, modeA, 'FFF2 modeA')
+    if (_fff3) await _write(_fff3, modeA, 'FFF3 modeA')
     _modeSet = true
   }
 
-  const toVal = pct => Math.max(0, Math.min(100, Math.round(pct))) * 10
-  const vals  = [r, g, b, w].map(toVal)
+  const brightnessA = _frameA(0x04, [
+    (rv >> 8) & 0xFF, rv & 0xFF,
+    (gv >> 8) & 0xFF, gv & 0xFF,
+    (bv >> 8) & 0xFF, bv & 0xFF,
+    (wv >> 8) & 0xFF, wv & 0xFF,
+  ])
+  if (_fff2) await _write(_fff2, brightnessA, 'FFF2 frameA')
+  if (_fff3) await _write(_fff3, brightnessA, 'FFF3 frameA')
 
-  const data = []
-  for (const v of vals) {
-    data.push((v >> 8) & 0xFF, v & 0xFF)
-  }
-
-  await _sendFrame(0x04, data)
+  // --- Frame B: Telink [LEN,SEQ,0x11,0x02,R,G,B,W,CRC], values 0–255 ---
+  const [r8, g8, b8, w8] = [r, g, b, w].map(to255)
+  const brightnessB = _frameB(0x11, 0x02, [r8, g8, b8, w8])
+  if (_fff2) await _write(_fff2, brightnessB, 'FFF2 frameB')
+  if (_fff3) await _write(_fff3, brightnessB, 'FFF3 frameB')
 }
 
 export async function disconnect() {
-  if (_device && _device.gatt.connected) {
-    _device.gatt.disconnect()
-  }
-  _device    = null
-  _writeChar = null
-  _modeSet   = false
+  if (_device && _device.gatt.connected) _device.gatt.disconnect()
+  _device = _fff2 = _fff3 = null
+  _modeSet = false
 }
