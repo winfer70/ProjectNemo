@@ -83,7 +83,7 @@
           <span class="channel-label" :style="{ color: channelColors[key] }">
             {{ $t('lighting.' + key) }}
           </span>
-          <input type="range" min="0" max="100" v-model.number="channels[key]" @change="pushChannels"
+          <input type="range" min="0" max="100" v-model.number="channels[key]" @input="pushChannels"
                  :disabled="!sensorsStore.bleConnected" />
           <span class="channel-value">{{ channels[key] }}%</span>
         </div>
@@ -192,16 +192,11 @@ function dueProgressPct(days, interval) {
   return Math.min(100, ((interval - days) / interval) * 100)
 }
 
-async function pushChannels() {
+function pushChannels() {
   if (!bleService.isConnected()) return
   const { r, g, b, w } = channels.value
   if (r > 0 || g > 0 || b > 0 || w > 0) savedChannels.value = { r, g, b, w }
-  try {
-    await bleService.setChannels(r, g, b, w)
-  } catch (err) {
-    bleError.value = err.message || String(err)
-    console.error('[nemo] BLE write failed:', err)
-  }
+  bleService.setChannels(r, g, b, w)
 }
 
 async function toggleLight() {
