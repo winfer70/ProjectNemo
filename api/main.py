@@ -14,6 +14,7 @@ from services.scheduler import scheduler
 from services.websocket_manager import live_push_loop, ws_endpoint
 
 logging.basicConfig(level=settings.log_level.upper())
+logging.getLogger().setLevel(settings.log_level.upper())  # force after uvicorn handler setup
 
 app = FastAPI(title="Project Nemo API", version="1.0.0")
 

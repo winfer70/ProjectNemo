@@ -85,7 +85,8 @@ _STATIC_HSV_REF: dict[str, list[tuple]] = {
     ],
 }
 
-WHITE_S_THRESH = 45
+WHITE_S_THRESH = 60   # raised: cream plastic + JPEG chroma bleed can push S to ~50
+WHITE_V_MIN = 160     # must also be bright to count as white/zero
 _NO_WHITE_ZERO = {"ph"}
 MIN_AVG_CONFIDENCE = 0.35
 
@@ -309,7 +310,7 @@ def debug_analyze_strip(image_bytes: bytes) -> tuple[bytes, list[dict]]:
             cv2.rectangle(debug_img, (rx, ry), (rx + rw, ry + rh), (0, 165, 255), 1)
 
         pad_hsv = _roi_median_hsv(img_hsv, *pad_cell)
-        white = param_key not in _NO_WHITE_ZERO and pad_hsv[1] < WHITE_S_THRESH
+        white = param_key not in _NO_WHITE_ZERO and pad_hsv[1] < WHITE_S_THRESH and pad_hsv[2] > WHITE_V_MIN
 
         row_debug.append({
             "row": row_idx,
@@ -370,13 +371,17 @@ def analyze_strip(
             row_idx, param_key, *pad_hsv, len(ref_cells),
         )
 
-        if param_key not in _NO_WHITE_ZERO and pad_hsv[1] < WHITE_S_THRESH:
+        if param_key not in _NO_WHITE_ZERO and pad_hsv[1] < WHITE_S_THRESH and pad_hsv[2] > WHITE_V_MIN:
             value, confidence = 0.0, 0.80
         else:
             if len(ref_cells) >= 2:
                 ref_cells_s = sorted(ref_cells, key=lambda c: c[0])
                 ref_hsvs = [_roi_median_hsv(img_hsv, *c) for c in ref_cells_s]
                 ref_hsvs = ref_hsvs[:len(values)]
+                # Chart direction: zero/lowest-value cell has lowest saturation.
+                # If list is high→low saturation (reversed chart), flip to match values order.
+                if len(ref_hsvs) >= 2 and ref_hsvs[0][1] > ref_hsvs[-1][1]:
+                    ref_hsvs = ref_hsvs[::-1]
                 using_static = False
             else:
                 ref_hsvs = [tuple(v) for v in _STATIC_HSV_REF.get(param_key, [])]
