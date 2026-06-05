@@ -1,146 +1,113 @@
 /**
- * Fluval Aquasky 2.0 — Web Bluetooth singleton service.
+ * Fluval Roma/Shaker 2.0 — Web Bluetooth singleton service.
  *
- * Packet format (mirrors homeassistant/config/custom_components/fluvalble/protocol.py):
- *   full_packet = [0x54, payload_len, 0x5A, ...payload]
- *   on-wire     = each byte ^ 0x0E
+ * Protocol (reverse-engineered, Roma&Shaker2.0 generation):
+ *   Service:   00001000-0000-1000-8000-00805f9b34fb
+ *   Write:     00001001-0000-1000-8000-00805f9b34fb
+ *   Register:  00001005-0000-1000-8000-00805f9b34fb
  *
- * Single-channel payload: [channel_id, raw >> 8, raw & 0xFF]
- *   where raw = clamp(percent, 0, 100) * 10  (0–1000 range)
+ * Init sequence (required before color commands):
+ *   1. Write [0x0F] to register char 1005
+ *   2. Write time-sync array [yy, mm, dd, dow, hh, min, sec] to write char 1001
+ *
+ * Color packet (write char 1001):
+ *   [0x54, ch1_pink, ch2_blue, ch3_cold_white, ch4_warm_white]
+ *   Values 0–100 (no XOR encoding on this generation).
+ *
+ * Channel mapping from UI (r, g, b, w, ch5):
+ *   r   → ch1 Pink/Red
+ *   g   → ignored (Roma has no green channel)
+ *   b   → ch2 Blue
+ *   w   → ch3 Cold White
+ *   ch5 → ch4 Warm White
  */
 
-const XOR_KEY = 0x0E
-const WRITE_CHAR_UUID = '00001002-0000-1000-8000-00805f9b34fb'
-const SERVICE_DISCOVERY = '0000180a-0000-1000-8000-00805f9b34fb'
-const SERVICE_CONTROL = '00001001-0000-1000-8000-00805f9b34fb'
+const SERVICE_UUID   = '00001000-0000-1000-8000-00805f9b34fb'
+const WRITE_UUID     = '00001001-0000-1000-8000-00805f9b34fb'
+const REGISTER_UUID  = '00001005-0000-1000-8000-00805f9b34fb'
 
-const CHANNEL_R = 0x01
-const CHANNEL_G = 0x02
-const CHANNEL_B = 0x03
-const CHANNEL_W = 0x04
-const CHANNEL_5 = 0x05
-
-// Module-level singletons — bleService is intentionally not a class.
-let _device = null
-let _char = null
+let _device   = null
+let _writeChar = null
 
 // ---------------------------------------------------------------------------
 // Internal helpers
 // ---------------------------------------------------------------------------
 
-function _xorEncrypt(bytes) {
-  return bytes.map(b => b ^ XOR_KEY)
+function _clamp(v) {
+  return Math.max(0, Math.min(100, Math.round(v)))
 }
 
-/**
- * Build the on-wire Uint8Array for a single-channel command.
- * Matches build_single_channel_command() in protocol.py.
- */
-function _buildSingleChannelPacket(channelId, percent) {
-  const raw = Math.max(0, Math.min(100, percent)) * 10
-  const payload = [channelId, (raw >> 8) & 0xFF, raw & 0xFF]
-  const header = [0x54, payload.length, 0x5A]
-  return new Uint8Array(_xorEncrypt([...header, ...payload]))
-}
+async function _initSession(server) {
+  const service = await server.getPrimaryService(SERVICE_UUID)
 
-/**
- * Iterate all primary GATT services and return the first characteristic
- * whose UUID matches WRITE_CHAR_UUID.
- * The write char lives in SERVICE_CONTROL (0x1001), but we iterate defensively.
- */
-async function _findWriteChar(server) {
-  const services = await server.getPrimaryServices()
-  for (const svc of services) {
-    try {
-      const chars = await svc.getCharacteristics()
-      for (const c of chars) {
-        if (c.uuid === WRITE_CHAR_UUID) return c
-      }
-    } catch (_err) {
-      // Service may not expose characteristics — skip silently.
-    }
-  }
-  throw new Error(`Write characteristic ${WRITE_CHAR_UUID} not found on any GATT service`)
+  // Step 1: wake the hardware register
+  const regChar = await service.getCharacteristic(REGISTER_UUID)
+  await regChar.writeValue(new Uint8Array([0x0F]))
+
+  // Step 2: sync light's internal clock
+  const writeChar = await service.getCharacteristic(WRITE_UUID)
+  const now = new Date()
+  await writeChar.writeValue(new Uint8Array([
+    now.getFullYear() % 100,
+    now.getMonth() + 1,
+    now.getDate(),
+    now.getDay(),
+    now.getHours(),
+    now.getMinutes(),
+    now.getSeconds(),
+  ]))
+
+  return writeChar
 }
 
 // ---------------------------------------------------------------------------
 // Public API
 // ---------------------------------------------------------------------------
 
-/**
- * Prompt the user to select a Fluval / Aquasky device and open GATT.
- * Must be called from a user-gesture handler (button click).
- *
- * Falls back to acceptAllDevices if the name-prefix filter finds nothing —
- * useful when the device is not actively advertising its name.
- */
 export async function connect() {
-  let device
-  try {
-    device = await navigator.bluetooth.requestDevice({
-      filters: [
-        { namePrefix: 'Fluval' },
-        { namePrefix: 'Aquasky' },
-      ],
-      optionalServices: [SERVICE_CONTROL, SERVICE_DISCOVERY],
-    })
-  } catch (_filterErr) {
-    // Name filters yielded nothing — open the full picker.
-    device = await navigator.bluetooth.requestDevice({
-      acceptAllDevices: true,
-      optionalServices: [SERVICE_CONTROL, SERVICE_DISCOVERY],
-    })
-  }
+  const device = await navigator.bluetooth.requestDevice({
+    filters: [
+      { namePrefix: 'Roma&Shaker2.0_' },
+      { namePrefix: 'Roma' },
+      { namePrefix: 'Fluval' },
+    ],
+    optionalServices: [SERVICE_UUID],
+  })
 
   const server = await device.gatt.connect()
-  _char = await _findWriteChar(server)
+  _writeChar = await _initSession(server)
   _device = device
 
-  // Notify the app when the peripheral drops the connection.
   device.addEventListener('gattserverdisconnected', () => {
     _device = null
-    _char = null
+    _writeChar = null
     window.dispatchEvent(new CustomEvent('ble:disconnected'))
   })
 }
 
-/** Returns true when a GATT connection is open and the write char is ready. */
 export function isConnected() {
-  return _device !== null && _device.gatt.connected && _char !== null
+  return _device !== null && _device.gatt.connected && _writeChar !== null
 }
 
 /**
- * Write one GATT command per channel (r, g, b, w, ch5 are 0–100 percent).
- * Mirrors the single-channel loop used by the HA custom component.
+ * r, b, w, ch5 are 0–100 percent.
+ * g is accepted for API compatibility but Roma has no green channel.
+ *   r   → Pink/Red
+ *   b   → Blue
+ *   w   → Cold White
+ *   ch5 → Warm White
  */
-export async function setChannels(r, g, b, w, ch5 = 0) {
-  if (!_char) throw new Error('BLE not connected — call connect() first')
+export async function setChannels(r, _g, b, w, ch5 = 0) {
+  if (!_writeChar) throw new Error('BLE not connected — call connect() first')
 
-  const channelMap = [
-    [CHANNEL_R, r],
-    [CHANNEL_G, g],
-    [CHANNEL_B, b],
-    [CHANNEL_W, w],
-    [CHANNEL_5, ch5],
-  ]
-
-  for (const [id, val] of channelMap) {
-    const packet = _buildSingleChannelPacket(id, val)
-    // writeValueWithoutResponse is the correct ATT Write Command for lighting.
-    // Falls back to the older writeValue for browsers that don't yet expose it.
-    if (_char.writeValueWithoutResponse) {
-      await _char.writeValueWithoutResponse(packet)
-    } else {
-      await _char.writeValue(packet)
-    }
-  }
+  const packet = new Uint8Array([0x54, _clamp(r), _clamp(b), _clamp(w), _clamp(ch5)])
+  await _writeChar.writeValue(packet)
 }
 
-/** Close the GATT connection and clear all module state. */
 export async function disconnect() {
   if (_device && _device.gatt.connected) {
     _device.gatt.disconnect()
   }
   _device = null
-  _char = null
+  _writeChar = null
 }

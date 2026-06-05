@@ -29,11 +29,10 @@
     "schedule": "{on} → {off}",
     "connect": "Connect Light",
     "connected": "Light Connected",
-    "red": "R",
-    "green": "G",
-    "blue": "B",
-    "white": "W",
-    "ch5": "UV"
+    "r": "Pink",
+    "b": "Blue",
+    "w": "Cold W",
+    "ch5": "Warm W"
   },
   "maintenance": {
     "due": "Due in {days} days",
