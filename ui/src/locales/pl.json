@@ -29,10 +29,10 @@
     "schedule": "{on} → {off}",
     "connect": "Połącz Oświetlenie",
     "connected": "Oświetlenie Połączone",
-    "r": "Różowy",
+    "r": "Czerwony",
+    "g": "Zielony",
     "b": "Niebieski",
-    "w": "Zimna B.",
-    "ch5": "Ciepła B."
+    "w": "Biały"
   },
   "maintenance": {
     "due": "Za {days} dni",

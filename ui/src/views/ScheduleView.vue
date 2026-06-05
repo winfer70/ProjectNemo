@@ -137,8 +137,8 @@ const scheduleStore = useScheduleStore()
 const sensorsStore = useSensorsStore()
 const maintenanceStore = useMaintenanceStore()
 
-const channels = ref({ r: 60, b: 100, w: 80, ch5: 0 })
-const channelColors = { r: '#ff4444', b: '#4488ff', w: '#ffffaa', ch5: '#ffcc88' }
+const channels = ref({ r: 60, g: 40, b: 100, w: 80 })
+const channelColors = { r: '#ff4444', g: '#44ff88', b: '#4488ff', w: '#ffffaa' }
 const maintModalTask = ref(null)
 
 const lightEntity = computed(() => {
@@ -193,7 +193,7 @@ function dueProgressPct(days, interval) {
 }
 
 async function pushChannels() {
-  await sensorsStore.setFluvalChannels(channels.value.r, 0, channels.value.b, channels.value.w, channels.value.ch5)
+  await sensorsStore.setFluvalChannels(channels.value.r, channels.value.g, channels.value.b, channels.value.w)
 }
 
 async function handleBleConnect() {

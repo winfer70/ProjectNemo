@@ -14,12 +14,11 @@
  *   [0x54, ch1_pink, ch2_blue, ch3_cold_white, ch4_warm_white]
  *   Values 0–100 (no XOR encoding on this generation).
  *
- * Channel mapping from UI (r, g, b, w, ch5):
- *   r   → ch1 Pink/Red
- *   g   → ignored (Roma has no green channel)
- *   b   → ch2 Blue
- *   w   → ch3 Cold White
- *   ch5 → ch4 Warm White
+ * Channel mapping from UI (r, g, b, w):
+ *   r → ch1 Red
+ *   g → ch2 Green
+ *   b → ch3 Blue
+ *   w → ch4 White
  */
 
 const SERVICE_UUID   = '00001000-0000-1000-8000-00805f9b34fb'
@@ -90,17 +89,12 @@ export function isConnected() {
 }
 
 /**
- * r, b, w, ch5 are 0–100 percent.
- * g is accepted for API compatibility but Roma has no green channel.
- *   r   → Pink/Red
- *   b   → Blue
- *   w   → Cold White
- *   ch5 → Warm White
+ * r, g, b, w are 0–100 percent. Matches FluvalConnect: Red, Green, Blue, White.
  */
-export async function setChannels(r, _g, b, w, ch5 = 0) {
+export async function setChannels(r, g, b, w) {
   if (!_writeChar) throw new Error('BLE not connected — call connect() first')
 
-  const packet = new Uint8Array([0x54, _clamp(r), _clamp(b), _clamp(w), _clamp(ch5)])
+  const packet = new Uint8Array([0x54, _clamp(r), _clamp(g), _clamp(b), _clamp(w)])
   await _writeChar.writeValue(packet)
 }
 
