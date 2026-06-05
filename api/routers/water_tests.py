@@ -173,6 +173,7 @@ async def create_session(
     await db.commit()
     await broadcast_change("water_tests")
 
+    logger.info("create_session scan_cache_id=%s", data.scan_cache_id)
     if data.scan_cache_id:
         corrected = {
             params[r.parameter_id].key: r.value
