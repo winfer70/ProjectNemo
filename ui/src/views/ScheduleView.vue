@@ -76,6 +76,9 @@
           <span v-if="!sensorsStore.bleConnected">{{ $t('lighting.connect') }}</span>
           <span v-else>{{ $t('lighting.connected') }} <span style="color:var(--ok)">&#9679;</span></span>
         </button>
+        <div v-if="bleError" style="font-size:11px;color:var(--danger,#e63946);margin-bottom:8px;word-break:break-word;">
+          BLE error: {{ bleError }}
+        </div>
         <div class="channel-slider" v-for="(ch, key) in channels" :key="key">
           <span class="channel-label" :style="{ color: channelColors[key] }">
             {{ $t('lighting.' + key) }}
@@ -136,6 +139,7 @@ const { locale } = useI18n()
 const scheduleStore = useScheduleStore()
 const sensorsStore = useSensorsStore()
 const maintenanceStore = useMaintenanceStore()
+const bleError = ref(null)
 
 const channels = ref({ r: 60, g: 40, b: 100, w: 80 })
 const channelColors = { r: '#ff4444', g: '#44ff88', b: '#4488ff', w: '#ffffaa' }
@@ -197,10 +201,12 @@ async function pushChannels() {
 }
 
 async function handleBleConnect() {
+  bleError.value = null
   try {
     await bleService.connect()
     sensorsStore.bleConnected = true
   } catch (err) {
+    bleError.value = err.message || String(err)
     console.error('[nemo] BLE connect failed:', err)
   }
 }

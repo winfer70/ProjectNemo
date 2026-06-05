@@ -56,6 +56,9 @@ async function _initSession(server) {
     now.getSeconds(),
   ]))
 
+  // Step 3: switch to manual mode (overrides Pro/Auto schedule)
+  await writeChar.writeValue(new Uint8Array([0x52, 0x00]))
+
   return writeChar
 }
 
