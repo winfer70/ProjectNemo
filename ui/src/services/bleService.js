@@ -132,17 +132,17 @@ export function setChannels(r, g, b, w) {
 function _doSetChannels(r, g, b, w) {
   if (!_fff2) return
   const clamp = v => Math.max(0, Math.min(100, Math.round(v)))
-  const to255 = v => Math.round(clamp(v) * 2.55)
 
   if (!_modeSet) {
     _enqueue(_cmd1(0x01, 0x02), 'mode-manual')
     _modeSet = true
   }
 
-  _enqueue(_cmd1(0x03, to255(r)), 'ch-R')
-  _enqueue(_cmd1(0x04, to255(g)), 'ch-G')
-  _enqueue(_cmd1(0x05, to255(b)), 'ch-B')
-  _enqueue(_cmd1(0x06, to255(w)), 'ch-W')
+  // Channels 03-06 use 0-100 scale (confirmed: device silently drops values > 100)
+  _enqueue(_cmd1(0x03, clamp(r)), 'ch-R')
+  _enqueue(_cmd1(0x04, clamp(g)), 'ch-G')
+  _enqueue(_cmd1(0x05, clamp(b)), 'ch-B')
+  _enqueue(_cmd1(0x06, clamp(w)), 'ch-W')
 }
 
 export function disconnect() {
