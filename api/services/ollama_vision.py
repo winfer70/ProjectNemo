@@ -1,4 +1,4 @@
-"""Test strip analysis via moondream on REDACTED-HOST Ollama."""
+"""Test strip analysis via llava-phi3 on REDACTED-HOST Ollama."""
 import base64
 import io
 import json
@@ -14,24 +14,33 @@ logger = logging.getLogger(__name__)
 
 MAX_PX = 1024
 
-STRIP_PROMPT = (
-    "This image shows an aquarium water test strip on the left and a color reference chart on the right. "
-    "Compare each pad color on the strip to the corresponding row in the reference chart. "
-    "Pick the closest matching value for each pad. "
-    "The 9 pads from top to bottom are: copper, nitrate, nitrite, free_chlorine, gh, total_alkalinity, kh, ph, ammonia. "
-    "Most pads will be white or near-zero — only pick a non-zero value if the color clearly matches a non-zero column. "
-    "Valid values for each parameter: "
-    "copper: 0, 0.2, 0.5, 1, 2, 5 | "
-    "nitrate: 0, 10, 25, 50, 100, 250 | "
-    "nitrite: 0, 1, 5, 10 | "
-    "free_chlorine: 0, 0.5, 1, 3, 5, 10, 20 | "
-    "gh: 0, 25, 50, 125, 250, 425 | "
-    "total_alkalinity: 0, 40, 80, 120, 180, 240 | "
-    "kh: 0, 40, 80, 120, 180, 300 | "
-    "ph: 6.2, 6.8, 7.2, 7.6, 7.8, 8.4 | "
-    "ammonia: 0, 0.5, 1, 3, 5, 10. "
-    "Respond with ONLY a JSON object. Start your response with { and end with }. "
-    'Example format: {"copper": 0, "nitrate": 25, "nitrite": 0, "free_chlorine": 0, "gh": 125, "total_alkalinity": 80, "kh": 40, "ph": 7.2, "ammonia": 0}'
+_SYSTEM = (
+    "You are a precise aquarium water test strip reader. "
+    "Your job is to compare pad colors on a test strip to a reference color chart. "
+    "CRITICAL: The '0' column in the reference chart is WHITE or very pale cream. "
+    "If a pad is white, off-white, or the same pale color as the 0-column → value is 0. "
+    "Only assign non-zero if the pad has an OBVIOUS, CLEARLY VISIBLE color that is distinctly different from white. "
+    "When uncertain, choose 0. You must respond with only a JSON object."
+)
+
+_USER = (
+    "Analyze this test strip image. Compare each pad to the reference chart.\n\n"
+    "The 9 pads from top to bottom are:\n"
+    "1. copper\n2. nitrate\n3. nitrite\n4. free_chlorine\n"
+    "5. gh\n6. total_alkalinity\n7. kh\n8. ph\n9. ammonia\n\n"
+    "WHITE or pale pad = 0. Only non-zero if CLEARLY colored differently from white.\n\n"
+    "Valid values:\n"
+    "copper: 0, 0.2, 0.5, 1, 2, 5\n"
+    "nitrate: 0, 10, 25, 50, 100, 250\n"
+    "nitrite: 0, 1, 5, 10\n"
+    "free_chlorine: 0, 0.5, 1, 3, 5, 10, 20\n"
+    "gh: 0, 25, 50, 125, 250, 425\n"
+    "total_alkalinity: 0, 40, 80, 120, 180, 240\n"
+    "kh: 0, 40, 80, 120, 180, 300\n"
+    "ph: 6.2, 6.8, 7.2, 7.6, 7.8, 8.4\n"
+    "ammonia: 0, 0.5, 1, 3, 5, 10\n\n"
+    "Respond with ONLY this JSON (no explanation, no markdown):\n"
+    '{"copper": 0, "nitrate": 0, "nitrite": 0, "free_chlorine": 0, "gh": 125, "total_alkalinity": 80, "kh": 40, "ph": 7.2, "ammonia": 0}'
 )
 
 
@@ -47,22 +56,26 @@ def _resize(image_bytes: bytes) -> bytes:
 async def analyze_strip(image_bytes: bytes) -> dict[str, float | None]:
     resized = _resize(image_bytes)
     b64 = base64.b64encode(resized).decode()
+
     payload = {
         "model": "llava-phi3",
-        "prompt": STRIP_PROMPT,
-        "images": [b64],
         "stream": False,
         "options": {"temperature": 0},
+        "messages": [
+            {"role": "system", "content": _SYSTEM},
+            {"role": "user", "content": _USER, "images": [b64]},
+        ],
     }
-    async with httpx.AsyncClient(timeout=240) as client:
-        r = await client.post(f"{settings.ollama_url}/api/generate", json=payload)
-        r.raise_for_status()
-        raw = r.json()["response"]
 
-    logger.info("moondream raw response: %s", raw[:500])
+    async with httpx.AsyncClient(timeout=240) as client:
+        r = await client.post(f"{settings.ollama_url}/api/chat", json=payload)
+        r.raise_for_status()
+        raw = r.json()["message"]["content"]
+
+    logger.info("llava-phi3 raw response: %s", raw[:500])
 
     match = re.search(r'\{[^{}]+\}', raw, re.DOTALL)
     if not match:
-        raise ValueError(f"No JSON in moondream response: {raw[:300]}")
+        raise ValueError(f"No JSON in llava-phi3 response: {raw[:300]}")
     data = json.loads(match.group())
     return {k: (float(v) if v is not None else None) for k, v in data.items()}
