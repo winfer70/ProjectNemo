@@ -171,9 +171,9 @@ def _cluster_rows(cells: list, n: int) -> list[list]:
 def _is_strip_inverted(rows: list[list], img_h: int) -> bool:
     """Detect upside-down strip: handle (blank plastic) causes a larger gap at one end.
 
-    If more blank space sits ABOVE the pad cluster than below, the handle is at the
-    top of the image — strip is inverted and rows must be reversed before mapping
-    to PAD_ORDER.
+    Normal hold: handle at TOP → large top_gap, small bottom_gap.
+    Inverted hold: handle at BOTTOM → large bottom_gap, small top_gap.
+    Reverse rows only when handle is at BOTTOM (bottom_gap >> top_gap).
     """
     all_cells = [c for row in rows for c in row]
     if not all_cells:
@@ -181,30 +181,62 @@ def _is_strip_inverted(rows: list[list], img_h: int) -> bool:
     ys = [c[1] + c[3] / 2.0 for c in all_cells]
     top_gap = min(ys)
     bottom_gap = img_h - max(ys)
-    inverted = top_gap > bottom_gap * 1.2
-    if inverted:
-        logger.info(
-            "strip_cv: inversion detected top_gap=%.0f bottom_gap=%.0f — reversing rows",
-            top_gap, bottom_gap,
-        )
+    inverted = bottom_gap > top_gap * 1.2
+    logger.info(
+        "strip_cv: orientation top_gap=%.0f bottom_gap=%.0f inverted=%s",
+        top_gap, bottom_gap, inverted,
+    )
     return inverted
 
 
-def _split_pad_chart(row: list) -> tuple[tuple | None, list]:
-    """Per-row initial split: pad = isolated cell, chart = tight group."""
-    if not row:
-        return None, []
-    if len(row) == 1:
-        return row[0], []
-    row_s = sorted(row, key=lambda c: c[0])
-    x_centers = [c[0] + c[2] / 2.0 for c in row_s]
-    gaps = [x_centers[i + 1] - x_centers[i] for i in range(len(x_centers) - 1)]
-    split = int(np.argmax(gaps))
-    left = row_s[: split + 1]
-    right = row_s[split + 1:]
-    if len(left) <= len(right):
-        return left[-1], right
-    return right[0], left
+def _find_strip_column_x(rows: list[list], bin_width: int = 80, min_rows: int = 4) -> float | None:
+    """Find x-centre of the strip pad column.
+
+    The strip is a narrow vertical column of pads on one side of the image.
+    The reference chart occupies the rest of the width.
+    Strategy: bin all cells into x-columns; the LEFTMOST bin whose cells span
+    at least min_rows different k-means rows is the strip column.
+    """
+    from collections import defaultdict
+    x_row_presence: dict[int, set] = defaultdict(set)
+    x_bin_centers: dict[int, list] = defaultdict(list)
+    for row_idx, row_cells in enumerate(rows):
+        for cell in row_cells:
+            x_center = cell[0] + cell[2] / 2.0
+            x_bin = int(x_center / bin_width)
+            x_row_presence[x_bin].add(row_idx)
+            x_bin_centers[x_bin].append(x_center)
+
+    valid = {b: rows for b, rows in x_row_presence.items() if len(rows) >= min_rows}
+    if not valid:
+        return None
+    leftmost_bin = min(valid.keys())
+    strip_x = float(np.median(x_bin_centers[leftmost_bin]))
+    logger.info("strip_cv: strip column x=%.0f (bin=%d, rows=%d)",
+                strip_x, leftmost_bin, len(valid[leftmost_bin]))
+    return strip_x
+
+
+def _assign_pads_by_column(rows: list[list]) -> list[tuple]:
+    """Assign pads using strip-column x detection instead of gap heuristic.
+
+    For each row, the cell closest to the detected strip_x is the pad.
+    Falls back to gap-based split if strip column cannot be found.
+    """
+    strip_x = _find_strip_column_x(rows)
+    if strip_x is None:
+        logger.warning("strip_cv: strip column not found, using gap-based split")
+        return [_split_pad_chart(row) for row in rows]
+
+    splits = []
+    for row_cells in rows:
+        if not row_cells:
+            splits.append((None, []))
+            continue
+        pad = min(row_cells, key=lambda c: abs(c[0] + c[2] / 2.0 - strip_x))
+        ref_cells = [c for c in row_cells if c is not pad]
+        splits.append((pad, ref_cells))
+    return splits
 
 
 def _enforce_pad_x_consistency(
@@ -311,8 +343,7 @@ def debug_analyze_strip(image_bytes: bytes) -> tuple[bytes, list[dict]]:
     for x, y, w, h in cells:
         cv2.rectangle(debug_img, (x, y), (x + w, y + h), (200, 100, 0), 1)
 
-    splits = [_split_pad_chart(row) for row in rows]
-    splits = _enforce_pad_x_consistency(rows, splits)
+    splits = _assign_pads_by_column(rows)
 
     for row_idx, (param_key, row_cells, (pad_cell, ref_cells)) in enumerate(
         zip(PAD_ORDER, rows, splits)
@@ -373,8 +404,7 @@ def analyze_strip(
     if _is_strip_inverted(rows, img_bgr.shape[0]):
         rows = rows[::-1]
 
-    splits = [_split_pad_chart(row) for row in rows]
-    splits = _enforce_pad_x_consistency(rows, splits)
+    splits = _assign_pads_by_column(rows)
 
     results: dict[str, dict] = {}
     confidences: list[float] = []
