@@ -207,3 +207,30 @@ class CalendarCompletion(Base):
     completed_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
 
     task: Mapped["CalendarTask"] = relationship(back_populates="completions")
+
+
+class StripScanCache(Base):
+    __tablename__ = "strip_scan_cache"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    image_sha256: Mapped[str] = mapped_column(String(64), unique=True, index=True)
+    image_phash: Mapped[str] = mapped_column(String(16))
+    _ai_result: Mapped[str] = mapped_column("ai_result", Text)
+    _corrected_result: Mapped[str | None] = mapped_column("corrected_result", Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+
+    @property
+    def ai_result(self) -> dict:
+        return json.loads(self._ai_result)
+
+    @ai_result.setter
+    def ai_result(self, value: dict):
+        self._ai_result = json.dumps(value)
+
+    @property
+    def corrected_result(self) -> dict | None:
+        return json.loads(self._corrected_result) if self._corrected_result else None
+
+    @corrected_result.setter
+    def corrected_result(self, value: dict | None):
+        self._corrected_result = json.dumps(value) if value is not None else None

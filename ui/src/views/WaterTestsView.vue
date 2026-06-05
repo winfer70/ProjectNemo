@@ -208,6 +208,7 @@ const fileInput = ref(null)
 const scanning = ref(false)
 const scanError = ref('')
 const scannedKeys = ref(new Set())
+const scanCacheId = ref(null)
 
 async function handleFileSelected(event) {
   const file = event.target.files?.[0]
@@ -215,6 +216,7 @@ async function handleFileSelected(event) {
   scanning.value = true
   scanError.value = ''
   scannedKeys.value = new Set()
+  scanCacheId.value = null
   try {
     const fd = new FormData()
     fd.append('file', file)
@@ -224,7 +226,9 @@ async function handleFileSelected(event) {
       try { detail = (await res.json()).detail ?? res.status } catch {}
       throw new Error(String(detail))
     }
-    const { prefill } = await res.json()
+    const { prefill, cache_id, cache_hit } = await res.json()
+    scanCacheId.value = cache_id
+    if (cache_hit) scanError.value = ''
     for (const [id, value] of Object.entries(prefill)) {
       formValues.value[parseInt(id)] = value
       scannedKeys.value.add(parseInt(id))
@@ -275,11 +279,12 @@ async function submitSession() {
 
   if (readings.length === 0) return
 
-  await waterTestsStore.createSession(null, formNotes.value || null, readings)
+  await waterTestsStore.createSession(null, formNotes.value || null, readings, scanCacheId.value)
   formValues.value = {}
   formNotes.value = ''
   scannedKeys.value = new Set()
   scanError.value = ''
+  scanCacheId.value = null
   showForm.value = false
 }
 

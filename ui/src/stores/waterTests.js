@@ -22,8 +22,8 @@ export const useWaterTestsStore = defineStore('waterTests', () => {
     sessions.value = r.data
   }
 
-  async function createSession(tested_at, notes, readings) {
-    const r = await axios.post('/api/water-tests/sessions', { tested_at, notes, readings })
+  async function createSession(tested_at, notes, readings, scan_cache_id = null) {
+    const r = await axios.post('/api/water-tests/sessions', { tested_at, notes, readings, scan_cache_id })
     await fetchLatest()
     await fetchSessions()
     return r.data

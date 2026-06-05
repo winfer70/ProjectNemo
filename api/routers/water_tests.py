@@ -17,7 +17,7 @@ from models.schemas import (
 )
 from services.n8n_client import n8n_client
 from services.websocket_manager import broadcast_change
-from services import ollama_vision
+from services import ollama_vision, scan_cache
 
 import logging
 import traceback
@@ -51,21 +51,35 @@ async def analyze_strip(
     db: AsyncSession = Depends(get_db),
 ):
     image_bytes = await file.read()
+
+    cached, sha256, phash = await scan_cache.lookup(db, image_bytes)
+    if cached:
+        results = cached.corrected_result or cached.ai_result
+        params_result = await db.execute(select(WaterTestParameter))
+        params_by_key = {p.key: p for p in params_result.scalars().all()}
+        prefill = {
+            params_by_key[key].id: value
+            for key, value in results.items()
+            if value is not None and key in params_by_key
+        }
+        return {"raw": results, "prefill": prefill, "cache_id": cached.id, "cache_hit": True}
+
     try:
         results = await ollama_vision.analyze_strip(image_bytes)
     except Exception as e:
         logger.error("analyze_strip failed: %s: %s\n%s", type(e).__name__, e, traceback.format_exc())
         raise HTTPException(502, f"Vision analysis failed: {type(e).__name__}: {e}")
 
+    cache_row = await scan_cache.store(db, sha256, phash, results)
+
     params_result = await db.execute(select(WaterTestParameter))
     params_by_key = {p.key: p for p in params_result.scalars().all()}
-
     prefill = {
         params_by_key[key].id: value
         for key, value in results.items()
         if value is not None and key in params_by_key
     }
-    return {"raw": results, "prefill": prefill}
+    return {"raw": results, "prefill": prefill, "cache_id": cache_row.id, "cache_hit": False}
 
 
 @router.get("/parameters", response_model=list[WaterTestParameterOut])
@@ -158,6 +172,14 @@ async def create_session(
 
     await db.commit()
     await broadcast_change("water_tests")
+
+    if data.scan_cache_id:
+        corrected = {
+            params[r.parameter_id].key: r.value
+            for r in data.readings
+            if r.parameter_id in params
+        }
+        await scan_cache.save_correction(db, data.scan_cache_id, corrected)
 
     # fire Telegram alerts for out-of-range readings
     for param, value in out_of_range_alerts:

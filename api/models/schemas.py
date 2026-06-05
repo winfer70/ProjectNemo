@@ -132,6 +132,7 @@ class WaterTestSessionCreate(BaseModel):
     tested_at: datetime | None = None
     notes: str | None = None
     readings: list[WaterTestReadingIn]
+    scan_cache_id: int | None = None
 
 
 class WaterTestReadingOut(BaseModel):
