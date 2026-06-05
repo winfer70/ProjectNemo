@@ -19,8 +19,9 @@
  *              values 0–1000 (percent × 10), 16-bit big-endian
  */
 
-const SERVICE_UUID = '0000fff0-0000-1000-8000-00805f9b34fb'
-const WRITE_UUID   = '0000fff2-0000-1000-8000-00805f9b34fb'
+const SERVICE_UUID  = '0000fff0-0000-1000-8000-00805f9b34fb'
+const WRITE_UUID    = '0000fff3-0000-1000-8000-00805f9b34fb'  // FFF3 = NOTIFY+WRITE
+const NOTIFY_UUID   = '0000fff1-0000-1000-8000-00805f9b34fb'  // FFF1 = NOTIFY (subscribe first)
 
 let _device     = null
 let _writeChar  = null
@@ -91,11 +92,21 @@ export async function connect() {
     optionalServices: [SERVICE_UUID],
   })
 
-  const server  = await device.gatt.connect()
-  const service = await server.getPrimaryService(SERVICE_UUID)
+  const server      = await device.gatt.connect()
+  const service     = await server.getPrimaryService(SERVICE_UUID)
+
+  // Subscribe to FFF1 notifications — required by some devices before accepting commands
+  const notifyChar  = await service.getCharacteristic(NOTIFY_UUID)
+  await notifyChar.startNotifications()
+  notifyChar.addEventListener('characteristicvaluechanged', (e) => {
+    const bytes = Array.from(new Uint8Array(e.target.value.buffer))
+    console.log('[fluval] notify:', bytes.map(b => b.toString(16).padStart(2,'0')).join(' '))
+  })
+
   _writeChar = await service.getCharacteristic(WRITE_UUID)
   _device    = device
   _modeSet   = false
+  console.log('[fluval] connected, write char:', WRITE_UUID)
 
   device.addEventListener('gattserverdisconnected', () => {
     _device    = null
@@ -119,7 +130,7 @@ export async function setChannels(r, g, b, w) {
 
   // Ensure device is in manual mode (overrides Pro/Auto schedule)
   if (!_modeSet) {
-    await _sendFrame(0x02, [0x00], true)
+    await _sendFrame(0x02, [0x00])
     _modeSet = true
   }
 
@@ -131,7 +142,7 @@ export async function setChannels(r, g, b, w) {
     data.push((v >> 8) & 0xFF, v & 0xFF)
   }
 
-  await _sendFrame(0x04, data, true)
+  await _sendFrame(0x04, data)
 }
 
 export async function disconnect() {
