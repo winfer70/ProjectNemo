@@ -1,0 +1,69 @@
+- id: filter_restart_after_feeding
+  alias: "Restart filter after Feed Now"
+  description: "Safety net — if filter plug was turned off manually, restart after 10 min"
+  trigger:
+    - platform: state
+      entity_id: switch.tapo_filter
+      to: "off"
+      for:
+        minutes: 10
+  condition:
+    - condition: state
+      entity_id: switch.tapo_filter
+      state: "off"
+  action:
+    - service: switch.turn_on
+      target:
+        entity_id: switch.tapo_filter
+
+- id: temp_alert_low
+  alias: "Temperature too low alert"
+  trigger:
+    - platform: numeric_state
+      entity_id: sensor.nemo_sensor_temperature
+      below: 24.5
+      for:
+        minutes: 5
+  action:
+    - service: rest_command.nemo_alert
+      data:
+        n8n_url: !secret n8n_url
+        webhook_id: !secret n8n_webhook_alert
+        message_en: "🌡️ Temperature {{ states('sensor.nemo_sensor_temperature') }}°C — too low!"
+        message_pl: "🌡️ Temperatura {{ states('sensor.nemo_sensor_temperature') }}°C — za niska!"
+        lang: "both"
+
+- id: temp_alert_high
+  alias: "Temperature too high alert"
+  trigger:
+    - platform: numeric_state
+      entity_id: sensor.nemo_sensor_temperature
+      above: 27.5
+      for:
+        minutes: 5
+  action:
+    - service: rest_command.nemo_alert
+      data:
+        n8n_url: !secret n8n_url
+        webhook_id: !secret n8n_webhook_alert
+        message_en: "🌡️ Temperature {{ states('sensor.nemo_sensor_temperature') }}°C — too high!"
+        message_pl: "🌡️ Temperatura {{ states('sensor.nemo_sensor_temperature') }}°C — za wysoka!"
+        lang: "both"
+
+- id: fluval_channel_sync
+  alias: "Sync Fluval RGBW channels from input_number to BLE"
+  trigger:
+    - platform: state
+      entity_id:
+        - input_number.fluval_r
+        - input_number.fluval_g
+        - input_number.fluval_b
+        - input_number.fluval_w
+  action:
+    - service: fluvalble.set_channels
+      data:
+        mac: !secret fluval_ble_mac
+        r: "{{ states('input_number.fluval_r') | int }}"
+        g: "{{ states('input_number.fluval_g') | int }}"
+        b: "{{ states('input_number.fluval_b') | int }}"
+        w: "{{ states('input_number.fluval_w') | int }}"
