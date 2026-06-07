@@ -357,7 +357,7 @@ const dayTasks = computed(() => {
   const key = `${viewYear.value}-${viewMonth.value}`
   const data = calendarStore.monthData[key]
   if (!data?.days) return []
-  const dayData = data.days.find(d => d.date === dayDateStr.value)
+  const dayData = data.days.find(d => (d.date || '').slice(0, 10) === dayDateStr.value)
   return dayData?.tasks || []
 })
 

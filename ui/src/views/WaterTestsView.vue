@@ -134,8 +134,10 @@
 
           <!-- Camera + detecting phase -->
           <template v-if="scanPhase !== 'confirm'">
+            <input type="file" accept="image/*" capture="environment" ref="fileInputRef" style="display:none" @change="handleFile">
             <div
-              style="aspect-ratio:3/4;border-radius:14px;overflow:hidden;position:relative;border:1px solid var(--border)"
+              style="aspect-ratio:3/4;border-radius:14px;overflow:hidden;position:relative;border:1px solid var(--border);cursor:pointer"
+              @click="fileInputRef?.click()"
             >
               <div class="ph" style="position:absolute;inset:0">podgląd kamery</div>
               <div
@@ -158,6 +160,17 @@
             <p class="muted" style="font-size:12.5px;text-align:center;margin:14px 0 18px">
               Umieść pasek testowy w ramce. CV dopasuje kolory, AI uzupełni braki.
             </p>
+
+            <button
+              class="btn btn-block btn-ghost"
+              style="margin-bottom:10px"
+              @click="() => { const vals = {}; manualParams.forEach(p => { vals[p.id] = '' }); detectedValues.value = vals; scanPhase.value = 'confirm' }"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 6h20v12H2z"/><path d="M6 10h.01"/><path d="M10 10h.01"/><path d="M14 10h.01"/><path d="M18 10h.01"/><path d="M8 14h8"/>
+              </svg>
+              Wpisz ręcznie
+            </button>
 
             <button
               class="btn btn-accent btn-block btn-lg"
@@ -272,6 +285,7 @@ const scanModal = ref(false)
 const scanPhase = ref('camera')
 const detectedValues = ref({})
 const saving = ref(false)
+const fileInputRef = ref(null)
 let scanTimeout = null
 
 function openScanModal() {
@@ -297,6 +311,13 @@ function startCapture() {
     detectedValues.value = vals
     scanPhase.value = 'confirm'
   }, 1600)
+}
+
+function handleFile(e) {
+  const file = e.target.files?.[0]
+  if (!file) return
+  // For now simulate detection phase like startCapture
+  startCapture()
 }
 
 async function saveScan() {

@@ -148,19 +148,43 @@
 
         <!-- Modal body -->
         <div style="padding:16px;overflow-y:auto;flex:1">
-          <!-- Thumb + kind segmented -->
-          <div class="row" style="gap:14px;margin-bottom:16px">
+          <!-- Thumb + kind segmented + image search -->
+          <div class="row" style="gap:14px;margin-bottom:16px;align-items:flex-start">
             <div class="ls-thumb" style="width:72px;height:72px;flex-shrink:0">
-              <img v-if="editModal.item?.img" :src="editModal.item.img" style="width:100%;height:100%;object-fit:cover">
+              <img v-if="lsFormImg" :src="lsFormImg" style="width:100%;height:100%;object-fit:cover">
               <div v-else class="ph" style="font-size:9px">{{ locale === 'pl' ? 'zdjęcie' : 'image' }}</div>
             </div>
-            <div class="seg" style="flex:1">
-              <button :class="{ on: lsFormKind === 'fish' }" @click="lsFormKind = 'fish'">
-                {{ locale === 'pl' ? 'Ryba' : 'Fish' }}
+            <div style="flex:1;display:flex;flex-direction:column;gap:8px">
+              <div class="seg">
+                <button :class="{ on: lsFormKind === 'fish' }" @click="lsFormKind = 'fish'">
+                  {{ locale === 'pl' ? 'Ryba' : 'Fish' }}
+                </button>
+                <button :class="{ on: lsFormKind === 'plant' }" @click="lsFormKind = 'plant'">
+                  {{ locale === 'pl' ? 'Roślina' : 'Plant' }}
+                </button>
+              </div>
+              <button class="btn btn-ghost" style="font-size:12px" @click="searchImg" :disabled="obsadaStore.searching">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+                </svg>
+                {{ obsadaStore.searching ? (locale === 'pl' ? 'Szukam…' : 'Searching…') : (locale === 'pl' ? 'Szukaj zdjęcia' : 'Search image') }}
               </button>
-              <button :class="{ on: lsFormKind === 'plant' }" @click="lsFormKind = 'plant'">
-                {{ locale === 'pl' ? 'Roślina' : 'Plant' }}
-              </button>
+            </div>
+          </div>
+
+          <!-- Image search results -->
+          <div v-if="obsadaStore.searchResults?.images?.length" style="margin-bottom:16px">
+            <div class="sec-lab" style="padding-bottom:6px">{{ locale === 'pl' ? 'Wyniki' : 'Results' }}</div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+              <div
+                v-for="img in obsadaStore.searchResults.images"
+                :key="img.url"
+                style="aspect-ratio:1;border-radius:8px;overflow:hidden;cursor:pointer;border:2px solid transparent"
+                :style="{ borderColor: lsFormImg === img.url ? 'var(--accent)' : 'transparent' }"
+                @click="lsFormImg = img.url"
+              >
+                <img :src="img.thumb || img.url" style="width:100%;height:100%;object-fit:cover">
+              </div>
             </div>
           </div>
 
@@ -292,6 +316,7 @@ const lsFormDate = ref('')
 const lsFormKind = ref('fish')
 const lsFormStatus = ref('planned')
 const lsConfirmDelete = ref(false)
+const lsFormImg = ref('')
 
 watch(editModal, (val) => {
   if (!val) return
@@ -305,7 +330,15 @@ watch(editModal, (val) => {
   lsFormKind.value = val.kind || 'fish'
   lsFormStatus.value = item?.status || 'planned'
   lsConfirmDelete.value = false
+  lsFormImg.value = item?.img || ''
+  obsadaStore.clearSearch()
 })
+
+async function searchImg() {
+  const q = lsFormName.value || lsFormLatin.value
+  if (!q) return
+  await obsadaStore.searchImages(q, lsFormKind.value)
+}
 
 async function saveLs() {
   if (!editModal.value) return
@@ -315,6 +348,7 @@ async function saveLs() {
     latin: lsFormLatin.value,
     qty: parseInt(lsFormQty.value) || 1,
     added_at: lsFormDate.value,
+    img: lsFormImg.value,
     ...(lsFormKind.value === 'fish' && { status: lsFormStatus.value }),
   }
   const { item, kind } = editModal.value

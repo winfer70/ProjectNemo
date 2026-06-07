@@ -25,7 +25,7 @@ export const useCalendarStore = defineStore('calendar', () => {
     const key = `${y}-${m}`
     const data = monthData.value[key]
     if (data) {
-      const day = data.days.find(d => d.date === date)
+      const day = data.days.find(d => (d.date || '').slice(0, 10) === date)
       if (day) {
         const task = day.tasks.find(t => t.id === taskId)
         if (task) {
