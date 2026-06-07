@@ -188,7 +188,7 @@
             </div>
           </div>
           <div v-else-if="obsadaStore.searchResults && !obsadaStore.searching" class="muted" style="font-size:12px;margin-bottom:12px;text-align:center">
-            {{ locale === 'pl' ? 'Brak wyników — spróbuj po łacinie' : 'No results — try latin name' }}
+            {{ locale === 'pl' ? 'Brak zdjęć dla tego gatunku' : 'No images found for this species' }}
           </div>
 
           <div class="field">

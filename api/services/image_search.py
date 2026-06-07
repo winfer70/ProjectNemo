@@ -7,8 +7,39 @@ import httpx
 logger = logging.getLogger("nemo.image_search")
 
 WIKI_SUMMARY = "https://en.wikipedia.org/api/rest_v1/page/summary/{}"
-COMMONS_SEARCH = "https://commons.wikimedia.org/w/api.php"
+COMMONS_API = "https://commons.wikimedia.org/w/api.php"
 HEADERS = {"User-Agent": "ProjectNemo/1.0"}
+
+
+async def _commons_images(client: httpx.AsyncClient, query: str) -> list[dict]:
+    images: list[dict] = []
+    try:
+        search_resp = await client.get(COMMONS_API, headers=HEADERS, params={
+            "action": "query", "list": "search", "srsearch": query,
+            "srnamespace": 6, "format": "json", "srlimit": 8,
+        })
+        if search_resp.status_code != 200:
+            return images
+        hits = search_resp.json().get("query", {}).get("search", [])
+        titles_param = "|".join(h["title"] for h in hits[:6])
+        if not titles_param:
+            return images
+        info_resp = await client.get(COMMONS_API, headers=HEADERS, params={
+            "action": "query", "titles": titles_param,
+            "prop": "imageinfo", "iiprop": "url|thumburl",
+            "iiurlwidth": 400, "format": "json",
+        })
+        if info_resp.status_code == 200:
+            pages = info_resp.json().get("query", {}).get("pages", {})
+            for page in pages.values():
+                info = (page.get("imageinfo") or [{}])[0]
+                url = info.get("url", "")
+                thumb = info.get("thumburl") or url
+                if url:
+                    images.append({"url": url, "source": "commons", "thumb": thumb})
+    except Exception as exc:
+        logger.debug("Wikimedia Commons search failed for %r: %s", query, exc)
+    return images
 
 
 async def search_species(query: str, species_type: str) -> dict:
@@ -21,7 +52,7 @@ async def search_species(query: str, species_type: str) -> dict:
     encoded = urllib.parse.quote(query.replace(" ", "_"))
 
     async with httpx.AsyncClient(timeout=10.0) as client:
-        # 1. Wikipedia REST summary (fast, has thumbnail for well-known species)
+        # 1. Wikipedia REST summary
         try:
             resp = await client.get(WIKI_SUMMARY.format(encoded), headers=HEADERS)
             if resp.status_code == 200:
@@ -37,35 +68,19 @@ async def search_species(query: str, species_type: str) -> dict:
         except Exception as exc:
             logger.debug("Wikipedia summary failed for %r: %s", query, exc)
 
-        # 2. Wikimedia Commons — works for species even when Wikipedia has no thumbnail
+        # 2. Wikimedia Commons — try exact species name, then genus fallback
         if len(images) < 5:
-            try:
-                # Search for image files matching the query
-                search_resp = await client.get(COMMONS_SEARCH, headers=HEADERS, params={
-                    "action": "query", "list": "search", "srsearch": query,
-                    "srnamespace": 6, "format": "json", "srlimit": 8,
-                })
-                if search_resp.status_code == 200:
-                    hits = search_resp.json().get("query", {}).get("search", [])
-                    titles_param = "|".join(h["title"] for h in hits[:6])
-                    if titles_param:
-                        info_resp = await client.get(COMMONS_SEARCH, headers=HEADERS, params={
-                            "action": "query", "titles": titles_param,
-                            "prop": "imageinfo", "iiprop": "url|thumburl",
-                            "iiurlwidth": 400, "format": "json",
-                        })
-                        if info_resp.status_code == 200:
-                            pages = info_resp.json().get("query", {}).get("pages", {})
-                            for page in pages.values():
-                                info = (page.get("imageinfo") or [{}])[0]
-                                url = info.get("url", "")
-                                thumb = info.get("thumburl") or url
-                                if url and not any(i["url"] == url for i in images):
-                                    images.append({"url": url, "source": "commons", "thumb": thumb})
-                                    if len(images) >= 6:
-                                        break
-            except Exception as exc:
-                logger.debug("Wikimedia Commons search failed for %r: %s", query, exc)
+            commons = await _commons_images(client, query)
+            # If exact species returns nothing, try genus (first word) as fallback
+            if not commons:
+                parts = query.split()
+                if len(parts) >= 2:
+                    commons = await _commons_images(client, parts[0])
+            for img in commons:
+                if not any(i["url"] == img["url"] for i in images):
+                    images.append(img)
+                    if len(images) >= 6:
+                        break
 
     return {
         "query": query,
