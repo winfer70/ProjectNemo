@@ -147,7 +147,7 @@
         </div>
 
         <!-- Modal body -->
-        <div style="padding:16px;flex:1 1 0;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain">
+        <div style="padding:16px;overflow-y:scroll;-webkit-overflow-scrolling:touch;overscroll-behavior:contain">
           <!-- Thumb + kind segmented + image search -->
           <div class="row" style="gap:14px;margin-bottom:16px;align-items:flex-start">
             <div class="ls-thumb" style="width:72px;height:72px;flex-shrink:0">
