@@ -34,7 +34,7 @@ class Settings(BaseSettings):
     esphome_ph_entity: str = "sensor.nemo_sensor_ph"
 
     ollama_url: str = "http://10.0.0.101:11434"
-    searxng_url: str = "http://10.0.0.101:8080"
+    searxng_url: str = "http://10.0.0.101:8888"
 
     api_secret_key: str = "dev_secret"
     log_level: str = "info"

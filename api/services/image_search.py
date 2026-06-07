@@ -14,6 +14,7 @@ from config import settings
 logger = logging.getLogger("nemo.image_search")
 
 WIKI_API = "https://en.wikipedia.org/api/rest_v1/page/summary/{}"
+WIKI_IMAGES_API = "https://en.wikipedia.org/w/api.php"
 
 
 async def search_species(query: str, species_type: str) -> dict:
@@ -25,11 +26,12 @@ async def search_species(query: str, species_type: str) -> dict:
 
     encoded = urllib.parse.quote(query.replace(" ", "_"))
     wiki_url_req = WIKI_API.format(encoded)
+    headers = {"User-Agent": "ProjectNemo/1.0"}
 
     async with httpx.AsyncClient(timeout=8.0) as client:
         # 1. Wikipedia summary
         try:
-            resp = await client.get(wiki_url_req, headers={"User-Agent": "ProjectNemo/1.0"})
+            resp = await client.get(wiki_url_req, headers=headers)
             if resp.status_code == 200:
                 data = resp.json()
                 wiki_extract = data.get("extract", "")[:500]
@@ -43,6 +45,23 @@ async def search_species(query: str, species_type: str) -> dict:
                 scientific_name = query
         except Exception as exc:
             logger.debug("Wikipedia lookup failed for %r: %s", query, exc)
+
+        # 1b. Wikipedia pageimages fallback when summary had no thumbnail
+        if not images:
+            try:
+                params = {
+                    "action": "query", "format": "json", "titles": query,
+                    "prop": "pageimages", "pithumbsize": 400, "pilimit": 3,
+                }
+                resp = await client.get(WIKI_IMAGES_API, params=params, headers=headers)
+                if resp.status_code == 200:
+                    pages = resp.json().get("query", {}).get("pages", {})
+                    for page in pages.values():
+                        thumb = page.get("thumbnail", {})
+                        if thumb.get("source"):
+                            images.append({"url": thumb["source"], "source": "wikipedia", "thumb": thumb["source"]})
+            except Exception as exc:
+                logger.debug("Wikipedia pageimages fallback failed for %r: %s", query, exc)
 
         # 2. SearXNG image search
         if settings.searxng_url:
