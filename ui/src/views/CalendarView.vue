@@ -192,7 +192,7 @@
         </div>
 
         <!-- Modal body -->
-        <div style="padding:16px;overflow-y:auto;flex:1;-webkit-overflow-scrolling:touch;touch-action:pan-y">
+        <div style="padding:16px;overflow-y:auto;flex:1 1 0;min-height:0;-webkit-overflow-scrolling:touch;overscroll-behavior:contain">
           <div class="field">
             <label>{{ locale === 'pl' ? 'Nazwa (PL)' : 'Title (PL)' }}</label>
             <input class="input" v-model="formPl" autofocus placeholder="Wymiana wody…">

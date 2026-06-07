@@ -130,7 +130,7 @@
         </div>
 
         <!-- Modal body -->
-        <div style="padding:16px;overflow-y:auto;flex:1;-webkit-overflow-scrolling:touch;touch-action:pan-y">
+        <div style="padding:16px;overflow-y:auto;flex:1 1 0;min-height:0;-webkit-overflow-scrolling:touch;overscroll-behavior:contain">
 
           <!-- Camera + detecting phase -->
           <template v-if="scanPhase !== 'confirm'">
