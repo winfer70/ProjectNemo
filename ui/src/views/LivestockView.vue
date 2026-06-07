@@ -147,7 +147,7 @@
         </div>
 
         <!-- Modal body -->
-        <div style="padding:16px;overflow-y:auto;flex:1">
+        <div style="padding:16px;flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;touch-action:pan-y">
           <!-- Thumb + kind segmented + image search -->
           <div class="row" style="gap:14px;margin-bottom:16px;align-items:flex-start">
             <div class="ls-thumb" style="width:72px;height:72px;flex-shrink:0">
@@ -175,11 +175,14 @@
           <!-- Image search results -->
           <div v-if="obsadaStore.searchResults?.images?.length" style="margin-bottom:16px">
             <div class="sec-lab" style="padding-bottom:6px">{{ locale === 'pl' ? 'Wyniki' : 'Results' }}</div>
-            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+            <div v-if="obsadaStore.searchResults.is_genus_fallback" class="muted" style="font-size:11px;margin-bottom:6px;text-align:center">
+              {{ locale === 'pl' ? 'Brak zdjęć gatunku — pokazuję podobne z rodzaju' : 'No species photos — showing similar from genus' }}
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px">
               <div
                 v-for="img in obsadaStore.searchResults.images"
                 :key="img.url"
-                style="aspect-ratio:1;border-radius:8px;overflow:hidden;cursor:pointer;border:2px solid transparent"
+                style="aspect-ratio:1;border-radius:6px;overflow:hidden;cursor:pointer;border:2px solid transparent"
                 :style="{ borderColor: lsFormImg === img.url ? 'var(--accent)' : 'transparent' }"
                 @click="lsFormImg = img.url"
               >

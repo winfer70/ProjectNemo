@@ -69,6 +69,7 @@ async def search_species(query: str, species_type: str) -> dict:
             logger.debug("Wikipedia summary failed for %r: %s", query, exc)
 
         # 2. Wikimedia Commons — try exact species name, then genus fallback
+        is_genus_fallback = False
         if len(images) < 5:
             commons = await _commons_images(client, query)
             # If exact species returns nothing, try genus (first word) as fallback
@@ -76,6 +77,8 @@ async def search_species(query: str, species_type: str) -> dict:
                 parts = query.split()
                 if len(parts) >= 2:
                     commons = await _commons_images(client, parts[0])
+                    if commons:
+                        is_genus_fallback = True
             for img in commons:
                 if not any(i["url"] == img["url"] for i in images):
                     images.append(img)
@@ -89,4 +92,5 @@ async def search_species(query: str, species_type: str) -> dict:
         "wiki_extract": wiki_extract,
         "wiki_url": wiki_url,
         "images": images,
+        "is_genus_fallback": is_genus_fallback,
     }
