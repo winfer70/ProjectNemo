@@ -303,6 +303,7 @@ class ImageSearchResult(BaseModel):
     wiki_extract: str | None = None
     wiki_url: str | None = None
     images: list[ImageResult] = []
+    is_genus_fallback: bool = False
 
 
 # ── Calendar ──────────────────────────────────────────────────────────────────
