@@ -1,4 +1,4 @@
-"""Maintenance tasks — list, steps, complete with checkboxes."""
+"""Maintenance tasks — list, start, complete with checkboxes."""
 from datetime import datetime, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -8,7 +8,7 @@ from sqlalchemy.orm import selectinload
 
 from database import get_db
 from models.orm import MaintenanceLog, MaintenanceTask, Supply
-from models.schemas import MaintenanceCompleteRequest, MaintenanceTaskOut
+from models.schemas import MaintenanceCompleteRequest, MaintenanceStartRequest, MaintenanceTaskOut
 from services.n8n_client import n8n_client
 from services.websocket_manager import broadcast_change
 
@@ -33,6 +33,8 @@ def _to_out(task: MaintenanceTask) -> MaintenanceTaskOut:
         days_until=_days_until(task.next_due),
         steps=task.steps,
         required_parts=task.required_parts,
+        started_at=task.started_at,
+        affects_entity=task.affects_entity,
     )
 
 
@@ -56,6 +58,24 @@ async def get_steps(task_id: int, db: AsyncSession = Depends(get_db)):
     }
 
 
+@router.post("/{task_id}/start")
+async def start_maintenance(
+    task_id: int,
+    body: MaintenanceStartRequest,
+    db: AsyncSession = Depends(get_db),
+):
+    """Mark task as in-progress. Suppresses device-off alerts for affects_entity."""
+    task = await db.get(MaintenanceTask, task_id)
+    if not task:
+        raise HTTPException(404, "Task not found")
+    task.started_at = datetime.utcnow()
+    if body.affects_entity:
+        task.affects_entity = body.affects_entity
+    await db.commit()
+    await broadcast_change("maintenance")
+    return {"ok": True}
+
+
 @router.post("/{task_id}/complete")
 async def complete_maintenance(
     task_id: int,
@@ -69,8 +89,8 @@ async def complete_maintenance(
     now = datetime.utcnow()
     task.last_completed = now
     task.next_due = now + timedelta(days=task.interval_days)
+    task.started_at = None  # clear in-progress state
 
-    # Decrement supply stock for replaced parts
     for part in body.parts_replaced:
         if sid := part.get("supply_id"):
             supply = await db.get(Supply, sid)

@@ -49,12 +49,27 @@ class HAClient:
             )
             r.raise_for_status()
 
+    async def turn_on_entity(self, entity_id: str):
+        domain = entity_id.split(".")[0]
+        await self.call_service(domain, "turn_on", {"entity_id": entity_id})
+
+    async def turn_off_entity(self, entity_id: str):
+        domain = entity_id.split(".")[0]
+        await self.call_service(domain, "turn_off", {"entity_id": entity_id})
+
+    async def pause_devices_for_feeding(self, entity_ids: list[str]):
+        """Turn off multiple devices for feeding mode."""
+        for eid in entity_ids:
+            await self.turn_off_entity(eid)
+
+    async def resume_devices(self, entity_ids: list[str]):
+        """Turn on devices after feeding pause ends."""
+        for eid in entity_ids:
+            await self.turn_on_entity(eid)
+
     async def pause_filter_for_feeding(self):
-        """Turn filter off; HA automation restarts it after 10 min."""
-        await self.call_service(
-            "switch", "turn_off",
-            {"entity_id": settings.tapo_filter_entity},
-        )
+        """Legacy: turn off filter only."""
+        await self.turn_off_entity(settings.tapo_filter_entity)
 
     async def set_fluval_channels(self, r: int, g: int, b: int, w: int, ch5: int = 0):
         """Broadcast Fluval RGBW channel values to the tablet BLE gateway."""

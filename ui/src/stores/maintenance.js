@@ -10,10 +10,18 @@ export const useMaintenanceStore = defineStore('maintenance', () => {
     tasks.value = r.data
   }
 
-  async function completeTask(taskId, partsReplaced, notes) {
-    await axios.post(`/api/maintenance/${taskId}/complete`, { parts_replaced: partsReplaced, notes })
+  async function startTask(taskId, affectsEntity = null) {
+    await axios.post(`/api/maintenance/${taskId}/start`, { affects_entity: affectsEntity })
     await fetchTasks()
   }
 
-  return { tasks, fetchTasks, completeTask }
+  async function completeTask(taskId, partsReplaced = [], notes = null) {
+    await axios.post(`/api/maintenance/${taskId}/complete`, {
+      parts_replaced: partsReplaced,
+      notes,
+    })
+    await fetchTasks()
+  }
+
+  return { tasks, fetchTasks, startTask, completeTask }
 })

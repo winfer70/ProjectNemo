@@ -1,74 +1,163 @@
 <template>
-  <div class="app-shell">
-    <!-- Header -->
-    <header class="app-header">
-      <span style="font-weight:700;font-size:15px;">🐟 PROJECT NEMO</span>
-      <div style="display:flex;align-items:center;gap:12px;">
-        <span style="font-size:12px;color:var(--text-muted);">{{ currentTime }}</span>
-        <div class="lang-toggle" @click="toggleLocale">
-          <span :class="{ active: locale === 'en' }">EN</span>
-          <span style="color:var(--border)"> | </span>
-          <span :class="{ active: locale === 'pl' }">PL</span>
+  <div class="nemo" :class="{ tablet: isTablet }" ref="rootRef">
+    <template v-if="!isTablet">
+      <header class="hdr">
+        <div class="hdr-brand">
+          <span class="fish">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M16 12c0 0 3-4 6-4-1 2-1 6 0 8-3 0-6-4-6-4z"/>
+              <path d="M16 12c-3-4-9-4-12 0 3 4 9 4 12 0z"/>
+              <circle cx="7" cy="11" r="0.6" fill="currentColor" stroke="none"/>
+            </svg>
+          </span>
+          PROJECT NEMO
         </div>
+        <div class="hdr-clock">{{ clock }}</div>
+        <div class="hdr-locale">
+          <button :class="{ on: locale === 'en' }" @click="setLocale('en')">EN</button>
+          <button :class="{ on: locale === 'pl' }" @click="setLocale('pl')">PL</button>
+        </div>
+      </header>
+      <main class="scroll" ref="scrollRef" @scroll="onScroll">
+        <ScheduleView v-if="activeTab === 'schedule'" />
+        <LiveView v-if="activeTab === 'live'" />
+        <WaterTestsView v-if="activeTab === 'tests'" />
+        <CalendarView v-if="activeTab === 'calendar'" />
+        <LivestockView v-if="activeTab === 'livestock'" />
+      </main>
+      <div v-if="toast" class="toast-msg">{{ toast }}</div>
+      <nav class="nav" :class="{ hidden: navHidden }">
+        <button :class="{ on: activeTab === 'schedule' }" @click="goTab('schedule')">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4.5" width="18" height="16" rx="2.5"/>
+            <path d="M3 9h18"/>
+            <path d="M8 2.5v4"/>
+            <path d="M16 2.5v4"/>
+            <path d="M8.5 14.5l2.2 2.2 4-4.4"/>
+          </svg>
+          <span class="nlab">{{ $t('nav.schedule') }}</span>
+        </button>
+        <button :class="{ on: activeTab === 'live' }" @click="goTab('live')">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 12h3.5l2-6 4 12 2.5-6H21"/>
+          </svg>
+          <span class="nlab">{{ $t('nav.live') }}</span>
+        </button>
+        <button :class="{ on: activeTab === 'tests' }" @click="goTab('tests')">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z"/>
+          </svg>
+          <span class="nlab">{{ $t('nav.tests') }}</span>
+        </button>
+        <button :class="{ on: activeTab === 'calendar' }" @click="goTab('calendar')">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4.5" width="18" height="16" rx="2.5"/>
+            <path d="M3 9.5h18"/>
+            <path d="M8 2.5v4"/>
+            <path d="M16 2.5v4"/>
+          </svg>
+          <span class="nlab">{{ $t('nav.calendar') }}</span>
+        </button>
+        <button :class="{ on: activeTab === 'livestock' }" @click="goTab('livestock')">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M16 12c0 0 3-4 6-4-1 2-1 6 0 8-3 0-6-4-6-4z"/>
+            <path d="M16 12c-3-4-9-4-12 0 3 4 9 4 12 0z"/>
+            <circle cx="7" cy="11" r="0.6" fill="currentColor" stroke="none"/>
+          </svg>
+          <span class="nlab">{{ $t('nav.livestock') }}</span>
+        </button>
+      </nav>
+    </template>
+
+    <template v-else>
+      <aside class="side">
+        <div class="s-brand">
+          <span class="fish">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M16 12c0 0 3-4 6-4-1 2-1 6 0 8-3 0-6-4-6-4z"/>
+              <path d="M16 12c-3-4-9-4-12 0 3 4 9 4 12 0z"/>
+              <circle cx="7" cy="11" r="0.6" fill="currentColor" stroke="none"/>
+            </svg>
+          </span>
+          PROJECT NEMO
+        </div>
+        <div class="s-clock">
+          <div class="c">{{ clock }}</div>
+          <div class="s-date">{{ fullDate }}</div>
+        </div>
+        <div class="s-nav">
+          <button class="s-item" :class="{ on: activeTab === 'schedule' }" @click="goTab('schedule')">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4.5" width="18" height="16" rx="2.5"/>
+              <path d="M3 9h18"/>
+              <path d="M8 2.5v4"/>
+              <path d="M16 2.5v4"/>
+              <path d="M8.5 14.5l2.2 2.2 4-4.4"/>
+            </svg>
+            <span>{{ $t('nav.schedule') }}</span>
+          </button>
+          <button class="s-item" :class="{ on: activeTab === 'live' }" @click="goTab('live')">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 12h3.5l2-6 4 12 2.5-6H21"/>
+            </svg>
+            <span>{{ $t('nav.live') }}</span>
+          </button>
+          <button class="s-item" :class="{ on: activeTab === 'tests' }" @click="goTab('tests')">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z"/>
+            </svg>
+            <span>{{ $t('nav.tests') }}</span>
+          </button>
+          <button class="s-item" :class="{ on: activeTab === 'calendar' }" @click="goTab('calendar')">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4.5" width="18" height="16" rx="2.5"/>
+              <path d="M3 9.5h18"/>
+              <path d="M8 2.5v4"/>
+              <path d="M16 2.5v4"/>
+            </svg>
+            <span>{{ $t('nav.calendar') }}</span>
+          </button>
+          <button class="s-item" :class="{ on: activeTab === 'livestock' }" @click="goTab('livestock')">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M16 12c0 0 3-4 6-4-1 2-1 6 0 8-3 0-6-4-6-4z"/>
+              <path d="M16 12c-3-4-9-4-12 0 3 4 9 4 12 0z"/>
+              <circle cx="7" cy="11" r="0.6" fill="currentColor" stroke="none"/>
+            </svg>
+            <span>{{ $t('nav.livestock') }}</span>
+          </button>
+        </div>
+        <div class="s-foot">
+          <div class="s-foot-info">
+            <span class="lab">{{ locale === 'pl' ? 'Serwer' : 'Server' }}</span>
+            <span class="chip" style="color: var(--success)">
+              <span class="dot on"></span>
+              REDACTED-HOST · {{ locale === 'pl' ? 'połączony' : 'connected' }}
+            </span>
+          </div>
+          <div class="s-foot-locale">
+            <div class="hdr-locale">
+              <button :class="{ on: locale === 'en' }" @click="setLocale('en')">EN</button>
+              <button :class="{ on: locale === 'pl' }" @click="setLocale('pl')">PL</button>
+            </div>
+          </div>
+        </div>
+      </aside>
+      <div class="main-pane">
+        <main class="scroll" ref="scrollRef" @scroll="onScroll">
+          <ScheduleView v-if="activeTab === 'schedule'" />
+          <LiveView v-if="activeTab === 'live'" />
+          <WaterTestsView v-if="activeTab === 'tests'" />
+          <CalendarView v-if="activeTab === 'calendar'" />
+          <LivestockView v-if="activeTab === 'livestock'" />
+        </main>
+        <div v-if="toast" class="toast-msg">{{ toast }}</div>
       </div>
-    </header>
-
-    <!-- Main content -->
-    <main class="app-content">
-      <ScheduleView v-if="activeTab === 'schedule'" />
-      <LiveView v-if="activeTab === 'live'" />
-      <WaterTestsView v-if="activeTab === 'tests'" />
-      <CalendarView v-if="activeTab === 'calendar'" />
-      <LivestockView v-if="activeTab === 'livestock'" />
-    </main>
-
-    <!-- Bottom tab bar -->
-    <nav class="tab-bar">
-      <button class="tab-btn" :class="{ active: activeTab === 'schedule' }" @click="activeTab = 'schedule'">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/>
-          <line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
-        </svg>
-        {{ $t('nav.schedule') }}
-      </button>
-      <button class="tab-btn" :class="{ active: activeTab === 'live' }" @click="activeTab = 'live'">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-        </svg>
-        {{ $t('nav.live') }}
-      </button>
-      <button class="tab-btn" :class="{ active: activeTab === 'tests' }" @click="activeTab = 'tests'">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"/>
-        </svg>
-        {{ $t('nav.tests') }}
-      </button>
-      <button class="tab-btn" :class="{ active: activeTab === 'calendar' }" @click="activeTab = 'calendar'">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <rect x="3" y="4" width="18" height="18" rx="2"/>
-          <line x1="16" y1="2" x2="16" y2="6"/>
-          <line x1="8" y1="2" x2="8" y2="6"/>
-          <line x1="3" y1="10" x2="21" y2="10"/>
-          <line x1="8" y1="14" x2="8" y2="14"/>
-          <line x1="12" y1="14" x2="12" y2="14"/>
-          <line x1="16" y1="14" x2="16" y2="14"/>
-        </svg>
-        {{ $t('nav.calendar') }}
-      </button>
-      <button class="tab-btn" :class="{ active: activeTab === 'livestock' }" @click="activeTab = 'livestock'">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M2 8L7 12L2 16"/>
-          <path d="M7 12C7 12 11 6 17 6C20 6 22 9 22 12C22 15 20 18 17 18C11 18 7 12 7 12Z"/>
-          <circle cx="17" cy="11" r="1" fill="currentColor" stroke="none"/>
-        </svg>
-        {{ $t('nav.livestock') }}
-      </button>
-    </nav>
+    </template>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, provide } from 'vue'
 import { useI18n } from 'vue-i18n'
 import ScheduleView from './views/ScheduleView.vue'
 import LiveView from './views/LiveView.vue'
@@ -82,24 +171,79 @@ import { useScheduleStore } from './stores/schedule'
 import { useCalendarStore } from './stores/calendar'
 
 const { locale } = useI18n()
+
 const sensorsStore = useSensorsStore()
 const waterTestsStore = useWaterTestsStore()
 const maintenanceStore = useMaintenanceStore()
 const scheduleStore = useScheduleStore()
 const calendarStore = useCalendarStore()
-const activeTab = ref('calendar')
 
+const rootRef = ref(null)
+const scrollRef = ref(null)
+const activeTab = ref('schedule')
+const navHidden = ref(false)
+const isTablet = ref(false)
+const toast = ref(null)
 const now = ref(new Date())
-let clockTimer
+const lastScroll = ref(0)
+
+let clockTimer = null
+let toastTimer = null
+let ro = null
+
+function showToast(msg) {
+  toast.value = msg
+  clearTimeout(toastTimer)
+  toastTimer = setTimeout(() => { toast.value = null }, 1700)
+}
+
+provide('showToast', showToast)
+
+function setLocale(lang) {
+  locale.value = lang
+  localStorage.setItem('nemo_locale', lang)
+}
+
+const clock = computed(() => {
+  const h = String(now.value.getHours()).padStart(2, '0')
+  const m = String(now.value.getMinutes()).padStart(2, '0')
+  return `${h}:${m}`
+})
+
+const fullDate = computed(() => {
+  const d = now.value
+  if (locale.value === 'pl') {
+    const days = ['Niedziela', 'Poniedziałek', 'Wtorek', 'Środa', 'Czwartek', 'Piątek', 'Sobota']
+    const months = ['Stycznia', 'Lutego', 'Marca', 'Kwietnia', 'Maja', 'Czerwca', 'Lipca', 'Sierpnia', 'Września', 'Października', 'Listopada', 'Grudnia']
+    return `${days[d.getDay()]}, ${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`
+  }
+  const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+  const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+  return `${days[d.getDay()]}, ${months[d.getMonth()]} ${d.getDate()} ${d.getFullYear()}`
+})
+
+function onScroll(e) {
+  const y = e.target.scrollTop
+  if (y > lastScroll.value + 6 && y > 40) navHidden.value = true
+  else if (y < lastScroll.value - 6) navHidden.value = false
+  lastScroll.value = y
+}
+
+function goTab(id) {
+  activeTab.value = id
+  if (scrollRef.value) scrollRef.value.scrollTop = 0
+  navHidden.value = false
+}
 
 const _refreshMap = {
   water_tests: () => { waterTestsStore.fetchLatest(); waterTestsStore.fetchSessions() },
   maintenance: () => maintenanceStore.fetchTasks(),
-  schedule:    () => { scheduleStore.fetchFeedings(); scheduleStore.fetchHistory(); scheduleStore.fetchDosing() },
-  supplies:    () => { sensorsStore.fetchSupplies(); scheduleStore.fetchDosing() },
-  dosing:      () => { scheduleStore.fetchDosing(); sensorsStore.fetchSupplies() },
-  calendar:    () => calendarStore.refetchCurrent(),
+  schedule: () => { scheduleStore.fetchFeedings(); scheduleStore.fetchHistory(); scheduleStore.fetchDosing() },
+  supplies: () => { sensorsStore.fetchSupplies(); scheduleStore.fetchDosing() },
+  dosing: () => { scheduleStore.fetchDosing(); sensorsStore.fetchSupplies() },
+  calendar: () => { calendarStore.refetchCurrent(); calendarStore.fetchToday() },
 }
+
 function _handleInvalidate(evt) {
   const fn = _refreshMap[evt.detail?.domain]
   if (fn) fn()
@@ -109,21 +253,21 @@ onMounted(() => {
   clockTimer = setInterval(() => { now.value = new Date() }, 1000)
   sensorsStore.connectWs()
   window.addEventListener('nemo:invalidate', _handleInvalidate)
+  if (rootRef.value) {
+    const measure = () => {
+      if (rootRef.value) isTablet.value = rootRef.value.offsetWidth >= 720
+    }
+    measure()
+    ro = new ResizeObserver(measure)
+    ro.observe(rootRef.value)
+  }
 })
+
 onUnmounted(() => {
   clearInterval(clockTimer)
+  clearTimeout(toastTimer)
   sensorsStore.disconnectWs()
   window.removeEventListener('nemo:invalidate', _handleInvalidate)
+  if (ro) ro.disconnect()
 })
-
-const currentTime = computed(() => {
-  return now.value.toLocaleTimeString(locale.value === 'pl' ? 'pl-PL' : 'en-IE', {
-    hour: '2-digit', minute: '2-digit',
-  })
-})
-
-function toggleLocale() {
-  locale.value = locale.value === 'en' ? 'pl' : 'en'
-  localStorage.setItem('nemo_locale', locale.value)
-}
 </script>

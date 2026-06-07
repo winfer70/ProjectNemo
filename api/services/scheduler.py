@@ -1,12 +1,12 @@
-"""APScheduler jobs — daily summary, overdue maintenance/test checks."""
+"""APScheduler jobs — daily summary, overdue checks, feeding pause auto-resume."""
 import logging
 from datetime import datetime, timedelta, timezone
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from sqlalchemy import select
+from sqlalchemy import select, and_
 
 from database import AsyncSessionLocal
-from models.orm import MaintenanceTask, Supply, WaterTestSession
+from models.orm import FeedingPause, MaintenanceTask, Supply, WaterTestSession
 from services.ha_client import ha_client
 from services.n8n_client import n8n_client
 from services.influx_client import influx_client
@@ -54,7 +54,6 @@ async def daily_summary():
 async def check_overdue():
     now = datetime.now(timezone.utc)
     async with AsyncSessionLocal() as db:
-        # Maintenance due / overdue
         result = await db.execute(select(MaintenanceTask))
         for task in result.scalars().all():
             if task.next_due is None:
@@ -73,7 +72,6 @@ async def check_overdue():
                     f"🔧 {task.name_pl} za 7 dni. Sprawdź części:\n{parts_list or '(brak)'}",
                 )
 
-        # Water test overdue (>7 days since last session)
         last = await db.execute(
             select(WaterTestSession).order_by(WaterTestSession.tested_at.desc()).limit(1)
         )
@@ -87,8 +85,33 @@ async def check_overdue():
                     f"🧪 Test wody zaległy — ostatni test {days_ago} dni temu",
                 )
 
-        # Supply warnings
         supply_result = await db.execute(select(Supply))
         for supply in supply_result.scalars().all():
             if supply.current_amount <= supply.min_threshold:
                 await n8n_client.supply_low(supply)
+
+
+@scheduler.scheduled_job("interval", seconds=30)
+async def resume_feeding_pauses():
+    """Auto-resume devices whose feeding pause timer has expired."""
+    now = datetime.now(timezone.utc)
+    async with AsyncSessionLocal() as db:
+        result = await db.execute(
+            select(FeedingPause).where(
+                and_(
+                    FeedingPause.cancelled_at.is_(None),
+                    FeedingPause.resumed_at.is_(None),
+                    FeedingPause.resume_at <= now,
+                )
+            )
+        )
+        pauses = result.scalars().all()
+        for pause in pauses:
+            try:
+                await ha_client.resume_devices(pause.paused_entities)
+                logger.info("Auto-resumed feeding pause %d: %s", pause.id, pause.paused_entities)
+            except Exception as exc:
+                logger.warning("Failed to resume devices for pause %d: %s", pause.id, exc)
+            pause.resumed_at = now
+        if pauses:
+            await db.commit()

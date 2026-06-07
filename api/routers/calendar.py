@@ -1,6 +1,6 @@
 """Calendar router — recurring aquarium care tasks with per-day completion tracking."""
 import calendar as cal_lib
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
@@ -9,12 +9,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from database import get_db
 from models.orm import CalendarTask, CalendarCompletion
+from models.schemas import CalendarTaskCreate, CalendarTaskUpdate
 from services.websocket_manager import broadcast_change
 
 router = APIRouter(prefix="/api/calendar", tags=["calendar"])
 
-
-# ── helpers ───────────────────────────────────────────────────────────────────
 
 def _task_applies(task: CalendarTask, d: date) -> bool:
     """Return True if this task is scheduled on the given date."""
@@ -27,6 +26,8 @@ def _task_applies(task: CalendarTask, d: date) -> bool:
             return False
     if task.recurrence_type == "daily":
         return True
+    if task.recurrence_type == "once":
+        return d == start
     if task.recurrence_type == "every_n_days":
         delta = (d - start).days
         return (delta % (task.interval_days or 1)) == 0
@@ -35,12 +36,12 @@ def _task_applies(task: CalendarTask, d: date) -> bool:
     return False
 
 
-# ── endpoints ─────────────────────────────────────────────────────────────────
+# ── Task CRUD ──────────────────────────────────────────────────────────────────
 
 @router.get("/tasks")
 async def list_tasks(db: AsyncSession = Depends(get_db)):
     """List all active calendar tasks."""
-    result = await db.execute(select(CalendarTask).where(CalendarTask.active == True))
+    result = await db.execute(select(CalendarTask).where(CalendarTask.active == True))  # noqa: E712
     tasks = result.scalars().all()
     return [
         {
@@ -60,16 +61,135 @@ async def list_tasks(db: AsyncSession = Depends(get_db)):
     ]
 
 
+@router.post("/tasks", status_code=201)
+async def create_task(data: CalendarTaskCreate, db: AsyncSession = Depends(get_db)):
+    task = CalendarTask(
+        name=data.name,
+        name_pl=data.name_pl,
+        color=data.color,
+        recurrence_type=data.recurrence_type,
+        interval_days=data.interval_days,
+        start_date=data.start_date,
+        end_date=data.end_date,
+        amount=data.amount,
+        notes_pl=data.notes_pl,
+        active=True,
+    )
+    task.recurrence_days = data.recurrence_days
+    db.add(task)
+    await db.commit()
+    await db.refresh(task)
+    await broadcast_change("calendar")
+    return {"id": task.id, "ok": True}
+
+
+@router.put("/tasks/{task_id}")
+async def update_task(
+    task_id: int,
+    data: CalendarTaskUpdate,
+    db: AsyncSession = Depends(get_db),
+):
+    task = await db.get(CalendarTask, task_id)
+    if not task:
+        raise HTTPException(404, "Task not found")
+    for field, value in data.model_dump(exclude_unset=True).items():
+        if field == "recurrence_days":
+            task.recurrence_days = value
+        else:
+            setattr(task, field, value)
+    await db.commit()
+    await broadcast_change("calendar")
+    return {"ok": True}
+
+
+@router.delete("/tasks/{task_id}")
+async def delete_task(task_id: int, db: AsyncSession = Depends(get_db)):
+    task = await db.get(CalendarTask, task_id)
+    if not task:
+        raise HTTPException(404, "Task not found")
+    task.active = False
+    await db.commit()
+    await broadcast_change("calendar")
+    return {"ok": True}
+
+
+# ── Today view ─────────────────────────────────────────────────────────────────
+
+@router.get("/today")
+async def get_today(db: AsyncSession = Depends(get_db)):
+    """Return tasks due today + overdue tasks from last 7 days."""
+    today = date.today()
+    today_str = today.isoformat()
+
+    result = await db.execute(select(CalendarTask).where(CalendarTask.active == True))  # noqa: E712
+    tasks = result.scalars().all()
+
+    comp_result = await db.execute(
+        select(CalendarCompletion).where(CalendarCompletion.date == today_str)
+    )
+    today_completions = {c.task_id for c in comp_result.scalars().all()}
+
+    due = []
+    seen_task_ids = set()
+
+    for t in tasks:
+        if _task_applies(t, today):
+            due.append({
+                "id": t.id,
+                "name": t.name,
+                "name_pl": t.name_pl,
+                "color": t.color,
+                "amount": t.amount,
+                "notes_pl": t.notes_pl,
+                "completed": t.id in today_completions,
+                "date": today_str,
+                "overdue_days": 0,
+            })
+            seen_task_ids.add(t.id)
+
+    for days_ago in range(1, 8):
+        past_date = today - timedelta(days=days_ago)
+        past_str = past_date.isoformat()
+        for t in tasks:
+            if t.id in seen_task_ids:
+                continue
+            if not _task_applies(t, past_date):
+                continue
+            comp_check = await db.execute(
+                select(CalendarCompletion).where(
+                    and_(
+                        CalendarCompletion.task_id == t.id,
+                        CalendarCompletion.date == past_str,
+                    )
+                )
+            )
+            if not comp_check.scalar_one_or_none():
+                due.append({
+                    "id": t.id,
+                    "name": t.name,
+                    "name_pl": t.name_pl,
+                    "color": t.color,
+                    "amount": t.amount,
+                    "notes_pl": t.notes_pl,
+                    "completed": False,
+                    "date": past_str,
+                    "overdue_days": days_ago,
+                })
+                seen_task_ids.add(t.id)
+
+    return {"date": today_str, "tasks": due}
+
+
+# ── Month view ─────────────────────────────────────────────────────────────────
+
 @router.get("/month/{year}/{month}")
 async def get_month(year: int, month: int, db: AsyncSession = Depends(get_db)):
-    """Return all days in the given month with scheduled tasks and completion status."""
     if not (1 <= month <= 12):
         raise HTTPException(400, "Invalid month")
 
-    result = await db.execute(select(CalendarTask).where(CalendarTask.active == True))
+    result = await db.execute(select(CalendarTask).where(CalendarTask.active == True))  # noqa: E712
     tasks = result.scalars().all()
 
-    # Fetch all completions for this month in one query
     prefix = f"{year:04d}-{month:02d}"
     comp_result = await db.execute(
         select(CalendarCompletion).where(CalendarCompletion.date.like(f"{prefix}%"))
@@ -104,12 +224,11 @@ async def get_month(year: int, month: int, db: AsyncSession = Depends(get_db)):
 
 class CompleteRequest(BaseModel):
     task_id: int
-    date: str   # YYYY-MM-DD
+    date: str
 
 
 @router.post("/complete")
 async def toggle_complete(req: CompleteRequest, db: AsyncSession = Depends(get_db)):
-    """Toggle completion of a task on a given date. Returns new completed state."""
     existing = await db.execute(
         select(CalendarCompletion).where(
             and_(

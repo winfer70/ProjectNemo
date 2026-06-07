@@ -10,9 +10,9 @@ from pydantic import BaseModel, ConfigDict
 class SupplyBase(BaseModel):
     name: str
     name_pl: str
-    type: str           # liquid | part
+    type: str
     current_amount: float
-    unit: str           # ml | pcs
+    unit: str
     min_threshold: float = 0
     purchase_link: str | None = None
     notes: str | None = None
@@ -33,7 +33,7 @@ class SupplyOut(SupplyBase):
     model_config = ConfigDict(from_attributes=True)
     id: int
     created_at: datetime
-    low: bool = False   # computed: current_amount <= min_threshold
+    low: bool = False
 
 
 # ── Dosing ────────────────────────────────────────────────────────────────────
@@ -63,6 +63,24 @@ class RestockRequest(BaseModel):
     new_amount: float
 
 
+class DosingTaskCreate(BaseModel):
+    supply_id: int
+    dose_amount: float
+    dose_unit: str = "ml"
+    time_of_day: str | None = None
+    notes: str | None = None
+    notes_pl: str | None = None
+
+
+class DosingTaskUpdate(BaseModel):
+    dose_amount: float | None = None
+    dose_unit: str | None = None
+    time_of_day: str | None = None
+    active: bool | None = None
+    notes: str | None = None
+    notes_pl: str | None = None
+
+
 # ── Maintenance ───────────────────────────────────────────────────────────────
 
 class MaintenanceTaskOut(BaseModel):
@@ -76,11 +94,17 @@ class MaintenanceTaskOut(BaseModel):
     days_until: int | None
     steps: list[dict[str, Any]]
     required_parts: list[dict[str, Any]]
+    started_at: datetime | None = None
+    affects_entity: str | None = None
 
 
 class MaintenanceCompleteRequest(BaseModel):
     parts_replaced: list[dict[str, Any]] = []
     notes: str | None = None
+
+
+class MaintenanceStartRequest(BaseModel):
+    affects_entity: str | None = None
 
 
 # ── Feeding ───────────────────────────────────────────────────────────────────
@@ -106,6 +130,12 @@ class FeedingLogOut(BaseModel):
     timestamp: datetime
     manual: bool
     notes: str | None
+
+
+class FeedingStatusOut(BaseModel):
+    paused: bool
+    resume_in_secs: int | None = None
+    paused_entities: list[str] = []
 
 
 # ── Water Tests ───────────────────────────────────────────────────────────────
@@ -175,14 +205,14 @@ class DeviceOut(BaseModel):
     entity_id: str
     name: str
     name_pl: str
-    state: str           # on | off | unavailable
+    state: str
     watts: float | None
     kwh_today: float | None
-    role: str            # filter | heater | light | air
+    role: str
 
 
 class FluvalChannels(BaseModel):
-    r: int   # 0–100
+    r: int
     g: int
     b: int
     w: int
@@ -197,7 +227,7 @@ class FishCreate(BaseModel):
     latin: str | None = None
     qty: int = 1
     zone: str | None = None
-    status: str = "in_tank"
+    status: str = "planned"
     temp: str | None = None
     notes_pl: str | None = None
     img: str | None = None
@@ -273,3 +303,32 @@ class ImageSearchResult(BaseModel):
     wiki_extract: str | None = None
     wiki_url: str | None = None
     images: list[ImageResult] = []
+
+
+# ── Calendar ──────────────────────────────────────────────────────────────────
+
+class CalendarTaskCreate(BaseModel):
+    name: str
+    name_pl: str
+    color: str = "#00b4d8"
+    recurrence_type: str = "once"
+    interval_days: int | None = None
+    recurrence_days: list[int] = []
+    start_date: str
+    end_date: str | None = None
+    amount: str | None = None
+    notes_pl: str | None = None
+
+
+class CalendarTaskUpdate(BaseModel):
+    name: str | None = None
+    name_pl: str | None = None
+    color: str | None = None
+    recurrence_type: str | None = None
+    interval_days: int | None = None
+    recurrence_days: list[int] | None = None
+    start_date: str | None = None
+    end_date: str | None = None
+    amount: str | None = None
+    notes_pl: str | None = None
+    active: bool | None = None

@@ -1,142 +1,217 @@
 <template>
   <div>
-    <!-- Cycling banners -->
-    <div v-if="waterTestsStore.isCycled()" class="banner banner-ok">
-      🐟 {{ $t('tests.cycled') }}
-    </div>
-    <div v-if="nh3High" class="banner banner-danger">
-      ⚠️ {{ $t('tests.waterChangeRecommended') }}
-    </div>
-
-    <!-- Header row -->
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-      <div style="font-size:12px;color:var(--text-muted);">
-        <span v-if="waterTestsStore.latestSession">
-          {{ $t('tests.lastTest', { days: daysSinceLastTest }) }}
-        </span>
-        <span v-else>{{ $t('tests.noTests') }}</span>
+    <!-- Main tile -->
+    <div class="tile">
+      <div class="tile-hd">
+        <h2>TESTY WODY</h2>
+        <button class="btn btn-sm btn-accent" @click="openScanModal">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 8.5a2 2 0 0 1 2-2h2l1.5-2h7L17 6.5h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-9z" />
+            <circle cx="12" cy="12.5" r="3.5" />
+          </svg>
+          Skanuj
+        </button>
       </div>
-      <button class="btn btn-primary btn-sm" @click="showForm = true">
-        + {{ $t('tests.newSession') }}
-      </button>
-    </div>
+      <hr class="divider" />
 
-    <!-- Latest values grid -->
-    <div class="card">
-      <div class="card-title">{{ $t('tests.title') }}</div>
-      <div class="test-grid">
-        <div v-for="param in manualParams" :key="param.key"
-             class="test-param"
-             :class="{ 'out-of-range': latestReading(param.key)?.out_of_range }">
-          <div class="test-param-name">
-            {{ locale === 'pl' ? param.name_pl : param.name_en }}
-          </div>
-          <div class="test-param-value">
-            {{ latestReading(param.key)?.value ?? '—' }}
-          </div>
-          <div class="test-param-unit">{{ param.unit }}</div>
-          <div class="test-param-age" v-if="waterTestsStore.latestSession">
-            {{ daysSinceLastTest }}d
-          </div>
-          <span class="badge" :class="latestReading(param.key)?.out_of_range ? 'badge-danger' : 'badge-ok'"
-                style="margin-top:4px;">
-            {{ latestReading(param.key)?.out_of_range ? $t('tests.outOfRange') : $t('tests.ok') }}
+      <!-- Empty state -->
+      <div v-if="latestReadings.length === 0" class="empty" style="padding:34px 16px">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 3h6" />
+          <path d="M10 3v6L5 18a2 2 0 0 0 2 3h10a2 2 0 0 0 2-3l-5-9V3" />
+          <path d="M7.5 14h9" />
+        </svg>
+        <span>Brak testów — dodaj pierwszy wynik</span>
+        <button class="btn btn-sm btn-accent" @click="openScanModal">Skanuj</button>
+      </div>
+
+      <!-- Test table -->
+      <template v-else>
+        <div class="tile-body" style="padding-top:12px;padding-bottom:8px">
+          <span class="muted" style="font-size:13px">
+            Ostatni test: <b style="color:var(--text)">{{ lastTestDays }} dni temu</b>
           </span>
-          <div style="font-size:10px;color:var(--text-muted);margin-top:2px;">({{ readTime(param.key) }})</div>
-          <details v-if="latestReading(param.key)?.out_of_range"
-                   style="margin-top:6px;border:1px solid #f59e0b;border-radius:6px;padding:6px 8px;">
-            <summary style="font-size:11px;cursor:pointer;color:#f59e0b;font-weight:600;">
-              {{ $t('tests.advice') }}
-            </summary>
-            <div style="font-size:12px;margin-top:6px;line-height:1.5;color:var(--text);">
-              {{ getRemediation(param, latestReading(param.key)) }}
+        </div>
+
+        <div class="tile-body ptable" style="padding-top:0">
+          <!-- Header row -->
+          <div class="prow" style="padding-bottom:6px">
+            <span class="sec-lab" style="padding:0">Parametr</span>
+            <span class="sec-lab" style="padding:0;text-align:right">Wartość</span>
+            <span class="sec-lab" style="padding:0;text-align:center">Status</span>
+            <span class="sec-lab" style="padding:0;text-align:center">Trend</span>
+          </div>
+
+          <!-- Data rows -->
+          <div v-for="p in latestReadings" :key="p.parameter_key" class="prow">
+            <span class="pp">{{ p.name_pl }}</span>
+            <span class="pv">{{ p.value }}{{ p.unit ? ' ' + p.unit : '' }}</span>
+            <span class="ps" :style="{ color: statusColor(p), justifyContent: 'center' }">
+              <svg v-if="!p.out_of_range" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 12.5l5 5 11-12" />
+              </svg>
+              <svg v-else width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 4l9 15H3l9-15z" />
+                <path d="M12 10v4" />
+                <circle cx="12" cy="16.5" r="0.6" fill="currentColor" stroke="none" />
+              </svg>
+              {{ statusText(p) }}
+            </span>
+            <span class="pt">
+              <span
+                :style="{
+                  color: p.trend === 'up' ? 'var(--warning)' : p.trend === 'down' ? 'var(--accent)' : 'var(--text-muted)',
+                  display: 'inline-flex'
+                }"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <template v-if="p.trend === 'up'">
+                    <path d="M6 18L18 6" />
+                    <path d="M9 6h9v9" />
+                  </template>
+                  <template v-else-if="p.trend === 'down'">
+                    <path d="M6 6l12 12" />
+                    <path d="M18 9v9H9" />
+                  </template>
+                  <template v-else>
+                    <path d="M5 12h13" />
+                    <path d="M13 6l6 6-6 6" />
+                  </template>
+                </svg>
+              </span>
+            </span>
+          </div>
+        </div>
+
+        <hr class="divider" />
+
+        <div class="tile-body" style="padding-top:14px">
+          <div class="row" style="gap:10px">
+            <button class="btn btn-block">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 12a9 9 0 1 0 3-6.7" />
+                <path d="M3 4v4h4" />
+                <path d="M12 8v4l3 2" />
+              </svg>
+              Historia
+            </button>
+            <button class="btn btn-block">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 12h3.5l2-6 4 12 2.5-6H21" />
+              </svg>
+              Cykl zbiornika
+            </button>
+          </div>
+        </div>
+      </template>
+    </div>
+
+    <!-- Scan modal -->
+    <div
+      v-if="scanModal"
+      class="backdrop"
+      style="align-items:stretch;justify-content:center"
+      @click.self="closeScanModal"
+    >
+      <div class="modal full" @click.stop>
+        <!-- Modal header -->
+        <div
+          class="spread"
+          style="padding:16px 16px 14px;border-bottom:1px solid var(--border);flex-shrink:0"
+        >
+          <button class="btn icon-btn btn-ghost" @click="closeScanModal">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M6 6l12 12" />
+              <path d="M18 6L6 18" />
+            </svg>
+          </button>
+          <span style="font-weight:700;font-size:16px">Skanuj</span>
+          <span style="width:32px" />
+        </div>
+
+        <!-- Modal body -->
+        <div style="padding:16px;overflow-y:auto;flex:1">
+
+          <!-- Camera + detecting phase -->
+          <template v-if="scanPhase !== 'confirm'">
+            <div
+              style="aspect-ratio:3/4;border-radius:14px;overflow:hidden;position:relative;border:1px solid var(--border)"
+            >
+              <div class="ph" style="position:absolute;inset:0">podgląd kamery</div>
+              <div
+                style="position:absolute;inset:18% 12%;border:2px dashed rgba(255,255,255,0.4);border-radius:10px"
+              />
+              <div
+                v-if="scanPhase === 'detecting'"
+                style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:rgba(0,0,0,0.45)"
+              >
+                <span style="color:var(--accent)" class="spin">
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 12a8 8 0 1 1-2.3-5.6" />
+                    <path d="M20 4v4h-4" />
+                  </svg>
+                </span>
+                <span style="font-size:13px;font-weight:600">Wykrywanie pasków…</span>
+              </div>
             </div>
-          </details>
-        </div>
-      </div>
-    </div>
 
-    <!-- Session history -->
-    <div class="card" v-if="waterTestsStore.sessions.length">
-      <div class="card-title">{{ $t('tests.history') }}</div>
-      <div v-for="session in waterTestsStore.sessions.slice(0,5)" :key="session.id"
-           style="border-bottom:1px solid var(--border);padding:8px 0;font-size:12px;">
-        <div style="display:flex;justify-content:space-between;">
-          <span>{{ formatDate(session.tested_at) }}</span>
-          <span v-if="session.readings.some(r => r.out_of_range)"
-                class="badge badge-danger">{{ $t('tests.outOfRange') }}</span>
-          <span v-else class="badge badge-ok">{{ $t('tests.ok') }}</span>
-        </div>
-        <div v-if="session.notes" style="color:var(--text-muted);margin-top:2px;">
-          {{ session.notes }}
-        </div>
-      </div>
-    </div>
+            <p class="muted" style="font-size:12.5px;text-align:center;margin:14px 0 18px">
+              Umieść pasek testowy w ramce. CV dopasuje kolory, AI uzupełni braki.
+            </p>
 
-    <!-- New test session modal -->
-    <div v-if="showForm" class="modal-overlay" @click.self="showForm = false">
-      <div class="modal-sheet">
-        <div class="modal-title">{{ $t('tests.newSession') }}</div>
+            <button
+              class="btn btn-accent btn-block btn-lg"
+              :disabled="scanPhase === 'detecting'"
+              @click="startCapture"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 8.5a2 2 0 0 1 2-2h2l1.5-2h7L17 6.5h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-9z" />
+                <circle cx="12" cy="12.5" r="3.5" />
+              </svg>
+              {{ scanPhase === 'detecting' ? 'Analizowanie…' : 'Zrób zdjęcie' }}
+            </button>
+          </template>
 
-        <!-- Strip scan buttons -->
-        <div style="margin-bottom:14px;">
-          <div style="font-size:11px;color:var(--text-muted);background:var(--bg-alt,var(--bg));border:1px solid var(--border);border-radius:6px;padding:7px 9px;margin-bottom:8px;line-height:1.5;">
-            📐 {{ $t('tests.scanTip') }}
-          </div>
-          <input ref="fileInput" type="file" accept="image/*"
-                 style="display:none" @change="handleFileSelected" />
-          <input ref="fileInputAmmonia" type="file" accept="image/*"
-                 style="display:none" @change="handleAmmoniaFileSelected" />
-          <button class="btn btn-secondary" style="width:100%;position:relative;"
-                  :disabled="scanning" @click="fileInput.click()">
-            <span v-if="scanning">⏳ {{ $t('tests.scanning') }}</span>
-            <span v-else>📷 {{ $t('tests.scanStrip') }}</span>
-          </button>
-          <button class="btn btn-secondary" style="width:100%;position:relative;margin-top:6px;"
-                  :disabled="scanningAmmonia" @click="fileInputAmmonia.click()">
-            <span v-if="scanningAmmonia">⏳ {{ $t('tests.scanningAmmonia') }}</span>
-            <span v-else>🟢 {{ $t('tests.scanAmmonia') }}</span>
-          </button>
-          <div v-if="scanError" style="font-size:11px;color:var(--danger);margin-top:4px;">{{ scanError }}</div>
-          <div v-if="scannedKeys.size" style="font-size:11px;color:var(--ok);margin-top:4px;">
-            ✓ {{ $t('tests.scanFilled', { n: scannedKeys.size }) }}
-          </div>
-          <div v-if="ammoniaScanned" style="font-size:11px;color:var(--ok);margin-top:2px;">
-            ✓ {{ $t('tests.scanAmmoniaFilled') }}
-          </div>
-        </div>
+          <!-- Confirm phase -->
+          <template v-else>
+            <div
+              class="banner"
+              style="background:var(--success-12);color:var(--success);margin-bottom:16px;border:1px solid rgba(63,185,80,0.3)"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="9" />
+                <path d="M8 12.2l2.6 2.6L16 9" />
+              </svg>
+              <span>Wykryto parametry — potwierdź wartości</span>
+            </div>
 
-        <div v-for="param in manualParams" :key="param.key" style="margin-bottom:12px;">
-          <label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:4px;">
-            {{ locale === 'pl' ? param.name_pl : param.name_en }} ({{ param.unit }})
-            <span v-if="scannedKeys.has(param.id) && scanOutOfRange[param.id]"
-                  style="color:var(--danger);font-size:10px;margin-left:4px;">⚠ high</span>
-            <span v-else-if="scannedKeys.has(param.id)"
-                  style="color:var(--ok);font-size:10px;margin-left:4px;">✓ scanned</span>
-          </label>
-          <input
-            type="number"
-            step="0.01"
-            v-model.number="formValues[param.id]"
-            :style="`width:100%;background:var(--bg);border:1px solid ${scanOutOfRange[param.id] ? 'var(--danger)' : scannedKeys.has(param.id) ? 'var(--ok)' : 'var(--border)'};border-radius:6px;color:var(--text);padding:8px;font-size:14px;`"
-            :placeholder="paramRange(param)"
-          />
-        </div>
-        <div style="margin-bottom:12px;">
-          <label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:4px;">
-            {{ $t('tests.sessionNotes') }}
-          </label>
-          <textarea v-model="formNotes"
-            style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:8px;font-size:13px;height:60px;resize:none;">
-          </textarea>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-secondary" style="flex:1" @click="showForm = false">
-            {{ $t('tests.cancel') }}
-          </button>
-          <button class="btn btn-primary" style="flex:1" @click="submitSession">
-            {{ $t('tests.save') }}
-          </button>
+            <div v-for="p in manualParams" :key="p.id" class="kv">
+              <span class="k" style="color:var(--text);font-weight:600">{{ p.name_pl }}</span>
+              <span class="v row" style="gap:8px">
+                <input
+                  class="input"
+                  v-model="detectedValues[p.id]"
+                  type="number"
+                  step="0.01"
+                  style="width:76px;padding:6px 10px;text-align:right"
+                />
+                <span class="muted" style="min-width:30px;font-size:12px">{{ p.unit }}</span>
+              </span>
+            </div>
+
+            <button
+              class="btn btn-success btn-block btn-lg"
+              style="margin-top:18px"
+              :disabled="saving"
+              @click="saveScan"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 12.5l5 5 11-12" />
+              </svg>
+              {{ saving ? 'Zapisywanie…' : 'Zapisz' }}
+            </button>
+          </template>
+
         </div>
       </div>
     </div>
@@ -145,214 +220,104 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { useI18n } from 'vue-i18n'
-import { useWaterTestsStore } from '../stores/waterTests'
+import axios from 'axios'
 
-const { locale } = useI18n()
-const waterTestsStore = useWaterTestsStore()
-
-const REMEDIATION = {
-  ph: {
-    high: 'pH > 7.8: Do 30% water change. Add driftwood or peat to filter for natural tannins. Reduce aeration temporarily.',
-    low: 'pH < 7.2: Do 30% water change with tap water (Meath pH ~7.6). Check KH — low KH causes pH swings.',
-    high_pl: 'pH > 7.8: Podmień 30% wody. Dodaj korzeń lub torf do filtra. Ogranicz napowietrzanie.',
-    low_pl: 'pH < 7.2: Podmień 30% wody kranową (Meath pH ~7.6). Sprawdź KH — niski KH powoduje wahania pH.',
-  },
-  nitrate: {
-    high: 'NO3 > 30 ppm: Do 30–50% water change. Reduce feeding. More plants absorb nitrates. Vacuum substrate.',
-    high_pl: 'NO3 > 30 ppm: Podmień 30–50% wody. Zmniejsz karmienie. Więcej roślin pochłania azotany. Wysyfonuj dno.',
-  },
-  nitrite: {
-    high: 'NO2 > 0: URGENT — add 5 ml Seachem Prime directly to tank (neutralises NO2 for 24–48h). Dose 25 ml Stability. Do 30% water change. Increase aeration to max.',
-    high_pl: 'NO2 > 0: PILNE — dodaj 5 ml Seachem Prime bezpośrednio do akwarium. Dodaj 25 ml Stability. Podmień 30% wody. Napowietrzanie na max.',
-  },
-  ammonia: {
-    high: 'NH3 > 0: URGENT — add 5 ml Seachem Prime. Do 30% water change immediately. Stop feeding for 48h. Dose 25 ml Stability daily until ammonia = 0.',
-    high_pl: 'NH3 > 0: PILNE — dodaj 5 ml Seachem Prime. Natychmiast podmień 30% wody. Nie karm przez 48h. Dodawaj 25 ml Stability codziennie aż amoniak = 0.',
-  },
-  free_chlorine: {
-    high: 'Chlorine > 0: Always add Seachem Prime to new water before adding to tank. If already in tank, add 5 ml Prime now.',
-    high_pl: 'Chlor > 0: Zawsze dodawaj Seachem Prime do nowej wody przed wlaniem do akwarium. Jeśli już w zbiorniku, dodaj 5 ml Prime.',
-  },
-  copper: {
-    high: 'Cu > 0.2 ppm: Dangerous for shrimp and invertebrates. Do 50% water change immediately. Check for copper pipes or copper-containing products.',
-    high_pl: 'Cu > 0.2 ppm: Niebezpieczne dla krewetek. Natychmiast podmień 50% wody. Sprawdź miedziane rury lub produkty zawierające miedź.',
-  },
-  kh: {
-    low: 'KH < 40 ppm: pH will be unstable. Add crushed coral to filter or use KH buffer. Do not change drastically.',
-    high: 'KH > 180 ppm: Partial water change with softer water. For Meath tap water this is normal — County Meath KH is 120–180 ppm.',
-    low_pl: 'KH < 40 ppm: pH będzie niestabilne. Dodaj pokruszony koral do filtra lub bufor KH.',
-    high_pl: 'KH > 180 ppm: Podmień część wody miękkiejszą wodą. Dla wody z Meath to normalne — KH 120–180 ppm.',
-  },
-  gh: {
-    low: 'GH < 125 ppm: Add mineral supplements (GH booster). Fish may show stress.',
-    high: 'GH > 250 ppm: Partial water change with RO or rainwater to dilute.',
-    low_pl: 'GH < 125 ppm: Dodaj minerały (GH booster). Ryby mogą być zestresowane.',
-    high_pl: 'GH > 250 ppm: Podmień część wody z wodą RO lub deszczówką.',
-  },
-  total_alkalinity: {
-    low: 'TAL < 80 ppm: pH buffering capacity is low. Add alkalinity buffer or crushed coral.',
-    high: 'TAL > 180 ppm: Partial water change. Add peat to filter.',
-    low_pl: 'TAL < 80 ppm: Niska zdolność buforowania pH. Dodaj bufor zasadowości lub koral.',
-    high_pl: 'TAL > 180 ppm: Podmień część wody. Dodaj torf do filtra.',
-  },
-}
-
-const READ_TIME = { ammonia: '3 min' }
-
-function readTime(key) {
-  return READ_TIME[key] || '30s'
-}
-
-function getRemediation(param, reading) {
-  if (!reading?.out_of_range) return null
-  const rem = REMEDIATION[param.key]
-  if (!rem) return null
-  const isHigh = param.max_safe !== null && reading.value > param.max_safe
-  const isLow = param.min_safe !== null && reading.value < param.min_safe
-  const lang = locale.value === 'pl' ? '_pl' : ''
-  if (isHigh) return rem[`high${lang}`] ?? rem.high ?? null
-  if (isLow) return rem[`low${lang}`] ?? rem.low ?? null
-  return null
-}
-
-const showForm = ref(false)
-const formValues = ref({})
-const formNotes = ref('')
-const fileInput = ref(null)
-const fileInputAmmonia = ref(null)
-const scanning = ref(false)
-const scanningAmmonia = ref(false)
-const scanError = ref('')
-const scannedKeys = ref(new Set())
-const ammoniaScanned = ref(false)
-const scanCacheId = ref(null)
-const scanOutOfRange = ref({})
-
-async function handleFileSelected(event) {
-  const file = event.target.files?.[0]
-  if (!file) return
-  scanning.value = true
-  scanError.value = ''
-  scannedKeys.value = new Set()
-  scanCacheId.value = null
-  scanOutOfRange.value = {}
-  try {
-    const fd = new FormData()
-    fd.append('file', file)
-    const res = await fetch('/api/water-tests/analyze_strip', { method: 'POST', body: fd })
-    if (!res.ok) {
-      let detail = res.status
-      try { detail = (await res.json()).detail ?? res.status } catch {}
-      throw new Error(String(detail))
-    }
-    const { prefill, cache_id, out_of_range, cache_hit } = await res.json()
-    scanCacheId.value = cache_id
-    if (cache_hit) scanError.value = ''
-    scanOutOfRange.value = out_of_range || {}
-    const ammoniaId = manualParams.value.find(p => p.key === 'ammonia')?.id
-    for (const [id, value] of Object.entries(prefill)) {
-      const numId = parseInt(id)
-      if (numId === ammoniaId) continue  // ammonia needs 3-min scan
-      formValues.value[numId] = value
-      scannedKeys.value.add(numId)
-    }
-  } catch (e) {
-    scanError.value = `Scan failed: ${e.message}`
-  } finally {
-    scanning.value = false
-    event.target.value = ''
-  }
-}
-
-async function handleAmmoniaFileSelected(event) {
-  const file = event.target.files?.[0]
-  if (!file) return
-  scanningAmmonia.value = true
-  scanError.value = ''
-  try {
-    const fd = new FormData()
-    fd.append('file', file)
-    const res = await fetch('/api/water-tests/analyze_strip', { method: 'POST', body: fd })
-    if (!res.ok) {
-      let detail = res.status
-      try { detail = (await res.json()).detail ?? res.status } catch {}
-      throw new Error(String(detail))
-    }
-    const { prefill, out_of_range } = await res.json()
-    const ammoniaId = manualParams.value.find(p => p.key === 'ammonia')?.id
-    if (ammoniaId !== undefined && prefill[ammoniaId] !== undefined) {
-      formValues.value[ammoniaId] = prefill[ammoniaId]
-      scannedKeys.value = new Set([...scannedKeys.value, ammoniaId])
-      if (out_of_range?.[ammoniaId] !== undefined) {
-        scanOutOfRange.value = { ...scanOutOfRange.value, [ammoniaId]: out_of_range[ammoniaId] }
-      }
-      ammoniaScanned.value = true
-    } else {
-      scanError.value = 'Ammonia not detected in photo'
-    }
-  } catch (e) {
-    scanError.value = `Ammonia scan failed: ${e.message}`
-  } finally {
-    scanningAmmonia.value = false
-    event.target.value = ''
-  }
-}
-
-const manualParams = computed(() =>
-  waterTestsStore.parameters.filter(p => p.category === 'manual')
-)
-
-const daysSinceLastTest = computed(() => {
-  if (!waterTestsStore.latestSession) return null
-  const diff = Date.now() - new Date(waterTestsStore.latestSession.tested_at).getTime()
-  return Math.floor(diff / 86400000)
-})
-
-const nh3High = computed(() => {
-  const r = latestReading('ammonia')
-  return r && r.value > 0.25
-})
-
-function latestReading(paramKey) {
-  if (!waterTestsStore.latestSession) return null
-  return waterTestsStore.latestSession.readings.find(r => r.parameter_key === paramKey)
-}
-
-function paramRange(param) {
-  const parts = []
-  if (param.min_safe !== null) parts.push(`min ${param.min_safe}`)
-  if (param.max_safe !== null) parts.push(`max ${param.max_safe}`)
-  return parts.join(' / ') || ''
-}
-
-function formatDate(iso) {
-  return new Date(iso).toLocaleDateString(locale.value === 'pl' ? 'pl-PL' : 'en-IE')
-}
-
-async function submitSession() {
-  const readings = Object.entries(formValues.value)
-    .filter(([, v]) => v !== null && v !== undefined && v !== '')
-    .map(([id, value]) => ({ parameter_id: parseInt(id), value }))
-
-  if (readings.length === 0) return
-
-  await waterTestsStore.createSession(null, formNotes.value || null, readings, scanCacheId.value)
-  formValues.value = {}
-  formNotes.value = ''
-  scannedKeys.value = new Set()
-  scanError.value = ''
-  scanCacheId.value = null
-  scanOutOfRange.value = {}
-  ammoniaScanned.value = false
-  showForm.value = false
-}
+const sessions = ref([])
+const parameters = ref([])
 
 onMounted(async () => {
-  await Promise.all([
-    waterTestsStore.fetchParameters(),
-    waterTestsStore.fetchLatest(),
-    waterTestsStore.fetchSessions(),
+  const [sessR, paramR] = await Promise.all([
+    axios.get('/api/water-tests/sessions'),
+    axios.get('/api/water-tests/parameters'),
   ])
+  sessions.value = sessR.data
+  parameters.value = paramR.data
 })
+
+const latestSession = computed(() => sessions.value[0] ?? null)
+
+const latestReadings = computed(() => {
+  if (!latestSession.value) return []
+  return latestSession.value.readings.map((r) => {
+    const param = parameters.value.find((p) => p.id === r.parameter_id)
+    return {
+      ...r,
+      name_pl: param?.name_pl ?? param?.name_en ?? r.parameter_id,
+      name_en: param?.name_en,
+      unit: param?.unit ?? '',
+      trend: 'flat',
+      parameter_key: param?.key,
+    }
+  })
+})
+
+const lastTestDays = computed(() => {
+  if (!latestSession.value) return 0
+  return Math.floor((Date.now() - new Date(latestSession.value.tested_at)) / 86400000)
+})
+
+const manualParams = computed(() =>
+  parameters.value.filter((p) => p.category === 'manual')
+)
+
+const statusColor = (p) => {
+  if (p.out_of_range) return 'var(--warning)'
+  return 'var(--success)'
+}
+
+const statusText = (p) => (p.out_of_range ? 'Wysoko' : 'OK')
+
+// Scan modal state
+const scanModal = ref(false)
+const scanPhase = ref('camera')
+const detectedValues = ref({})
+const saving = ref(false)
+let scanTimeout = null
+
+function openScanModal() {
+  scanPhase.value = 'camera'
+  detectedValues.value = {}
+  scanModal.value = true
+}
+
+function closeScanModal() {
+  clearTimeout(scanTimeout)
+  scanModal.value = false
+  scanPhase.value = 'camera'
+  detectedValues.value = {}
+}
+
+function startCapture() {
+  scanPhase.value = 'detecting'
+  scanTimeout = setTimeout(() => {
+    const vals = {}
+    manualParams.value.forEach((p) => {
+      vals[p.id] = ''
+    })
+    detectedValues.value = vals
+    scanPhase.value = 'confirm'
+  }, 1600)
+}
+
+async function saveScan() {
+  const readings = Object.entries(detectedValues.value)
+    .filter(([, v]) => v !== '' && v !== null && v !== undefined)
+    .map(([id, value]) => ({ parameter_id: parseInt(id), value: parseFloat(value) }))
+    .filter((r) => !isNaN(r.value))
+
+  if (readings.length === 0) {
+    closeScanModal()
+    return
+  }
+
+  saving.value = true
+  try {
+    await axios.post('/api/water-tests/sessions', { readings })
+    const sessR = await axios.get('/api/water-tests/sessions')
+    sessions.value = sessR.data
+  } finally {
+    saving.value = false
+    closeScanModal()
+  }
+}
 </script>

@@ -1,10 +1,4 @@
-"""SQLAlchemy ORM model definitions — imported by all routers and seed_data.py.
-
-Defines mapped classes for Supply, DosingTask, DoseLog, MaintenanceTask, CalendarTask,
-Fish, Plant, FeedingSchedule, WaterTestParameter, WaterTestSession, and WaterTestReading.
-All routers (calendar, dosing, maintenance, obsada, schedule, sensors, supplies,
-water_tests) and seed_data.py query these models against the SQLite database.
-"""
+"""SQLAlchemy ORM model definitions — imported by all routers and seed_data.py."""
 import json
 from datetime import datetime
 
@@ -20,9 +14,9 @@ class Supply(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     name: Mapped[str] = mapped_column(String(100))
     name_pl: Mapped[str] = mapped_column(String(100))
-    type: Mapped[str] = mapped_column(String(20))          # liquid | part
+    type: Mapped[str] = mapped_column(String(20))
     current_amount: Mapped[float] = mapped_column(Float)
-    unit: Mapped[str] = mapped_column(String(10))          # ml | pcs
+    unit: Mapped[str] = mapped_column(String(10))
     min_threshold: Mapped[float] = mapped_column(Float, default=0)
     purchase_link: Mapped[str | None] = mapped_column(Text, nullable=True)
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
@@ -38,8 +32,8 @@ class DosingTask(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     supply_id: Mapped[int] = mapped_column(ForeignKey("supplies.id"))
     dose_amount: Mapped[float] = mapped_column(Float)
-    dose_unit: Mapped[str] = mapped_column(String(10))     # ml | pcs
-    time_of_day: Mapped[str | None] = mapped_column(String(5), nullable=True)   # HH:MM
+    dose_unit: Mapped[str] = mapped_column(String(10))
+    time_of_day: Mapped[str | None] = mapped_column(String(5), nullable=True)
     active: Mapped[bool] = mapped_column(Boolean, default=True)
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
     notes_pl: Mapped[str | None] = mapped_column(Text, nullable=True)
@@ -68,6 +62,8 @@ class MaintenanceTask(Base):
     interval_days: Mapped[int] = mapped_column(Integer)
     last_completed: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     next_due: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    started_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    affects_entity: Mapped[str | None] = mapped_column(String(100), nullable=True)
     _steps: Mapped[str] = mapped_column("steps", Text, default="[]")
     _required_parts: Mapped[str] = mapped_column("required_parts", Text, default="[]")
 
@@ -114,7 +110,7 @@ class FeedingSchedule(Base):
     __tablename__ = "feeding_schedule"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    time_of_day: Mapped[str] = mapped_column(String(5))    # HH:MM
+    time_of_day: Mapped[str] = mapped_column(String(5))
     active: Mapped[bool] = mapped_column(Boolean, default=True)
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
 
@@ -133,6 +129,26 @@ class FeedingLog(Base):
     schedule: Mapped["FeedingSchedule | None"] = relationship(back_populates="logs")
 
 
+class FeedingPause(Base):
+    """Tracks active device pauses for feeding mode."""
+    __tablename__ = "feeding_pauses"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    started_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+    resume_at: Mapped[datetime] = mapped_column(DateTime)
+    cancelled_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    resumed_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    _paused_entities: Mapped[str] = mapped_column("paused_entities", Text, default="[]")
+
+    @property
+    def paused_entities(self) -> list:
+        return json.loads(self._paused_entities)
+
+    @paused_entities.setter
+    def paused_entities(self, value: list):
+        self._paused_entities = json.dumps(value)
+
+
 class WaterTestParameter(Base):
     __tablename__ = "water_test_parameters"
 
@@ -143,7 +159,7 @@ class WaterTestParameter(Base):
     unit: Mapped[str] = mapped_column(String(20))
     min_safe: Mapped[float | None] = mapped_column(Float, nullable=True)
     max_safe: Mapped[float | None] = mapped_column(Float, nullable=True)
-    category: Mapped[str] = mapped_column(String(20))      # manual | continuous
+    category: Mapped[str] = mapped_column(String(20))
 
     readings: Mapped[list["WaterTestReading"]] = relationship(back_populates="parameter")
 
@@ -180,13 +196,10 @@ class CalendarTask(Base):
     name: Mapped[str] = mapped_column(String(100))
     name_pl: Mapped[str] = mapped_column(String(100))
     color: Mapped[str] = mapped_column(String(20))
-    # daily | every_n_days | weekdays
     recurrence_type: Mapped[str] = mapped_column(String(20))
-    # Used when recurrence_type == "every_n_days"
     interval_days: Mapped[int | None] = mapped_column(Integer, nullable=True)
-    # JSON array of weekday ints (0=Mon…6=Sun) for recurrence_type == "weekdays"
     _recurrence_days: Mapped[str | None] = mapped_column("recurrence_days", Text, nullable=True)
-    start_date: Mapped[str] = mapped_column(String(10))        # YYYY-MM-DD
+    start_date: Mapped[str] = mapped_column(String(10))
     end_date: Mapped[str | None] = mapped_column(String(10), nullable=True)
     amount: Mapped[str | None] = mapped_column(String(50), nullable=True)
     notes_pl: Mapped[str | None] = mapped_column(Text, nullable=True)
@@ -209,7 +222,7 @@ class CalendarCompletion(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     task_id: Mapped[int] = mapped_column(ForeignKey("calendar_tasks.id"))
-    date: Mapped[str] = mapped_column(String(10))              # YYYY-MM-DD
+    date: Mapped[str] = mapped_column(String(10))
     completed_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
 
     task: Mapped["CalendarTask"] = relationship(back_populates="completions")
@@ -224,7 +237,7 @@ class Fish(Base):
     latin: Mapped[str | None] = mapped_column(String(150), nullable=True)
     qty: Mapped[int] = mapped_column(Integer, default=1)
     zone: Mapped[str | None] = mapped_column(String(50), nullable=True)
-    status: Mapped[str] = mapped_column(String(20), default="in_tank")
+    status: Mapped[str] = mapped_column(String(20), default="planned")
     temp: Mapped[str | None] = mapped_column(String(30), nullable=True)
     notes_pl: Mapped[str | None] = mapped_column(Text, nullable=True)
     img: Mapped[str | None] = mapped_column(Text, nullable=True)

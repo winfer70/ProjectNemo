@@ -1,315 +1,338 @@
 <template>
-  <div class="ls-container">
+  <!-- ── Main livestock tile ────────────────────────────────────── -->
+  <div class="tile ls-tile">
+    <div class="tile-hd">
+      <h2>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M16 12c0 0 3-4 6-4-1 2-1 6 0 8-3 0-6-4-6-4z"/>
+          <path d="M16 12c-3-4-9-4-12 0 3 4 9 4 12 0z"/>
+          <circle cx="7" cy="11" r="0.6" fill="currentColor" stroke="none"/>
+        </svg>
+        OBSADA
+      </h2>
+      <button class="btn btn-sm btn-accent" @click="editModal = { item: null, kind: 'fish' }">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 5v14"/><path d="M5 12h14"/>
+        </svg>
+        {{ locale === 'pl' ? 'Dodaj' : 'Add' }}
+      </button>
+    </div>
+    <hr class="divider">
 
-    <!-- ── Fish section ──────────────────────────────────────────── -->
-    <div class="ls-section-header">
-      <span class="ls-section-title">{{ locale === 'pl' ? 'Ryby' : 'Fish' }}</span>
-      <span class="badge ls-count-badge">{{ store.fish.length }} {{ locale === 'pl' ? 'gatunków' : 'species' }}</span>
-      <button class="btn btn-primary ls-add-btn" @click="openAdd('fish')">+</button>
+    <!-- Empty state -->
+    <div v-if="!fish.length && !plants.length" class="empty" style="padding:40px 16px">
+      <span class="em">🐠</span>
+      <span>{{ locale === 'pl' ? 'Dodaj pierwsze ryby' : 'Add your first fish' }}</span>
     </div>
 
-    <div v-for="fish in store.fish" :key="fish.id" class="card ls-fish-card">
-      <div class="ls-media-row">
-        <img v-if="fish.img" :src="fish.img" :alt="fish.latin" class="ls-thumb" loading="lazy" />
-        <div v-else class="ls-thumb ls-thumb-placeholder"></div>
-        <div class="ls-media-body">
-          <div class="ls-card-top">
-            <div class="ls-card-name-block">
-              <div class="ls-name">{{ locale === 'pl' && fish.name_pl ? fish.name_pl : fish.name_en }}</div>
-              <div class="ls-latin">{{ fish.latin }}</div>
-            </div>
-            <span class="badge" :class="statusBadgeClass(fish.status)">{{ statusLabel(fish.status) }}</span>
+    <!-- Content -->
+    <div v-else class="tile-body" style="padding-top:4px">
+      <!-- Fish section -->
+      <div class="sec-lab">{{ locale === 'pl' ? 'Ryby' : 'Fish' }} ({{ fish.length }})</div>
+      <div
+        v-for="x in fish"
+        :key="x.id"
+        class="ls-card"
+        @click="editModal = { item: x, kind: 'fish' }"
+      >
+        <div class="ls-thumb">
+          <img v-if="x.img" :src="x.img" style="width:100%;height:100%;object-fit:cover">
+          <div v-else class="ph">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M16 12c0 0 3-4 6-4-1 2-1 6 0 8-3 0-6-4-6-4z"/>
+              <path d="M16 12c-3-4-9-4-12 0 3 4 9 4 12 0z"/>
+              <circle cx="7" cy="11" r="0.6" fill="currentColor" stroke="none"/>
+            </svg>
           </div>
-          <div class="ls-badges-row">
-            <span class="badge ls-badge-qty">× {{ fish.qty }}</span>
-            <span v-if="fish.zone" class="badge ls-badge-zone">{{ fish.zone }}</span>
-            <span v-if="fish.temp" class="badge ls-badge-temp">🌡 {{ fish.temp }}</span>
-          </div>
-          <div v-if="fish.notes_pl" class="ls-notes">{{ fish.notes_pl }}</div>
         </div>
-        <div class="ls-card-actions">
-          <button class="ls-action-btn" @click="openEdit('fish', fish)">✏️</button>
-          <button class="ls-action-btn ls-action-del" @click="confirmDelete('fish', fish)">🗑</button>
+        <div class="ls-meta">
+          <div class="name">
+            <span style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+              {{ locale === 'pl' && x.name_pl ? x.name_pl : x.name_en }}
+            </span>
+            <span
+              :class="['pill', x.status]"
+              @click.stop="togglePicker(x.id)"
+            >
+              {{ statusLabel(x.status) }}
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5 9l7 7 7-7"/>
+              </svg>
+            </span>
+          </div>
+          <span class="sp">{{ x.latin }}</span>
+          <span class="sub">
+            {{ x.status === 'planned' ? (locale === 'pl' ? 'Planowane' : 'Planned') : (locale === 'pl' ? 'Dodano' : 'Added') }}:
+            {{ formatDate(x.added_at) }} · ×{{ x.qty }}
+          </span>
+          <!-- Inline status picker -->
+          <div
+            v-if="statusPicker === x.id"
+            class="row"
+            style="gap:6px;margin-top:8px;flex-wrap:wrap"
+            @click.stop
+          >
+            <span
+              v-for="s in statuses"
+              :key="s"
+              :class="['pill', s]"
+              :style="{ opacity: s === x.status ? 1 : 0.6, cursor: 'pointer' }"
+              @click="setStatus(x, s)"
+            >
+              {{ statusLabel(s) }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Plants section -->
+      <div v-if="plants.length > 0" class="sec-lab" style="padding-top:14px">
+        {{ locale === 'pl' ? 'Rośliny' : 'Plants' }} ({{ plants.length }})
+      </div>
+      <div
+        v-for="x in plants"
+        :key="x.id"
+        class="ls-card"
+        @click="editModal = { item: x, kind: 'plant' }"
+      >
+        <div class="ls-thumb">
+          <img v-if="x.img" :src="x.img" style="width:100%;height:100%;object-fit:cover">
+          <div v-else class="ph">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 4S8 4 6 12c-1 4 1 7 1 7s9-1 11-9c1-4 2-6 2-6z"/>
+              <path d="M5 19c2-6 6-9 10-10"/>
+            </svg>
+          </div>
+        </div>
+        <div class="ls-meta">
+          <div class="name">
+            <span style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+              {{ locale === 'pl' && x.name_pl ? x.name_pl : x.name_en }}
+            </span>
+            <span class="pill in_tank" style="cursor:default">
+              {{ locale === 'pl' ? 'W zbiorniku' : 'In tank' }}
+            </span>
+          </div>
+          <span class="sp">{{ x.latin }}</span>
+          <span class="sub">
+            {{ locale === 'pl' ? 'Dodano' : 'Added' }}: {{ formatDate(x.added_at) }}
+          </span>
         </div>
       </div>
     </div>
-
-    <!-- ── Plants section ───────────────────────────────────────── -->
-    <div class="ls-section-header ls-section-gap">
-      <span class="ls-section-title">{{ locale === 'pl' ? 'Rośliny' : 'Plants' }}</span>
-      <span class="badge ls-count-badge">{{ store.plants.length }} {{ locale === 'pl' ? 'gatunków' : 'species' }}</span>
-      <button class="btn btn-primary ls-add-btn" @click="openAdd('plant')">+</button>
-    </div>
-
-    <div v-for="plant in store.plants" :key="plant.id" class="card ls-plant-card">
-      <div class="ls-media-row">
-        <img v-if="plant.img" :src="plant.img" :alt="plant.latin" class="ls-thumb" loading="lazy" />
-        <div v-else class="ls-thumb ls-thumb-placeholder"></div>
-        <div class="ls-media-body">
-          <div class="ls-card-top">
-            <div class="ls-card-name-block">
-              <div class="ls-name">{{ locale === 'pl' && plant.name_pl ? plant.name_pl : plant.name_en }}</div>
-              <div class="ls-latin">{{ plant.latin }}</div>
-            </div>
-            <span v-if="plant.location" class="badge ls-badge-location">{{ plant.location }}</span>
-          </div>
-          <div v-if="plant.notes_pl" class="ls-notes">{{ plant.notes_pl }}</div>
-        </div>
-        <div class="ls-card-actions">
-          <button class="ls-action-btn" @click="openEdit('plant', plant)">✏️</button>
-          <button class="ls-action-btn ls-action-del" @click="confirmDelete('plant', plant)">🗑</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- ── Delete confirmation banner ───────────────────────────── -->
-    <div v-if="pendingDelete" class="banner-danger">
-      <span>{{ $t('obsada.confirmDelete') }}: <strong>{{ pendingDelete.item.name_en }}</strong></span>
-      <div style="display:flex;gap:8px;margin-top:8px;">
-        <button class="btn btn-secondary btn-sm" @click="pendingDelete = null">{{ $t('maintenance.cancel') }}</button>
-        <button class="btn btn-danger btn-sm" @click="doDelete">{{ $t('obsada.delete') }}</button>
-      </div>
-    </div>
-
   </div>
 
-  <!-- ── Modal ────────────────────────────────────────────────── -->
-  <ObsadaAddModal
-    v-if="modal.open"
-    :type="modal.type"
-    :edit-item="modal.editItem"
-    @close="closeModal"
-    @saved="closeModal"
-  />
+  <!-- ── LsEditModal (full-screen) ──────────────────────────────── -->
+  <Teleport to="body">
+    <div
+      v-if="editModal"
+      class="backdrop"
+      style="position:fixed;align-items:stretch;justify-content:center"
+      @click.self="editModal = null"
+    >
+      <div class="modal full" @click.stop>
+        <!-- Modal header -->
+        <div class="spread" style="padding:16px 16px 14px;border-bottom:1px solid var(--border);flex-shrink:0">
+          <button class="btn icon-btn btn-ghost" @click="editModal = null">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M6 6l12 12"/><path d="M18 6L6 18"/>
+            </svg>
+          </button>
+          <span style="font-weight:700;font-size:16px">
+            {{ editModal.item ? (locale === 'pl' ? 'Edytuj' : 'Edit') : (locale === 'pl' ? 'Dodaj' : 'Add') }}
+          </span>
+          <button class="btn btn-sm btn-accent" @click="saveLs">
+            {{ locale === 'pl' ? 'Zapisz' : 'Save' }}
+          </button>
+        </div>
+
+        <!-- Modal body -->
+        <div style="padding:16px;overflow-y:auto;flex:1">
+          <!-- Thumb + kind segmented -->
+          <div class="row" style="gap:14px;margin-bottom:16px">
+            <div class="ls-thumb" style="width:72px;height:72px;flex-shrink:0">
+              <img v-if="editModal.item?.img" :src="editModal.item.img" style="width:100%;height:100%;object-fit:cover">
+              <div v-else class="ph" style="font-size:9px">{{ locale === 'pl' ? 'zdjęcie' : 'image' }}</div>
+            </div>
+            <div class="seg" style="flex:1">
+              <button :class="{ on: lsFormKind === 'fish' }" @click="lsFormKind = 'fish'">
+                {{ locale === 'pl' ? 'Ryba' : 'Fish' }}
+              </button>
+              <button :class="{ on: lsFormKind === 'plant' }" @click="lsFormKind = 'plant'">
+                {{ locale === 'pl' ? 'Roślina' : 'Plant' }}
+              </button>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>{{ locale === 'pl' ? 'Nazwa' : 'Name' }}</label>
+            <input class="input" v-model="lsFormName" autofocus :placeholder="lsFormKind === 'fish' ? 'Pyszczak mozambicki…' : 'Elodea…'">
+          </div>
+          <div class="field">
+            <label>{{ locale === 'pl' ? 'Gatunek (łac.)' : 'Species (latin)' }}</label>
+            <input class="input" v-model="lsFormLatin" style="font-style:italic" placeholder="Oreochromis mossambicus…">
+          </div>
+          <div class="row" style="gap:12px">
+            <div class="field" style="width:100px">
+              <label>{{ locale === 'pl' ? 'Ilość' : 'Count' }}</label>
+              <input class="input" type="number" v-model="lsFormQty" min="1">
+            </div>
+            <div class="field" style="flex:1">
+              <label>{{ locale === 'pl' ? 'Data' : 'Date' }}</label>
+              <input class="input" type="date" v-model="lsFormDate">
+            </div>
+          </div>
+
+          <!-- Status picker — fish only -->
+          <div v-if="lsFormKind === 'fish'" class="field">
+            <label>{{ locale === 'pl' ? 'Status' : 'Status' }}</label>
+            <div class="seg" style="flex-wrap:wrap">
+              <button
+                v-for="s in statuses"
+                :key="s"
+                :class="{ on: lsFormStatus === s }"
+                @click="lsFormStatus = s"
+              >
+                {{ statusLabel(s) }}
+              </button>
+            </div>
+          </div>
+
+          <!-- Delete -->
+          <div v-if="editModal.item?.id" style="margin-top:16px">
+            <div v-if="lsConfirmDelete" class="row" style="gap:10px">
+              <span class="muted" style="font-size:13px;flex:1">
+                {{ locale === 'pl' ? 'Usunąć?' : 'Delete?' }}
+              </span>
+              <button class="btn btn-danger-o" @click="deleteLs">
+                {{ locale === 'pl' ? 'Tak, usuń' : 'Yes, delete' }}
+              </button>
+              <button class="btn btn-ghost" @click="lsConfirmDelete = false">
+                {{ locale === 'pl' ? 'Anuluj' : 'Cancel' }}
+              </button>
+            </div>
+            <button v-else class="btn btn-block btn-danger-o" @click="lsConfirmDelete = true">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 7h16"/><path d="M9 7V5h6v2"/><path d="M6 7l1 13h10l1-13"/>
+              </svg>
+              {{ locale === 'pl' ? 'Usuń' : 'Delete' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </Teleport>
 </template>
 
 <script setup>
-import { reactive, ref, onMounted } from 'vue'
-import { useI18n } from 'vue-i18n'
 import { useObsadaStore } from '../stores/obsada'
-import ObsadaAddModal from '../components/ObsadaAddModal.vue'
+import { useI18n } from 'vue-i18n'
+import { ref, computed, onMounted, watch } from 'vue'
 
 const { locale } = useI18n()
-const store = useObsadaStore()
+const obsadaStore = useObsadaStore()
 
-const modal = reactive({ open: false, type: 'fish', editItem: null })
-const pendingDelete = ref(null)
+// ── UI state ──────────────────────────────────────────────────
+const statusPicker = ref(null)   // id of item showing status picker
+const editModal = ref(null)      // null | { item: fish|plant|null, kind: 'fish'|'plant' }
 
-onMounted(async () => {
-  await Promise.all([store.fetchFish(), store.fetchPlants()])
+// ── Status helpers ────────────────────────────────────────────
+const statuses = ['planned', 'in_tank', 'sold', 'deceased']
+
+const STATUS_LABELS_PL = {
+  planned: 'Planowany',
+  in_tank: 'W zbiorniku',
+  sold: 'Sprzedany',
+  deceased: 'Obumarły',
+}
+const STATUS_LABELS_EN = {
+  planned: 'Planned',
+  in_tank: 'In tank',
+  sold: 'Sold',
+  deceased: 'Deceased',
+}
+
+function statusLabel(s) {
+  const map = locale.value === 'pl' ? STATUS_LABELS_PL : STATUS_LABELS_EN
+  return map[s] || s
+}
+
+function togglePicker(id) {
+  statusPicker.value = statusPicker.value === id ? null : id
+}
+
+async function setStatus(x, s) {
+  if (x.kind === 'fish') {
+    await obsadaStore.updateFish(x.id, { status: s })
+  }
+  statusPicker.value = null
+}
+
+// ── Data ──────────────────────────────────────────────────────
+const fish = computed(() => obsadaStore.fish.map(f => ({ ...f, kind: 'fish' })))
+const plants = computed(() => obsadaStore.plants.map(p => ({ ...p, kind: 'plant' })))
+
+onMounted(() => {
+  obsadaStore.fetchFish()
+  obsadaStore.fetchPlants()
 })
 
-function openAdd(type) {
-  modal.type = type
-  modal.editItem = null
-  modal.open = true
+function formatDate(s) {
+  if (!s) return '—'
+  return new Date(s).toLocaleDateString('pl-PL', {
+    year: 'numeric', month: '2-digit', day: '2-digit',
+  })
 }
 
-function openEdit(type, item) {
-  modal.type = type
-  modal.editItem = item
-  modal.open = true
+// ── LsEditModal form state ────────────────────────────────────
+const lsFormName = ref('')
+const lsFormLatin = ref('')
+const lsFormQty = ref(1)
+const lsFormDate = ref('')
+const lsFormKind = ref('fish')
+const lsFormStatus = ref('planned')
+const lsConfirmDelete = ref(false)
+
+watch(editModal, (val) => {
+  if (!val) return
+  const item = val.item
+  lsFormName.value = item ? (item.name_pl || item.name_en || '') : ''
+  lsFormLatin.value = item?.latin || ''
+  lsFormQty.value = item?.qty || 1
+  lsFormDate.value = item?.added_at
+    ? item.added_at.slice(0, 10)
+    : new Date().toISOString().slice(0, 10)
+  lsFormKind.value = val.kind || 'fish'
+  lsFormStatus.value = item?.status || 'planned'
+  lsConfirmDelete.value = false
+})
+
+async function saveLs() {
+  if (!editModal.value) return
+  const data = {
+    name_en: lsFormName.value,
+    name_pl: lsFormName.value,
+    latin: lsFormLatin.value,
+    qty: parseInt(lsFormQty.value) || 1,
+    added_at: lsFormDate.value,
+    ...(lsFormKind.value === 'fish' && { status: lsFormStatus.value }),
+  }
+  const { item, kind } = editModal.value
+  if (item?.id) {
+    if (kind === 'fish') await obsadaStore.updateFish(item.id, data)
+    else await obsadaStore.updatePlant(item.id, data)
+  } else {
+    if (kind === 'fish') await obsadaStore.addFish(data)
+    else await obsadaStore.addPlant(data)
+  }
+  editModal.value = null
 }
 
-function closeModal() {
-  modal.open = false
-  modal.editItem = null
-  store.clearSearch()
-}
-
-function confirmDelete(type, item) {
-  pendingDelete.value = { type, item }
-}
-
-async function doDelete() {
-  if (!pendingDelete.value) return
-  const { type, item } = pendingDelete.value
-  if (type === 'fish') await store.deleteFish(item.id)
-  else await store.deletePlant(item.id)
-  pendingDelete.value = null
-}
-
-function statusLabel(status) {
-  const labels = locale.value === 'pl'
-    ? { in_tank: '✅ W akwarium', planned: '🛒 Planowane' }
-    : { in_tank: '✅ In tank',    planned: '🛒 Planned' }
-  return labels[status] ?? status
-}
-
-function statusBadgeClass(status) {
-  return status === 'in_tank' ? 'ls-status-green' : 'ls-status-blue'
+async function deleteLs() {
+  if (!editModal.value?.item?.id) return
+  const { item, kind } = editModal.value
+  if (kind === 'fish') await obsadaStore.deleteFish(item.id)
+  else await obsadaStore.deletePlant(item.id)
+  editModal.value = null
 }
 </script>
-
-<style scoped>
-.ls-container {
-  padding-bottom: 8px;
-}
-
-.ls-section-header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 8px;
-}
-.ls-section-gap {
-  margin-top: 16px;
-}
-.ls-section-title {
-  font-size: 13px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--text-muted);
-}
-.ls-count-badge {
-  background: rgba(0, 180, 216, 0.12);
-  color: var(--accent);
-  border: 1px solid rgba(0, 180, 216, 0.25);
-}
-.ls-add-btn {
-  margin-left: auto;
-  padding: 2px 12px;
-  font-size: 18px;
-  line-height: 1.3;
-  min-width: 32px;
-}
-
-.ls-fish-card,
-.ls-plant-card {
-  margin-bottom: 8px;
-}
-
-.ls-media-row {
-  display: flex;
-  gap: 12px;
-  align-items: flex-start;
-}
-.ls-thumb {
-  width: 80px;
-  height: 60px;
-  object-fit: cover;
-  border-radius: 6px;
-  flex-shrink: 0;
-}
-.ls-thumb-placeholder {
-  background: rgba(255,255,255,0.04);
-  border: 1px solid var(--border);
-}
-.ls-media-body {
-  flex: 1;
-  min-width: 0;
-}
-
-.ls-card-top {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 8px;
-  margin-bottom: 6px;
-}
-.ls-card-name-block {
-  flex: 1;
-  min-width: 0;
-}
-.ls-name {
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--text);
-  line-height: 1.3;
-}
-.ls-latin {
-  font-size: 11px;
-  font-style: italic;
-  color: var(--text-muted);
-  margin-top: 2px;
-}
-
-.ls-badges-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-bottom: 8px;
-}
-
-.ls-badge-qty {
-  background: rgba(255, 255, 255, 0.06);
-  color: var(--text);
-  border: 1px solid var(--border);
-  font-weight: 700;
-}
-.ls-badge-zone {
-  background: rgba(72, 202, 228, 0.10);
-  color: var(--accent2);
-  border: 1px solid rgba(72, 202, 228, 0.20);
-}
-.ls-badge-temp {
-  background: rgba(230, 57, 70, 0.10);
-  color: #f4a261;
-  border: 1px solid rgba(230, 57, 70, 0.20);
-}
-.ls-badge-location {
-  background: rgba(46, 196, 182, 0.10);
-  color: var(--ok);
-  border: 1px solid rgba(46, 196, 182, 0.20);
-  white-space: nowrap;
-}
-
-.ls-status-green {
-  background: rgba(46, 196, 182, 0.15);
-  color: var(--ok);
-  border: 1px solid rgba(46, 196, 182, 0.30);
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-.ls-status-blue {
-  background: rgba(0, 180, 216, 0.15);
-  color: var(--accent);
-  border: 1px solid rgba(0, 180, 216, 0.30);
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-.ls-notes {
-  font-size: 12px;
-  color: var(--text-muted);
-  line-height: 1.5;
-}
-
-.ls-card-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  flex-shrink: 0;
-}
-.ls-action-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 14px;
-  padding: 2px 4px;
-  border-radius: 4px;
-  opacity: 0.6;
-  transition: opacity 0.15s;
-}
-.ls-action-btn:hover { opacity: 1; }
-.ls-action-del:hover { color: var(--danger, #e63946); }
-
-.banner-danger {
-  background: rgba(230, 57, 70, 0.10);
-  border: 1px solid rgba(230, 57, 70, 0.30);
-  border-radius: 8px;
-  padding: 12px;
-  margin-top: 8px;
-  font-size: 13px;
-  color: var(--text);
-}
-.btn-danger {
-  background: rgba(230, 57, 70, 0.80);
-  color: #fff;
-}
-.btn-sm {
-  padding: 4px 10px;
-  font-size: 12px;
-}
-</style>
