@@ -26,6 +26,14 @@ Next action: Tapo P110 HA integration (add in HA UI → get entity IDs → updat
 - `firmware/nemo-sensor.yaml` — ESPHome sensor config
 - `N8N_SETUP.md`, `TABLET_SETUP.md`, `VOICE_SETUP.md` — integration docs
 
+## Branch Rules
+
+- Integration branch: `dev`
+- All work on `feature/<name>` branches — never commit directly to `dev` or `main`
+- Deploy only via `./release.sh` — merges dev→main, SQLite backup, docker compose up --build
+- Prod target: REDACTED-HOST `10.0.0.103` (wired) / `.107` (WiFi), SSH user `kamilo`
+- `.env` and `homeassistant/config/secrets.yaml` NOT in git — already on REDACTED-HOST
+
 ## graphify
 
 This project has a graphify knowledge graph at `graphify-out/`.

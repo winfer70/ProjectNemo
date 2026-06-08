@@ -8,7 +8,7 @@ NODE_IP="10.0.0.103"  # REDACTED-HOST ethernet; use .107 if on WiFi
 NODE_USER="kamilo"
 TARGET_DIR="/home/kamilo/nemo/ProjectNemo"
 INTEGRATION_BRANCH="dev"
-KUMA_PUSH_URL=""  # TODO: create Push monitor in REDACTED-HOST:3001, paste URL here
+KUMA_PUSH_URL=""  # TODO: create Push monitor in REDACTED-HOST:3001 (Kuma migrated from REDACTED-HOST), paste URL here
 
 echo "[1/5] Merging $INTEGRATION_BRANCH -> main..."
 git checkout main && git pull origin main
