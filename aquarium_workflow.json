@@ -1,0 +1,601 @@
+{
+  "name": "Aquarium Bot",
+  "nodes": [
+    {
+      "id": "n-trigger",
+      "name": "Telegram Trigger",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1,
+      "position": [
+        240,
+        80
+      ],
+      "parameters": {
+        "updates": [
+          "message"
+        ]
+      },
+      "credentials": {
+        "telegramApi": {
+          "id": "TYyehuWr4cp4n1e1",
+          "name": "Aquarium Bot"
+        }
+      }
+    },
+    {
+      "id": "n-switch",
+      "name": "Route Command",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 1,
+      "position": [
+        480,
+        80
+      ],
+      "parameters": {
+        "dataType": "string",
+        "value1": "={{ $json.message.text.trim() }}",
+        "rules": {
+          "rules": [
+            {
+              "value2": "/status",
+              "output": 0
+            },
+            {
+              "value2": "/filter on",
+              "output": 1
+            },
+            {
+              "value2": "/filter off",
+              "output": 2
+            },
+            {
+              "value2": "/heater on",
+              "output": 3
+            },
+            {
+              "value2": "/heater off",
+              "output": 4
+            },
+            {
+              "value2": "/pump on",
+              "output": 5
+            },
+            {
+              "value2": "/pump off",
+              "output": 6
+            },
+            {
+              "value2": "/feed",
+              "output": 7
+            }
+          ]
+        },
+        "fallbackOutput": 8
+      }
+    },
+    {
+      "id": "n-http-0",
+      "name": "HTTP Get Status",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        720,
+        -400
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "http://10.0.0.102:8000/api/devices",
+        "options": {}
+      }
+    },
+    {
+      "id": "n-code-0",
+      "name": "Format Status",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        960,
+        -400
+      ],
+      "parameters": {
+        "language": "javaScript",
+        "jsCode": "const raw = items[0].json;\nconst devs = Array.isArray(raw) ? raw : [raw];\nconst lines = devs.map(d => '  ' + (d.entity_id||d.name||'?') + ': ' + (d.state||d.status||'?'));\nconst msg = 'Aquarium Status:\\n' + lines.join('\\n');\nreturn [{ json: { message: msg } }];"
+      }
+    },
+    {
+      "id": "n-tg-0",
+      "name": "Reply Status",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        1200,
+        -400
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "sendMessage",
+        "chatId": "8485350751",
+        "text": "={{ $json.message }}",
+        "additionalFields": {}
+      },
+      "credentials": {
+        "telegramApi": {
+          "id": "TYyehuWr4cp4n1e1",
+          "name": "Aquarium Bot"
+        }
+      }
+    },
+    {
+      "id": "n-http-1",
+      "name": "HTTP /filter on",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        720,
+        -280
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "http://10.0.0.102:8000/api/devices/switch.tapo_filter/toggle",
+        "options": {}
+      }
+    },
+    {
+      "id": "n-tg-1",
+      "name": "Reply /filter on",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        960,
+        -280
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "sendMessage",
+        "chatId": "8485350751",
+        "text": "Filter toggled.",
+        "additionalFields": {}
+      },
+      "credentials": {
+        "telegramApi": {
+          "id": "TYyehuWr4cp4n1e1",
+          "name": "Aquarium Bot"
+        }
+      }
+    },
+    {
+      "id": "n-http-2",
+      "name": "HTTP /filter off",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        720,
+        -160
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "http://10.0.0.102:8000/api/devices/switch.tapo_filter/toggle",
+        "options": {}
+      }
+    },
+    {
+      "id": "n-tg-2",
+      "name": "Reply /filter off",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        960,
+        -160
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "sendMessage",
+        "chatId": "8485350751",
+        "text": "Filter toggled.",
+        "additionalFields": {}
+      },
+      "credentials": {
+        "telegramApi": {
+          "id": "TYyehuWr4cp4n1e1",
+          "name": "Aquarium Bot"
+        }
+      }
+    },
+    {
+      "id": "n-http-3",
+      "name": "HTTP /heater on",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        720,
+        -40
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "http://10.0.0.102:8000/api/devices/switch.tapo_heater/toggle",
+        "options": {}
+      }
+    },
+    {
+      "id": "n-tg-3",
+      "name": "Reply /heater on",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        960,
+        -40
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "sendMessage",
+        "chatId": "8485350751",
+        "text": "Heater toggled.",
+        "additionalFields": {}
+      },
+      "credentials": {
+        "telegramApi": {
+          "id": "TYyehuWr4cp4n1e1",
+          "name": "Aquarium Bot"
+        }
+      }
+    },
+    {
+      "id": "n-http-4",
+      "name": "HTTP /heater off",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        720,
+        80
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "http://10.0.0.102:8000/api/devices/switch.tapo_heater/toggle",
+        "options": {}
+      }
+    },
+    {
+      "id": "n-tg-4",
+      "name": "Reply /heater off",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        960,
+        80
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "sendMessage",
+        "chatId": "8485350751",
+        "text": "Heater toggled.",
+        "additionalFields": {}
+      },
+      "credentials": {
+        "telegramApi": {
+          "id": "TYyehuWr4cp4n1e1",
+          "name": "Aquarium Bot"
+        }
+      }
+    },
+    {
+      "id": "n-http-5",
+      "name": "HTTP /pump on",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        720,
+        200
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "http://10.0.0.102:8000/api/devices/switch.tapo_air_pump/toggle",
+        "options": {}
+      }
+    },
+    {
+      "id": "n-tg-5",
+      "name": "Reply /pump on",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        960,
+        200
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "sendMessage",
+        "chatId": "8485350751",
+        "text": "Air pump toggled.",
+        "additionalFields": {}
+      },
+      "credentials": {
+        "telegramApi": {
+          "id": "TYyehuWr4cp4n1e1",
+          "name": "Aquarium Bot"
+        }
+      }
+    },
+    {
+      "id": "n-http-6",
+      "name": "HTTP /pump off",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        720,
+        320
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "http://10.0.0.102:8000/api/devices/switch.tapo_air_pump/toggle",
+        "options": {}
+      }
+    },
+    {
+      "id": "n-tg-6",
+      "name": "Reply /pump off",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        960,
+        320
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "sendMessage",
+        "chatId": "8485350751",
+        "text": "Air pump toggled.",
+        "additionalFields": {}
+      },
+      "credentials": {
+        "telegramApi": {
+          "id": "TYyehuWr4cp4n1e1",
+          "name": "Aquarium Bot"
+        }
+      }
+    },
+    {
+      "id": "n-http-7",
+      "name": "HTTP /feed",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        720,
+        440
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "http://10.0.0.102:8000/api/schedule/actions/feed-now",
+        "options": {}
+      }
+    },
+    {
+      "id": "n-tg-7",
+      "name": "Reply /feed",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        960,
+        440
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "sendMessage",
+        "chatId": "8485350751",
+        "text": "Feeding initiated.",
+        "additionalFields": {}
+      },
+      "credentials": {
+        "telegramApi": {
+          "id": "TYyehuWr4cp4n1e1",
+          "name": "Aquarium Bot"
+        }
+      }
+    },
+    {
+      "id": "n-tg-default",
+      "name": "Reply Unknown",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        720,
+        560
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "sendMessage",
+        "chatId": "8485350751",
+        "text": "Unknown command. Try: /status /filter on|off /heater on|off /pump on|off /feed",
+        "additionalFields": {}
+      },
+      "credentials": {
+        "telegramApi": {
+          "id": "TYyehuWr4cp4n1e1",
+          "name": "Aquarium Bot"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Route Command",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route Command": {
+      "main": [
+        [
+          {
+            "node": "HTTP Get Status",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "HTTP /filter on",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "HTTP /filter off",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "HTTP /heater on",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "HTTP /heater off",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "HTTP /pump on",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "HTTP /pump off",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "HTTP /feed",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Reply Unknown",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Get Status": {
+      "main": [
+        [
+          {
+            "node": "Format Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Status": {
+      "main": [
+        [
+          {
+            "node": "Reply Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP /filter on": {
+      "main": [
+        [
+          {
+            "node": "Reply /filter on",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP /filter off": {
+      "main": [
+        [
+          {
+            "node": "Reply /filter off",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP /heater on": {
+      "main": [
+        [
+          {
+            "node": "Reply /heater on",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP /heater off": {
+      "main": [
+        [
+          {
+            "node": "Reply /heater off",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP /pump on": {
+      "main": [
+        [
+          {
+            "node": "Reply /pump on",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP /pump off": {
+      "main": [
+        [
+          {
+            "node": "Reply /pump off",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP /feed": {
+      "main": [
+        [
+          {
+            "node": "Reply /feed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  }
+}
