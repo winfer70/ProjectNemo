@@ -67,10 +67,10 @@
     </template>
 
     <template v-else>
-      <aside class="side">
-        <div class="s-brand">
+      <header class="t-hdr">
+        <div class="t-hdr-brand">
           <span class="fish">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
               <path d="M16 12c0 0 3-4 6-4-1 2-1 6 0 8-3 0-6-4-6-4z"/>
               <path d="M16 12c-3-4-9-4-12 0 3 4 9 4 12 0z"/>
               <circle cx="7" cy="11" r="0.6" fill="currentColor" stroke="none"/>
@@ -78,88 +78,92 @@
           </span>
           PROJECT NEMO
         </div>
-        <div class="s-clock">
-          <div class="c">{{ clock }}</div>
-          <div class="s-date">{{ fullDate }}</div>
+        <div class="t-hdr-center">
+          <div class="t-clock">{{ clock }}</div>
+          <div class="t-date">{{ fullDate }}</div>
         </div>
-        <div v-if="weather" class="s-weather">
-          <div class="wx-ico" style="font-size:28px">{{ wxEmoji(weather.code) }}</div>
-          <div class="wx-main">
-            <div class="wx-temp">{{ Math.round(weather.temp) }}°C</div>
-            <div class="wx-cond">{{ wxLabel(weather.code) }}</div>
-            <div class="wx-city">Ballivor, Meath</div>
-          </div>
-          <div class="wx-hl">
-            <div>↑ {{ Math.round(weather.high) }}°</div>
-            <div>↓ {{ Math.round(weather.low) }}°</div>
-          </div>
-        </div>
-        <div class="s-nav">
-          <button class="s-item" :class="{ on: activeTab === 'schedule' }" @click="goTab('schedule')">
-            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="4.5" width="18" height="16" rx="2.5"/>
-              <path d="M3 9h18"/>
-              <path d="M8 2.5v4"/>
-              <path d="M16 2.5v4"/>
-              <path d="M8.5 14.5l2.2 2.2 4-4.4"/>
-            </svg>
-            <span>{{ $t('nav.schedule') }}</span>
-          </button>
-          <button class="s-item" :class="{ on: activeTab === 'live' }" @click="goTab('live')">
-            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M3 12h3.5l2-6 4 12 2.5-6H21"/>
-            </svg>
-            <span>{{ $t('nav.live') }}</span>
-          </button>
-          <button class="s-item" :class="{ on: activeTab === 'tests' }" @click="goTab('tests')">
-            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z"/>
-            </svg>
-            <span>{{ $t('nav.tests') }}</span>
-          </button>
-          <button class="s-item" :class="{ on: activeTab === 'calendar' }" @click="goTab('calendar')">
-            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="4.5" width="18" height="16" rx="2.5"/>
-              <path d="M3 9.5h18"/>
-              <path d="M8 2.5v4"/>
-              <path d="M16 2.5v4"/>
-            </svg>
-            <span>{{ $t('nav.calendar') }}</span>
-          </button>
-          <button class="s-item" :class="{ on: activeTab === 'livestock' }" @click="goTab('livestock')">
-            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M16 12c0 0 3-4 6-4-1 2-1 6 0 8-3 0-6-4-6-4z"/>
-              <path d="M16 12c-3-4-9-4-12 0 3 4 9 4 12 0z"/>
-              <circle cx="7" cy="11" r="0.6" fill="currentColor" stroke="none"/>
-            </svg>
-            <span>{{ $t('nav.livestock') }}</span>
-          </button>
-        </div>
-        <div class="s-foot">
-          <div class="s-foot-info">
-            <span class="lab">{{ locale === 'pl' ? 'Serwer' : 'Server' }}</span>
-            <span class="chip" style="color: var(--success)">
-              <span class="dot on"></span>
-              REDACTED-HOST · {{ locale === 'pl' ? 'połączony' : 'connected' }}
-            </span>
-          </div>
-          <div class="s-foot-locale">
-            <div class="hdr-locale">
-              <button :class="{ on: locale === 'en' }" @click="setLocale('en')">EN</button>
-              <button :class="{ on: locale === 'pl' }" @click="setLocale('pl')">PL</button>
+        <div class="t-hdr-right">
+          <div v-if="weather" class="t-weather">
+            <span style="font-size:30px;line-height:1;flex-shrink:0">{{ wxEmoji(weather.code) }}</span>
+            <div class="wx-main">
+              <div class="wx-temp">{{ Math.round(weather.temp) }}°C</div>
+              <div class="wx-cond">{{ wxLabel(weather.code) }}</div>
+              <div class="wx-city">Ballivor, Meath</div>
+            </div>
+            <div class="wx-hl">
+              <div>↑ {{ Math.round(weather.high) }}°</div>
+              <div>↓ {{ Math.round(weather.low) }}°</div>
             </div>
           </div>
+          <div class="hdr-locale">
+            <button :class="{ on: locale === 'en' }" @click="setLocale('en')">EN</button>
+            <button :class="{ on: locale === 'pl' }" @click="setLocale('pl')">PL</button>
+          </div>
         </div>
-      </aside>
-      <div class="main-pane">
-        <main class="scroll" ref="scrollRef" @scroll="onScroll">
-          <ScheduleView v-if="activeTab === 'schedule'" />
-          <LiveView v-if="activeTab === 'live'" />
-          <WaterTestsView v-if="activeTab === 'tests'" />
-          <CalendarView v-if="activeTab === 'calendar'" />
-          <LivestockView v-if="activeTab === 'livestock'" />
-        </main>
-        <div v-if="toast" class="toast-msg">{{ toast }}</div>
+      </header>
+      <div class="t-body">
+        <aside class="side">
+          <div class="s-nav">
+            <button class="s-item" :class="{ on: activeTab === 'schedule' }" @click="goTab('schedule')">
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="4.5" width="18" height="16" rx="2.5"/>
+                <path d="M3 9h18"/>
+                <path d="M8 2.5v4"/>
+                <path d="M16 2.5v4"/>
+                <path d="M8.5 14.5l2.2 2.2 4-4.4"/>
+              </svg>
+              <span>{{ $t('nav.schedule') }}</span>
+            </button>
+            <button class="s-item" :class="{ on: activeTab === 'live' }" @click="goTab('live')">
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 12h3.5l2-6 4 12 2.5-6H21"/>
+              </svg>
+              <span>{{ $t('nav.live') }}</span>
+            </button>
+            <button class="s-item" :class="{ on: activeTab === 'tests' }" @click="goTab('tests')">
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z"/>
+              </svg>
+              <span>{{ $t('nav.tests') }}</span>
+            </button>
+            <button class="s-item" :class="{ on: activeTab === 'calendar' }" @click="goTab('calendar')">
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="4.5" width="18" height="16" rx="2.5"/>
+                <path d="M3 9.5h18"/>
+                <path d="M8 2.5v4"/>
+                <path d="M16 2.5v4"/>
+              </svg>
+              <span>{{ $t('nav.calendar') }}</span>
+            </button>
+            <button class="s-item" :class="{ on: activeTab === 'livestock' }" @click="goTab('livestock')">
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M16 12c0 0 3-4 6-4-1 2-1 6 0 8-3 0-6-4-6-4z"/>
+                <path d="M16 12c-3-4-9-4-12 0 3 4 9 4 12 0z"/>
+                <circle cx="7" cy="11" r="0.6" fill="currentColor" stroke="none"/>
+              </svg>
+              <span>{{ $t('nav.livestock') }}</span>
+            </button>
+          </div>
+          <div class="s-foot">
+            <div class="s-foot-info">
+              <span class="lab">{{ locale === 'pl' ? 'Serwer' : 'Server' }}</span>
+              <span class="chip" style="color: var(--success)">
+                <span class="dot on"></span>
+                REDACTED-HOST · {{ locale === 'pl' ? 'połączony' : 'connected' }}
+              </span>
+            </div>
+          </div>
+        </aside>
+        <div class="main-pane">
+          <main class="scroll" ref="scrollRef" @scroll="onScroll">
+            <ScheduleView v-if="activeTab === 'schedule'" />
+            <LiveView v-if="activeTab === 'live'" />
+            <WaterTestsView v-if="activeTab === 'tests'" />
+            <CalendarView v-if="activeTab === 'calendar'" />
+            <LivestockView v-if="activeTab === 'livestock'" />
+          </main>
+          <div v-if="toast" class="toast-msg">{{ toast }}</div>
+        </div>
       </div>
     </template>
   </div>
