@@ -115,7 +115,11 @@ async def live_push_loop():
     """Push sensor + device data every 30s and check for device-off alerts."""
     while True:
         try:
-            temp = await ha_client.get_state_float(settings.esphome_temp_entity)
+            temp = None
+            if settings.zigbee_temp_entity:
+                temp = await ha_client.get_state_float(settings.zigbee_temp_entity)
+            if temp is None:
+                temp = await ha_client.get_state_float(settings.esphome_temp_entity)
             ph = await ha_client.get_state_float(settings.esphome_ph_entity)
 
             now_dt = datetime.now(timezone.utc)
