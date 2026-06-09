@@ -90,6 +90,7 @@ html, body, #app { height: 100%; margin: 0; padding: 0; background: #0e1117; }
   border: 1px solid var(--border);
   border-radius: var(--r-card);
   overflow: hidden;
+  flex-shrink: 0;
 }
 .tile-hd {
   display: flex; align-items: center; justify-content: space-between;
