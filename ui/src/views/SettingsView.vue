@@ -32,9 +32,9 @@
 
       <div class="field">
         <label class="field-label">{{ locale === 'en' ? 'Language' : 'Język' }}</label>
-        <div style="display:flex;gap:8px;margin-top:8px">
-          <button class="seg" :class="{ on: locale === 'en' }" @click="setLocale('en')">EN</button>
-          <button class="seg" :class="{ on: locale === 'pl' }" @click="setLocale('pl')">PL</button>
+        <div class="seg" style="margin-top:8px">
+          <button :class="{ on: locale === 'en' }" @click="setLocale('en')">EN</button>
+          <button :class="{ on: locale === 'pl' }" @click="setLocale('pl')">PL</button>
         </div>
       </div>
     </div>
