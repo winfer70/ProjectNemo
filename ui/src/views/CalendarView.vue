@@ -1,6 +1,7 @@
 <template>
+  <div style="display:flex;gap:12px;align-items:flex-start">
   <!-- ── Tile 1: Calendar grid ──────────────────────────────────── -->
-  <div class="tile" style="zoom:0.5">
+  <div class="tile" style="zoom:0.65;flex-shrink:0">
     <div class="tile-hd">
       <h2>
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -54,7 +55,7 @@
   </div>
 
   <!-- ── Tile 2: Selected day tasks ─────────────────────────────── -->
-  <div class="tile">
+  <div class="tile" style="flex:1;min-width:0">
     <div class="tile-hd">
       <h2>{{ formattedDay }}</h2>
     </div>
@@ -165,6 +166,7 @@
         {{ locale === 'pl' ? 'Dodaj zadanie' : 'Add task' }}
       </button>
     </div>
+  </div>
   </div>
 
   <!-- ── CalEditModal (full-screen) ────────────────────────────── -->
