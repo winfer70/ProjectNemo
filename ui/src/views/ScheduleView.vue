@@ -63,6 +63,12 @@
               <span v-else class="task-badge b-pending">{{ locale === 'pl' ? 'dziś' : 'today' }}</span>
             </div>
             <div v-if="expandedTask === (task.id + '_' + task.date) && !task.completed" class="task-actions">
+              <div v-if="task.amount" style="font-size:13px;font-weight:600;color:var(--accent);background:var(--surface-2,rgba(255,255,255,0.04));border-radius:8px;padding:7px 12px;margin-bottom:8px">
+                {{ task.amount }}
+              </div>
+              <div v-if="task.notes_pl" style="font-size:12.5px;color:var(--text-muted);white-space:pre-line;line-height:1.65;background:var(--surface-2,rgba(255,255,255,0.04));border-radius:8px;padding:9px 12px;margin-bottom:10px">
+                {{ task.notes_pl }}
+              </div>
               <button class="btn btn-sm btn-success" @click="completeTask(task)">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M4 12.5l5 5 11-12"/>
