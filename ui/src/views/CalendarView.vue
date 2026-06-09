@@ -440,3 +440,7 @@ async function deleteTask() {
   editModal.value = null
 }
 </script>
+
+<style scoped>
+.cal-cell { height: 48px; }
+</style>
