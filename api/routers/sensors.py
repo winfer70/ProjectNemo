@@ -3,6 +3,7 @@ from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, Query
 
+from config import settings
 from models.schemas import SensorCurrentOut, SensorHistoryPoint
 from services.ha_client import ha_client
 from services.influx_client import influx_client
@@ -12,13 +13,17 @@ router = APIRouter(prefix="/api/sensors", tags=["sensors"])
 
 @router.get("/current", response_model=SensorCurrentOut)
 async def current_sensors():
-    temp = await ha_client.get_state_float("sensor.nemo_sensor_temperature")
-    ph = await ha_client.get_state_float("sensor.nemo_sensor_ph")
+    temp = None
+    if settings.zigbee_temp_entity:
+        temp = await ha_client.get_state_float(settings.zigbee_temp_entity)
+    if temp is None:
+        temp = await ha_client.get_state_float(settings.esphome_temp_entity)
+    ph = await ha_client.get_state_float(settings.esphome_ph_entity)
     return SensorCurrentOut(
         temperature=temp,
         ph=ph,
-        tds=None,   # Phase B — not yet wired
-        orp=None,   # Phase B — not yet wired
+        tds=None,
+        orp=None,
         updated_at=datetime.now(timezone.utc),
     )
 

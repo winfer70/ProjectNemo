@@ -63,30 +63,32 @@
               <span v-else class="task-badge b-pending">{{ locale === 'pl' ? 'dziś' : 'today' }}</span>
             </div>
             <div v-if="expandedTask === (task.id + '_' + task.date) && !task.completed" class="task-actions">
-              <div v-if="task.amount" style="font-size:13px;font-weight:600;color:var(--accent);background:var(--surface-2,rgba(255,255,255,0.04));border-radius:8px;padding:7px 12px;margin-bottom:8px">
+              <div v-if="task.amount" style="font-size:13px;font-weight:600;color:var(--accent);background:var(--surface-2,rgba(255,255,255,0.04));border-radius:8px;padding:7px 12px">
                 {{ task.amount }}
               </div>
-              <div v-if="task.notes_pl" style="font-size:12.5px;color:var(--text-muted);white-space:pre-line;line-height:1.65;background:var(--surface-2,rgba(255,255,255,0.04));border-radius:8px;padding:9px 12px;margin-bottom:10px">
+              <div v-if="task.notes_pl" style="font-size:12.5px;color:var(--text-muted);white-space:pre-line;line-height:1.65;background:var(--surface-2,rgba(255,255,255,0.04));border-radius:8px;padding:9px 12px">
                 {{ task.notes_pl }}
               </div>
-              <button class="btn btn-sm btn-success" @click="completeTask(task)">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M4 12.5l5 5 11-12"/>
-                </svg>
-                {{ locale === 'pl' ? 'Zrobione' : 'Done' }}
-              </button>
-              <button class="btn btn-sm" @click="expandedTask = null">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 1.5"/><path d="M5 4l4 2"/><path d="M19 4l-4 2"/>
-                </svg>
-                {{ locale === 'pl' ? 'Drzemka' : 'Snooze' }}
-              </button>
-              <button class="btn btn-sm" @click="expandedTask = null">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="3" y="4.5" width="18" height="16" rx="2.5"/><path d="M3 9.5h18"/><path d="M8 2.5v4"/><path d="M16 2.5v4"/>
-                </svg>
-                {{ locale === 'pl' ? 'Jutro' : 'Tomorrow' }}
-              </button>
+              <div class="task-actions-btns">
+                <button class="btn btn-sm btn-success" @click="completeTask(task)">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 12.5l5 5 11-12"/>
+                  </svg>
+                  {{ locale === 'pl' ? 'Zrobione' : 'Done' }}
+                </button>
+                <button class="btn btn-sm" @click="expandedTask = null">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 1.5"/><path d="M5 4l4 2"/><path d="M19 4l-4 2"/>
+                  </svg>
+                  {{ locale === 'pl' ? 'Drzemka' : 'Snooze' }}
+                </button>
+                <button class="btn btn-sm" @click="expandedTask = null">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="4.5" width="18" height="16" rx="2.5"/><path d="M3 9.5h18"/><path d="M8 2.5v4"/><path d="M16 2.5v4"/>
+                  </svg>
+                  {{ locale === 'pl' ? 'Jutro' : 'Tomorrow' }}
+                </button>
+              </div>
             </div>
           </div>
         </template>
@@ -375,7 +377,10 @@
             </span>
             <div class="dev-name">
               <div class="n" style="font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ locale === 'pl' ? device.name_pl : device.name }}</div>
-              <div class="w">{{ device.state === 'on' ? (device.watts ?? 0) : 0 }}W</div>
+              <div class="w">
+                <span>{{ device.state === 'on' ? (device.watts ?? 0) : 0 }}W</span>
+                <span v-if="device.kwh_today != null" style="margin-left:5px;opacity:0.65">{{ device.kwh_today.toFixed(2) }} kWh</span>
+              </div>
             </div>
             <span v-if="device.state !== 'on' && !scheduleStore.feedStatus.paused && !hasAnyInProgressMaintenance" class="warn-ico">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">

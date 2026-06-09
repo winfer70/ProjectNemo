@@ -2,17 +2,14 @@
   <div class="nemo" :class="{ tablet: isTablet }" ref="rootRef">
     <template v-if="!isTablet">
       <header class="hdr">
-        <div class="hdr-brand">
-          <span class="fish">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M16 12c0 0 3-4 6-4-1 2-1 6 0 8-3 0-6-4-6-4z"/>
-              <path d="M16 12c-3-4-9-4-12 0 3 4 9 4 12 0z"/>
-              <circle cx="7" cy="11" r="0.6" fill="currentColor" stroke="none"/>
-            </svg>
-          </span>
-          PROJECT NEMO
+        <div class="hdr-dt">
+          <div class="hdr-dt-day">{{ shortDay }}</div>
+          <div class="hdr-dt-bottom">
+            <span class="hdr-dt-date">{{ shortDate }}</span>
+            <span class="hdr-dt-sep">·</span>
+            <span class="hdr-dt-clock">{{ clock }}</span>
+          </div>
         </div>
-        <div class="hdr-clock">{{ clock }}</div>
         <div class="hdr-locale">
           <button :class="{ on: locale === 'en' }" @click="setLocale('en')">EN</button>
           <button :class="{ on: locale === 'pl' }" @click="setLocale('pl')">PL</button>
@@ -208,6 +205,24 @@ const clock = computed(() => {
   const h = String(now.value.getHours()).padStart(2, '0')
   const m = String(now.value.getMinutes()).padStart(2, '0')
   return `${h}:${m}`
+})
+
+const shortDay = computed(() => {
+  const d = now.value
+  if (locale.value === 'pl') {
+    return ['Ndz', 'Pon', 'Wt', 'Śr', 'Czw', 'Pt', 'Sob'][d.getDay()]
+  }
+  return ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][d.getDay()]
+})
+
+const shortDate = computed(() => {
+  const d = now.value
+  if (locale.value === 'pl') {
+    const months = ['sty', 'lut', 'mar', 'kwi', 'maj', 'cze', 'lip', 'sie', 'wrz', 'paź', 'lis', 'gru']
+    return `${d.getDate()} ${months[d.getMonth()]}`
+  }
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+  return `${months[d.getMonth()]} ${d.getDate()}`
 })
 
 const fullDate = computed(() => {

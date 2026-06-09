@@ -54,7 +54,8 @@ services:
       - "8080:8080"           # Z2M web UI (local access only)
     volumes:
       - ./zigbee2mqtt/config:/app/data
-                                     # comment out HA device line if Z2M manages ZBDongle-E
+    devices:
+      - /dev/ttyUSB0:/dev/ttyUSB0   # ZBDongle-E (EFR32MG21)
     depends_on:
       - mosquitto
     networks:
@@ -109,6 +110,7 @@ services:
       - FLUVAL_BLE_MAC=${FLUVAL_BLE_MAC}
       - ESPHOME_TEMP_ENTITY=${ESPHOME_TEMP_ENTITY}
       - ESPHOME_PH_ENTITY=${ESPHOME_PH_ENTITY}
+      - ZIGBEE_TEMP_ENTITY=${ZIGBEE_TEMP_ENTITY}
       - API_SECRET_KEY=${API_SECRET_KEY}
       - LOG_LEVEL=${LOG_LEVEL:-info}
     ports:

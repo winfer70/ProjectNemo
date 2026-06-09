@@ -32,6 +32,7 @@ class Settings(BaseSettings):
     fluval_ble_mac: str = ""
     esphome_temp_entity: str = "sensor.nemo_sensor_temperature"
     esphome_ph_entity: str = "sensor.nemo_sensor_ph"
+    zigbee_temp_entity: str = "sensor.snzb_02ld_temperature"
 
     ollama_url: str = "http://10.0.0.101:11434"
     searxng_url: str = "http://10.0.0.101:8888"

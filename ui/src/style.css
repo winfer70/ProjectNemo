@@ -45,10 +45,10 @@ html, body, #app { height: 100%; margin: 0; padding: 0; background: #0e1117; }
 
 /* ───────── Header ───────── */
 .hdr {
-  height: 48px;
+  height: 60px;
   flex-shrink: 0;
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  grid-template-columns: 1fr auto;
   align-items: center;
   padding: 0 14px;
   background: rgba(14,17,23,0.86);
@@ -63,6 +63,12 @@ html, body, #app { height: 100%; margin: 0; padding: 0; background: #0e1117; }
 .hdr-locale { justify-self: end; display: flex; align-items: center; gap: 0; background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-pill); padding: 2px; }
 .hdr-locale button { border: 0; background: transparent; color: var(--text-muted); font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 14px; cursor: pointer; letter-spacing: 0.5px; }
 .hdr-locale button.on { background: var(--accent); color: #fff; }
+.hdr-dt { display: flex; flex-direction: column; justify-content: center; gap: 1px; }
+.hdr-dt-day { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px; color: var(--text-muted); }
+.hdr-dt-bottom { display: flex; align-items: baseline; gap: 5px; }
+.hdr-dt-date { font-size: 13px; font-weight: 600; color: var(--text); }
+.hdr-dt-sep { color: var(--text-muted); font-size: 11px; }
+.hdr-dt-clock { font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--accent); line-height: 1; }
 
 /* ───────── Scroll area ───────── */
 .scroll {
@@ -119,9 +125,10 @@ html, body, #app { height: 100%; margin: 0; padding: 0; background: #0e1117; }
 
 /* inline expand action row */
 .task-actions {
-  display: flex; gap: 8px; padding: 4px 2px 10px;
+  display: flex; flex-direction: column; gap: 8px; padding: 4px 2px 10px;
   animation: slideDown .18s ease;
 }
+.task-actions-btns { display: flex; gap: 8px; flex-wrap: wrap; }
 @keyframes slideDown { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
 
 /* ───────── Buttons ───────── */
@@ -197,7 +204,7 @@ html, body, #app { height: 100%; margin: 0; padding: 0; background: #0e1117; }
 
 /* ───────── Grid for two tiles ───────── */
 .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap); }
-@media (max-width: 380px) { .row2 { grid-template-columns: 1fr; } }
+@media (max-width: 480px) { .row2 { grid-template-columns: 1fr; } }
 
 /* ───────── Sensor cards ───────── */
 .sensor-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap); }

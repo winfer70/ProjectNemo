@@ -132,14 +132,15 @@
         <!-- Modal body -->
         <div style="padding:16px;overflow-y:scroll;-webkit-overflow-scrolling:touch;overscroll-behavior:contain">
 
-          <!-- Camera + detecting phase -->
+        <!-- Camera + detecting phase -->
           <template v-if="scanPhase !== 'confirm'">
             <input type="file" accept="image/*" capture="environment" ref="fileInputRef" style="display:none" @change="handleFile">
             <div
               style="aspect-ratio:3/4;border-radius:14px;overflow:hidden;position:relative;border:1px solid var(--border);cursor:pointer"
               @click="fileInputRef?.click()"
             >
-              <div class="ph" style="position:absolute;inset:0">podgląd kamery</div>
+              <img v-if="scannedImageUrl" :src="scannedImageUrl" style="width:100%;height:100%;object-fit:cover;display:block">
+              <div v-else class="ph" style="position:absolute;inset:0">podgląd kamery</div>
               <div
                 style="position:absolute;inset:18% 12%;border:2px dashed rgba(255,255,255,0.4);border-radius:10px"
               />
@@ -164,7 +165,7 @@
             <button
               class="btn btn-block btn-ghost"
               style="margin-bottom:10px"
-              @click="() => { const vals = {}; manualParams.forEach(p => { vals[p.id] = '' }); detectedValues.value = vals; scanPhase.value = 'confirm' }"
+              @click="enterManual"
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M2 6h20v12H2z"/><path d="M6 10h.01"/><path d="M10 10h.01"/><path d="M14 10h.01"/><path d="M18 10h.01"/><path d="M8 14h8"/>
@@ -188,6 +189,17 @@
           <!-- Confirm phase -->
           <template v-else>
             <div
+              v-if="scanError"
+              class="banner"
+              style="background:var(--warning-12);color:var(--warning);margin-bottom:16px;border:1px solid rgba(210,153,34,0.3)"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 4l9 15H3l9-15z"/><path d="M12 10v4"/><circle cx="12" cy="16.5" r="0.6" fill="currentColor" stroke="none"/>
+              </svg>
+              <span>{{ scanError }}</span>
+            </div>
+            <div
+              v-else
               class="banner"
               style="background:var(--success-12);color:var(--success);margin-bottom:16px;border:1px solid rgba(63,185,80,0.3)"
             >
@@ -196,6 +208,16 @@
                 <path d="M8 12.2l2.6 2.6L16 9" />
               </svg>
               <span>Wykryto parametry — potwierdź wartości</span>
+            </div>
+
+            <div class="field" style="margin-bottom:16px">
+              <label style="font-size:12px;color:var(--text-muted);font-weight:600;display:block;margin-bottom:6px">Data testu</label>
+              <input
+                class="input"
+                type="datetime-local"
+                v-model="testDate"
+                style="font-size:14px"
+              />
             </div>
 
             <div v-for="p in manualParams" :key="p.id" class="kv">
@@ -280,37 +302,114 @@ const statusColor = (p) => {
 
 const statusText = (p) => (p.out_of_range ? 'Wysoko' : 'OK')
 
-// Scan modal state
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+function toLocalDatetimeInput(d) {
+  const pad = (n) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
+}
+
+function extractExifDate(file) {
+  return new Promise((resolve) => {
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      try {
+        const bytes = new Uint8Array(e.target.result)
+        let str = ''
+        for (let i = 0; i < bytes.length; i++) str += String.fromCharCode(bytes[i])
+        // EXIF DateTimeOriginal format: "YYYY:MM:DD HH:MM:SS"
+        const m = str.match(/(\d{4}):(\d{2}):(\d{2}) (\d{2}):(\d{2}):(\d{2})/)
+        if (m) {
+          const dt = new Date(`${m[1]}-${m[2]}-${m[3]}T${m[4]}:${m[5]}:${m[6]}`)
+          if (!isNaN(dt.getTime())) { resolve(dt); return }
+        }
+      } catch {}
+      resolve(new Date(file.lastModified || Date.now()))
+    }
+    reader.onerror = () => resolve(new Date(file.lastModified || Date.now()))
+    reader.readAsArrayBuffer(file.slice(0, 65536))
+  })
+}
+
+// ─── Scan modal state ─────────────────────────────────────────────────────────
 const scanModal = ref(false)
 const scanPhase = ref('camera')
 const detectedValues = ref({})
 const saving = ref(false)
 const fileInputRef = ref(null)
-let scanTimeout = null
+const scannedImageUrl = ref(null)
+const testDate = ref('')
+const scanError = ref(null)
+const cacheId = ref(null)
 
 function openScanModal() {
   scanPhase.value = 'camera'
   detectedValues.value = {}
+  scannedImageUrl.value = null
+  testDate.value = toLocalDatetimeInput(new Date())
+  scanError.value = null
+  cacheId.value = null
   scanModal.value = true
 }
 
 function closeScanModal() {
-  clearTimeout(scanTimeout)
   scanModal.value = false
   scanPhase.value = 'camera'
   detectedValues.value = {}
+  scannedImageUrl.value = null
+  testDate.value = ''
+  scanError.value = null
+  cacheId.value = null
 }
 
 function startCapture() {
+  fileInputRef.value?.click()
+}
+
+function enterManual() {
+  const vals = {}
+  manualParams.value.forEach((p) => { vals[p.id] = '' })
+  detectedValues.value = vals
+  testDate.value = toLocalDatetimeInput(new Date())
+  cacheId.value = null
+  scanError.value = null
+  scanPhase.value = 'confirm'
+}
+
+async function handleFile(event) {
+  const file = event.target.files?.[0]
+  if (!file) return
+
+  scannedImageUrl.value = URL.createObjectURL(file)
   scanPhase.value = 'detecting'
-  scanTimeout = setTimeout(() => {
+  scanError.value = null
+
+  // Extract date from EXIF, fall back to file.lastModified
+  const dt = await extractExifDate(file)
+  testDate.value = toLocalDatetimeInput(dt)
+
+  try {
+    const form = new FormData()
+    form.append('file', file)
+    const res = await axios.post('/api/water-tests/analyze_strip', form)
+    cacheId.value = res.data.cache_id
+
     const vals = {}
     manualParams.value.forEach((p) => {
-      vals[p.id] = ''
+      const v = res.data.prefill?.[p.id]
+      vals[p.id] = v !== undefined ? String(v) : ''
     })
     detectedValues.value = vals
     scanPhase.value = 'confirm'
-  }, 1600)
+  } catch {
+    const vals = {}
+    manualParams.value.forEach((p) => { vals[p.id] = '' })
+    detectedValues.value = vals
+    scanError.value = 'Analiza nieudana — wpisz wartości ręcznie'
+    scanPhase.value = 'confirm'
+  }
+
+  // Reset file input so same file can be re-selected
+  if (fileInputRef.value) fileInputRef.value.value = ''
 }
 
 async function saveScan() {
@@ -326,7 +425,11 @@ async function saveScan() {
 
   saving.value = true
   try {
-    await axios.post('/api/water-tests/sessions', { readings })
+    const payload = { readings }
+    if (cacheId.value != null) payload.scan_cache_id = cacheId.value
+    if (testDate.value) payload.tested_at = new Date(testDate.value).toISOString()
+
+    await axios.post('/api/water-tests/sessions', payload)
     const sessR = await axios.get('/api/water-tests/sessions')
     sessions.value = sessR.data
   } finally {
