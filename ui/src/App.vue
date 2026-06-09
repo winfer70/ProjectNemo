@@ -82,6 +82,18 @@
           <div class="c">{{ clock }}</div>
           <div class="s-date">{{ fullDate }}</div>
         </div>
+        <div v-if="weather" class="s-weather">
+          <div class="wx-ico" style="font-size:28px">{{ wxEmoji(weather.code) }}</div>
+          <div class="wx-main">
+            <div class="wx-temp">{{ Math.round(weather.temp) }}°C</div>
+            <div class="wx-cond">{{ wxLabel(weather.code) }}</div>
+            <div class="wx-city">Ballivor, Meath</div>
+          </div>
+          <div class="wx-hl">
+            <div>↑ {{ Math.round(weather.high) }}°</div>
+            <div>↓ {{ Math.round(weather.low) }}°</div>
+          </div>
+        </div>
         <div class="s-nav">
           <button class="s-item" :class="{ on: activeTab === 'schedule' }" @click="goTab('schedule')">
             <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -183,9 +195,11 @@ const isTablet = ref(false)
 const toast = ref(null)
 const now = ref(new Date())
 const lastScroll = ref(0)
+const weather = ref(null)
 
 let clockTimer = null
 let toastTimer = null
+let wxTimer = null
 let ro = null
 
 function showToast(msg) {
@@ -237,6 +251,67 @@ const fullDate = computed(() => {
   return `${days[d.getDay()]}, ${months[d.getMonth()]} ${d.getDate()} ${d.getFullYear()}`
 })
 
+const WX_LABELS = {
+  0:  ['Clear sky',      'Bezchmurnie'],
+  1:  ['Mainly clear',   'Małe zachmurzenie'],
+  2:  ['Partly cloudy',  'Częściowe chmury'],
+  3:  ['Overcast',       'Zachmurzenie'],
+  45: ['Fog',            'Mgła'],
+  48: ['Icy fog',        'Mgła z szronem'],
+  51: ['Light drizzle',  'Lekka mżawka'],
+  53: ['Drizzle',        'Mżawka'],
+  55: ['Heavy drizzle',  'Silna mżawka'],
+  61: ['Light rain',     'Lekki deszcz'],
+  63: ['Rain',           'Deszcz'],
+  65: ['Heavy rain',     'Silny deszcz'],
+  71: ['Light snow',     'Lekki śnieg'],
+  73: ['Snow',           'Śnieg'],
+  75: ['Heavy snow',     'Silny śnieg'],
+  77: ['Snow grains',    'Ziarna śniegu'],
+  80: ['Showers',        'Przelotne opady'],
+  81: ['Showers',        'Przelotne opady'],
+  82: ['Heavy showers',  'Silne opady'],
+  95: ['Thunderstorm',   'Burza'],
+  96: ['Storm + hail',   'Burza z gradem'],
+  99: ['Storm + hail',   'Burza z gradem'],
+}
+
+function wxLabel(code) {
+  const entry = WX_LABELS[code]
+  if (!entry) return ''
+  return locale.value === 'pl' ? entry[1] : entry[0]
+}
+
+function wxEmoji(code) {
+  if (code === 0) return '☀️'
+  if (code <= 2) return '🌤️'
+  if (code === 3) return '☁️'
+  if (code <= 48) return '🌫️'
+  if (code <= 57) return '🌦️'
+  if (code <= 67) return '🌧️'
+  if (code <= 77) return '❄️'
+  if (code <= 82) return '🌧️'
+  return '⛈️'
+}
+
+async function fetchWeather() {
+  try {
+    const r = await fetch(
+      'https://api.open-meteo.com/v1/forecast?latitude=53.5563&longitude=-6.8847' +
+      '&current=temperature_2m,weather_code,wind_speed_10m' +
+      '&daily=temperature_2m_max,temperature_2m_min' +
+      '&timezone=Europe%2FDublin&forecast_days=1'
+    )
+    const d = await r.json()
+    weather.value = {
+      temp: d.current.temperature_2m,
+      code: d.current.weather_code,
+      high: d.daily.temperature_2m_max[0],
+      low:  d.daily.temperature_2m_min[0],
+    }
+  } catch {}
+}
+
 function onScroll(e) {
   const y = e.target.scrollTop
   if (y > lastScroll.value + 6 && y > 40) navHidden.value = true
@@ -266,6 +341,8 @@ function _handleInvalidate(evt) {
 
 onMounted(() => {
   clockTimer = setInterval(() => { now.value = new Date() }, 1000)
+  fetchWeather()
+  wxTimer = setInterval(fetchWeather, 30 * 60 * 1000)
   sensorsStore.connectWs()
   window.addEventListener('nemo:invalidate', _handleInvalidate)
   if (rootRef.value) {
@@ -280,6 +357,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   clearInterval(clockTimer)
+  clearInterval(wxTimer)
   clearTimeout(toastTimer)
   sensorsStore.disconnectWs()
   window.removeEventListener('nemo:invalidate', _handleInvalidate)
