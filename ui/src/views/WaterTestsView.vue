@@ -132,34 +132,27 @@
         <!-- Modal body -->
         <div style="padding:16px;overflow-y:scroll;-webkit-overflow-scrolling:touch;overscroll-behavior:contain">
 
-        <!-- Camera + detecting phase -->
+        <!-- Upload + manual phase -->
           <template v-if="scanPhase !== 'confirm'">
-            <input type="file" accept="image/*" capture="environment" ref="fileInputRef" style="display:none" @change="handleFile">
+            <input type="file" accept="image/*" ref="fileInputRef" style="display:none" @change="handleFile">
             <div
-              style="aspect-ratio:3/4;border-radius:14px;overflow:hidden;position:relative;border:1px solid var(--border);cursor:pointer"
+              style="aspect-ratio:3/4;border-radius:14px;overflow:hidden;position:relative;border:2px dashed var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center"
               @click="fileInputRef?.click()"
             >
               <img v-if="scannedImageUrl" :src="scannedImageUrl" style="width:100%;height:100%;object-fit:cover;display:block">
-              <div v-else class="ph" style="position:absolute;inset:0">podgląd kamery</div>
-              <div
-                style="position:absolute;inset:18% 12%;border:2px dashed rgba(255,255,255,0.4);border-radius:10px"
-              />
-              <div
-                v-if="scanPhase === 'detecting'"
-                style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:rgba(0,0,0,0.45)"
-              >
-                <span style="color:var(--accent)" class="spin">
-                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M20 12a8 8 0 1 1-2.3-5.6" />
-                    <path d="M20 4v4h-4" />
-                  </svg>
-                </span>
-                <span style="font-size:13px;font-weight:600">Wykrywanie pasków…</span>
+              <div v-else style="display:flex;flex-direction:column;align-items:center;gap:10px;color:var(--text-muted)">
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                  <polyline points="17 8 12 3 7 8"/>
+                  <line x1="12" y1="3" x2="12" y2="15"/>
+                </svg>
+                <span style="font-size:14px;font-weight:600">Wgraj zdjęcie</span>
+                <span style="font-size:12px">Dotknij aby wybrać</span>
               </div>
             </div>
 
             <p class="muted" style="font-size:12.5px;text-align:center;margin:14px 0 18px">
-              Umieść pasek testowy w ramce. CV dopasuje kolory, AI uzupełni braki.
+              Wgraj zdjęcie paska testowego — data zostanie pobrana z EXIF.
             </p>
 
             <button
@@ -175,39 +168,21 @@
 
             <button
               class="btn btn-accent btn-block btn-lg"
-              :disabled="scanPhase === 'detecting'"
-              @click="startCapture"
+              @click="fileInputRef?.click()"
             >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M3 8.5a2 2 0 0 1 2-2h2l1.5-2h7L17 6.5h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-9z" />
-                <circle cx="12" cy="12.5" r="3.5" />
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="17 8 12 3 7 8"/>
+                <line x1="12" y1="3" x2="12" y2="15"/>
               </svg>
-              {{ scanPhase === 'detecting' ? 'Analizowanie…' : 'Zrób zdjęcie' }}
+              Wgraj zdjęcie
             </button>
           </template>
 
           <!-- Confirm phase -->
           <template v-else>
-            <div
-              v-if="scanError"
-              class="banner"
-              style="background:var(--warning-12);color:var(--warning);margin-bottom:16px;border:1px solid rgba(210,153,34,0.3)"
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M12 4l9 15H3l9-15z"/><path d="M12 10v4"/><circle cx="12" cy="16.5" r="0.6" fill="currentColor" stroke="none"/>
-              </svg>
-              <span>{{ scanError }}</span>
-            </div>
-            <div
-              v-else
-              class="banner"
-              style="background:var(--success-12);color:var(--success);margin-bottom:16px;border:1px solid rgba(63,185,80,0.3)"
-            >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="9" />
-                <path d="M8 12.2l2.6 2.6L16 9" />
-              </svg>
-              <span>Wykryto parametry — potwierdź wartości</span>
+            <div v-if="scannedImageUrl" style="margin-bottom:16px;border-radius:10px;overflow:hidden;max-height:180px">
+              <img :src="scannedImageUrl" style="width:100%;object-fit:cover;display:block">
             </div>
 
             <div class="field" style="margin-bottom:16px">
@@ -332,37 +307,30 @@ function extractExifDate(file) {
 
 // ─── Scan modal state ─────────────────────────────────────────────────────────
 const scanModal = ref(false)
-const scanPhase = ref('camera')
+const scanPhase = ref('upload')
 const detectedValues = ref({})
 const saving = ref(false)
 const fileInputRef = ref(null)
 const scannedImageUrl = ref(null)
 const testDate = ref('')
-const scanError = ref(null)
 const cacheId = ref(null)
 
 function openScanModal() {
-  scanPhase.value = 'camera'
+  scanPhase.value = 'upload'
   detectedValues.value = {}
   scannedImageUrl.value = null
   testDate.value = toLocalDatetimeInput(new Date())
-  scanError.value = null
   cacheId.value = null
   scanModal.value = true
 }
 
 function closeScanModal() {
   scanModal.value = false
-  scanPhase.value = 'camera'
+  scanPhase.value = 'upload'
   detectedValues.value = {}
   scannedImageUrl.value = null
   testDate.value = ''
-  scanError.value = null
   cacheId.value = null
-}
-
-function startCapture() {
-  fileInputRef.value?.click()
 }
 
 function enterManual() {
@@ -380,35 +348,17 @@ async function handleFile(event) {
   if (!file) return
 
   scannedImageUrl.value = URL.createObjectURL(file)
-  scanPhase.value = 'detecting'
   scanError.value = null
 
-  // Extract date from EXIF, fall back to file.lastModified
   const dt = await extractExifDate(file)
   testDate.value = toLocalDatetimeInput(dt)
 
-  try {
-    const form = new FormData()
-    form.append('file', file)
-    const res = await axios.post('/api/water-tests/analyze_strip', form)
-    cacheId.value = res.data.cache_id
+  const vals = {}
+  manualParams.value.forEach((p) => { vals[p.id] = '' })
+  detectedValues.value = vals
+  cacheId.value = null
+  scanPhase.value = 'confirm'
 
-    const vals = {}
-    manualParams.value.forEach((p) => {
-      const v = res.data.prefill?.[p.id]
-      vals[p.id] = v !== undefined ? String(v) : ''
-    })
-    detectedValues.value = vals
-    scanPhase.value = 'confirm'
-  } catch {
-    const vals = {}
-    manualParams.value.forEach((p) => { vals[p.id] = '' })
-    detectedValues.value = vals
-    scanError.value = 'Analiza nieudana — wpisz wartości ręcznie'
-    scanPhase.value = 'confirm'
-  }
-
-  // Reset file input so same file can be re-selected
   if (fileInputRef.value) fileInputRef.value.value = ''
 }
 
