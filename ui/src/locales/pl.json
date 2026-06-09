@@ -4,7 +4,8 @@
     "live": "Na Żywo",
     "tests": "Testy",
     "calendar": "Kalendarz",
-    "livestock": "Obsada"
+    "livestock": "Obsada",
+    "settings": "Ustawienia"
   },
   "schedule": {
     "title": "Harmonogram",

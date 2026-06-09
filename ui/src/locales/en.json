@@ -4,7 +4,8 @@
     "live": "Live",
     "tests": "Tests",
     "calendar": "Calendar",
-    "livestock": "Livestock"
+    "livestock": "Livestock",
+    "settings": "Settings"
   },
   "schedule": {
     "title": "Schedule",

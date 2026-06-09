@@ -1,5 +1,5 @@
 <template>
-  <div class="nemo" :class="{ tablet: isTablet }" ref="rootRef">
+  <div class="nemo" :class="{ tablet: isTablet }" ref="rootRef" :style="{ zoom: appZoom }">
     <template v-if="!isTablet">
       <header class="hdr">
         <div class="hdr-dt">
@@ -10,10 +10,6 @@
             <span class="hdr-dt-clock">{{ clock }}</span>
           </div>
         </div>
-        <div class="hdr-locale">
-          <button :class="{ on: locale === 'en' }" @click="setLocale('en')">EN</button>
-          <button :class="{ on: locale === 'pl' }" @click="setLocale('pl')">PL</button>
-        </div>
       </header>
       <main class="scroll" ref="scrollRef" @scroll="onScroll">
         <ScheduleView v-if="activeTab === 'schedule'" />
@@ -21,6 +17,7 @@
         <WaterTestsView v-if="activeTab === 'tests'" />
         <CalendarView v-if="activeTab === 'calendar'" />
         <LivestockView v-if="activeTab === 'livestock'" />
+        <SettingsView v-if="activeTab === 'settings'" />
       </main>
       <div v-if="toast" class="toast-msg">{{ toast }}</div>
       <nav class="nav" :class="{ hidden: navHidden }">
@@ -63,6 +60,13 @@
           </svg>
           <span class="nlab">{{ $t('nav.livestock') }}</span>
         </button>
+        <button :class="{ on: activeTab === 'settings' }" @click="goTab('settings')">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+          </svg>
+          <span class="nlab">{{ $t('nav.settings') }}</span>
+        </button>
       </nav>
     </template>
 
@@ -84,7 +88,7 @@
         </div>
         <div class="t-hdr-right">
           <div v-if="weather" class="t-weather">
-            <span style="font-size:50px;line-height:1;flex-shrink:0">{{ wxEmoji(weather.code) }}</span>
+            <span style="font-size:75px;line-height:1;flex-shrink:0">{{ wxEmoji(weather.code) }}</span>
             <div class="wx-main">
               <div class="wx-temp">{{ Math.round(weather.temp) }}°C</div>
               <div class="wx-cond">{{ wxLabel(weather.code) }}</div>
@@ -94,10 +98,6 @@
               <div>↑ {{ Math.round(weather.high) }}°</div>
               <div>↓ {{ Math.round(weather.low) }}°</div>
             </div>
-          </div>
-          <div class="hdr-locale">
-            <button :class="{ on: locale === 'en' }" @click="setLocale('en')">EN</button>
-            <button :class="{ on: locale === 'pl' }" @click="setLocale('pl')">PL</button>
           </div>
         </div>
       </header>
@@ -143,15 +143,13 @@
               </svg>
               <span>{{ $t('nav.livestock') }}</span>
             </button>
-          </div>
-          <div class="s-foot">
-            <div class="s-foot-info">
-              <span class="lab">{{ locale === 'pl' ? 'Serwer' : 'Server' }}</span>
-              <span class="chip" style="color: var(--success)">
-                <span class="dot on"></span>
-                REDACTED-HOST · {{ locale === 'pl' ? 'połączony' : 'connected' }}
-              </span>
-            </div>
+            <button class="s-item s-settings-btn" :class="{ on: activeTab === 'settings' }" @click="goTab('settings')">
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+              </svg>
+              <span>{{ $t('nav.settings') }}</span>
+            </button>
           </div>
         </aside>
         <div class="main-pane">
@@ -161,6 +159,7 @@
             <WaterTestsView v-if="activeTab === 'tests'" />
             <CalendarView v-if="activeTab === 'calendar'" />
             <LivestockView v-if="activeTab === 'livestock'" />
+            <SettingsView v-if="activeTab === 'settings'" />
           </main>
           <div v-if="toast" class="toast-msg">{{ toast }}</div>
         </div>
@@ -177,6 +176,7 @@ import LiveView from './views/LiveView.vue'
 import WaterTestsView from './views/WaterTestsView.vue'
 import CalendarView from './views/CalendarView.vue'
 import LivestockView from './views/LivestockView.vue'
+import SettingsView from './views/SettingsView.vue'
 import { useSensorsStore } from './stores/sensors'
 import { useWaterTestsStore } from './stores/waterTests'
 import { useMaintenanceStore } from './stores/maintenance'
@@ -200,6 +200,13 @@ const toast = ref(null)
 const now = ref(new Date())
 const lastScroll = ref(0)
 const weather = ref(null)
+const fontScale = ref(parseInt(localStorage.getItem('nemo_fontscale') || '0'))
+const appZoom = computed(() => Math.max(0.25, Math.min(3, 1 + fontScale.value / 100)))
+
+function setFontScale(val) {
+  fontScale.value = val
+  localStorage.setItem('nemo_fontscale', String(val))
+}
 
 let clockTimer = null
 let toastTimer = null
@@ -213,6 +220,7 @@ function showToast(msg) {
 }
 
 provide('showToast', showToast)
+provide('fontScale', { fontScale, setFontScale })
 
 function setLocale(lang) {
   locale.value = lang
@@ -357,6 +365,7 @@ onMounted(() => {
     ro = new ResizeObserver(measure)
     ro.observe(rootRef.value)
   }
+  setFontScale(fontScale.value)
 })
 
 onUnmounted(() => {
