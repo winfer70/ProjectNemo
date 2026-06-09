@@ -377,9 +377,9 @@ html, body, #app { height: 100%; margin: 0; padding: 0; background: #0e1117; }
 }
 .side .s-brand { display: flex; align-items: center; gap: 9px; font-size: 16px; font-weight: 700; letter-spacing: 0.5px; padding: 2px 8px 18px; }
 .side .s-brand .fish { color: var(--accent-warm); display: flex; }
-.side .s-clock { display: flex; flex-direction: column; align-items: flex-start; padding: 2px 8px 16px; border-bottom: 1px solid var(--border); margin-bottom: 14px; }
-.side .s-clock .c { font-size: 38px; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: 0.5px; line-height: 1; }
-.side .s-date { font-size: 19px; color: #ccd4de; margin-top: 10px; font-weight: 700; max-width: none; line-height: 1.3; }
+.side .s-clock { display: flex; flex-direction: column; align-items: center; padding: 2px 8px 16px; border-bottom: 1px solid var(--border); margin-bottom: 14px; }
+.side .s-clock .c { font-size: 60px; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: 0.5px; line-height: 1; }
+.side .s-date { font-size: 24px; color: #ccd4de; margin-top: 10px; font-weight: 700; max-width: none; line-height: 1.3; text-align: center; }
 .side .s-weather { display: flex; align-items: center; gap: 12px; padding: 11px 12px; background: var(--surface-alt); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 16px; }
 .side .s-weather .wx-ico { display: flex; flex-shrink: 0; }
 .side .s-weather .wx-main { flex: 1; min-width: 0; }
