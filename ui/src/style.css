@@ -377,15 +377,15 @@ html, body, #app { height: 100%; margin: 0; padding: 0; background: #0e1117; }
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
   padding: 0 32px;
-  height: 96px;
+  height: 150px;
   background: var(--surface);
   border-bottom: 1px solid var(--border);
 }
 .t-hdr-brand { display: flex; align-items: center; gap: 12px; font-size: 20px; font-weight: 700; letter-spacing: 0.8px; }
 .t-hdr-brand .fish { color: var(--accent-warm); display: flex; }
 .t-hdr-center { display: flex; flex-direction: column; align-items: center; gap: 4px; }
-.t-clock { font-size: 58px; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: 1px; line-height: 1; }
-.t-date { font-size: 18px; color: var(--text-muted); font-weight: 500; white-space: nowrap; }
+.t-clock { font-size: 116px; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: 1px; line-height: 1; }
+.t-date { font-size: 36px; color: var(--text-muted); font-weight: 500; white-space: nowrap; }
 .t-hdr-right { display: flex; align-items: center; gap: 20px; justify-content: flex-end; }
 .t-weather { display: flex; align-items: center; gap: 12px; }
 .t-weather .wx-main { display: flex; flex-direction: column; }
