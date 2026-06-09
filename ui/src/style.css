@@ -83,6 +83,7 @@ html, body, #app { height: 100%; margin: 0; padding: 0; background: #0e1117; }
   position: relative;
 }
 .scroll::-webkit-scrollbar { display: none; }
+.scroll > * { flex-shrink: 0; }
 
 /* ───────── Tile ───────── */
 .tile {
