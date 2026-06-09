@@ -84,7 +84,7 @@
         </div>
         <div class="t-hdr-right">
           <div v-if="weather" class="t-weather">
-            <span style="font-size:30px;line-height:1;flex-shrink:0">{{ wxEmoji(weather.code) }}</span>
+            <span style="font-size:50px;line-height:1;flex-shrink:0">{{ wxEmoji(weather.code) }}</span>
             <div class="wx-main">
               <div class="wx-temp">{{ Math.round(weather.temp) }}°C</div>
               <div class="wx-cond">{{ wxLabel(weather.code) }}</div>
