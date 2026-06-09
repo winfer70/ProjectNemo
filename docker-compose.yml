@@ -54,8 +54,8 @@ services:
       - "8080:8080"           # Z2M web UI (local access only)
     volumes:
       - ./zigbee2mqtt/config:/app/data
-    devices:
-      - /dev/ttyUSB0:/dev/ttyUSB0   # ZBDongle-E (EFR32MG21)
+    # devices:
+    #   - /dev/ttyUSB0:/dev/ttyUSB0   # ZBDongle-E — uncomment after plugging dongle into REDACTED-HOST
     depends_on:
       - mosquitto
     networks:
