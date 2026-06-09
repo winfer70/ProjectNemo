@@ -48,6 +48,8 @@ services:
     image: koenkk/zigbee2mqtt:latest
     container_name: nemo-zigbee2mqtt
     restart: unless-stopped
+    group_add:
+      - "20"   # dialout — needed for /dev/ttyUSB0 access
     environment:
       - TZ=Europe/Dublin
     ports:
