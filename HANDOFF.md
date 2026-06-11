@@ -1,27 +1,34 @@
-# ProjectNemo HANDOFF — 11 June 2026
+# ProjectNemo Handoff — 2026-06-11
 
-## What was accomplished this session
-- Updated `api/seed_data.py` with current aquarium state from conversation summary:
-  - DEFAULT_FISH: replaced with actual fish in tank (1 Pearl Gourami, 14 Penta Barbs, 7 False Julii Corydoras, 6 Kuhli Loach, 5 Amano Shrimp) + upcoming Etap A/B/C fish
-  - DEFAULT_FEEDING_TIMES: ["08:00","18:00"] → ["19:00"] (single 7PM feed)
-  - DEFAULT_SUPPLIES: added Aquavital Stress-Protect
-  - CALENDAR_TASKS: replaced phase-based feeding tasks with day-specific schedule (Mon–Sun), updated Stability doses to Etap A (Jun 13), Etap B (Jun 25), Etap C (Jul 9), water change → every_n_days/28 starting Jun 21
-- Rewrote STOCKING_PLAN.md with new Etap A/B/C timeline + water change protocol + weekly feeding table
+## Accomplished this session
+- Seeded DB with real fish stock: 5 in_tank (Pearl Gourami, Penta Barb x14, False Julii Cory x7, Kuhli Loach x6, Amano Shrimp x5) + 5 arriving (Etap A/B/C)
+- Day-specific feeding schedule Mon–Sun at 19:00 (Fri = fasting, Sun = test day)
+- Stress-Protect added to supplies; Stability dosing tasks for each etap
+- Water change: every 28 days from Jun 21, ~15% (~38L)
+- STOCKING_PLAN.md fully rewritten with timeline, acclimation protocol, compatibility table
+- ScheduleView TODAY tile: split layout — temp widget left (50% width, 42px, color-coded 24.5–27.5°C), tasks right
+- Deployed to REDACTED-HOST (10.0.0.102:3000). Committed + pushed to dev.
 
 ## Current state
-- seed_data.py updated — changes take effect on fresh DB (empty tables)
-- If DB already has data, need to reset Docker volume to re-seed
-- Etap A fish purchase is Saturday 13 June 2026 (Seahorse Aquariums or Angel Exotix)
-- Water parameters confirmed: NO2=0, NO3≤10ppm, NH3=0, pH~7.4–7.6
+- UI: http://10.0.0.102:3000 ✓ live with split today tile
+- API: http://10.0.0.102:8000 ✓
+- Git: `dev` branch, all changes merged and pushed to origin
+- Temp widget shows `—` until ZBDongle-E paired with SNZB-02LD
 
-## Exact next action
-1. If website shows old data → reset DB: `docker volume rm projectnemo_nemo-db && docker compose up -d`
-2. Confirm Pearl Gourami sex via video at fish shop on Sat June 13
-3. Run Etap A acclimation protocol (45 min drip, lights off, 30ml Stability)
-4. First water change post-Etap A: Sunday June 21 (15%, ~38L)
-5. Next session: verify BLE+scroll fix on tablet, then pair SNZB-02LD+ZBDongle-E (Tuesday)
+## Next actions
+1. **Tuesday** — pair SNZB-02LD + ZBDongle-E (Zigbee sensor) → temp live
+2. **Saturday Jun 13 (Etap A)** — buy: 12× Raccoon Tetra, 4× Panda Garra, +2 Pearl Gouramis. Acclimate 45–60 min drip. Dose Stability 15ml.
+3. **Sunday Jun 21** — first water change 15% (~38L)
+4. **Thursday Jun 25 (Etap B)** — buy: 12× Purple Pencilfish, 6× Otocinclus
 
-## Blockers / pending decisions
-- Pearl Gourami harem ratio depends on sex confirmation at shop Saturday
-- Purple Pencilfish vs Cherry Barbs for Etap B — user preference (both listed in plan)
-- DB reset required if app already running with stale data
+## DB reset (if needed before Etap A)
+```bash
+ssh REDACTED-HOST "cd /home/kamilo/nemo/ProjectNemo && docker compose down && docker volume rm projectnemo_nemo-db && docker compose up -d --no-deps nemo-api nemo-ui"
+```
+
+## OneDrive .git corruption fix
+If git fails with "not a git repository":
+```bash
+mv "/c/.../ProjectNemo/.git/HEAD (# Name clash*)" "/c/.../ProjectNemo/.git/HEAD"
+mv "/c/.../ProjectNemo/.git/index (# Name clash*)" "/c/.../ProjectNemo/.git/index"
+```
