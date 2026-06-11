@@ -1,11 +1,11 @@
-# Graph Report - .  (2026-06-08)
+# Graph Report - .  (2026-06-11)
 
 ## Corpus Check
 - 42 files · ~0 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 327 nodes · 636 edges · 20 communities detected
+- 327 nodes · 637 edges · 20 communities detected
 - Extraction: 58% EXTRACTED · 42% INFERRED · 0% AMBIGUOUS · INFERRED: 266 edges (avg confidence: 0.5)
 - Token cost: 0 input · 0 output
 
@@ -131,9 +131,7 @@ _Questions this graph is uniquely positioned to answer:_
 - **Why does `HAClient` connect `Community 9` to `Community 8`?**
   _High betweenness centrality (0.068) - this node is a cross-community bridge._
 - **Why does `Base` connect `Community 1` to `Community 0`, `Community 2`, `Community 7`?**
-  _High betweenness centrality (0.059) - this node is a cross-community bridge._
-- **Why does `SensorHistoryPoint` connect `Community 4` to `Community 0`, `Community 11`?**
-  _High betweenness centrality (0.059) - this node is a cross-community bridge._
+  _High betweenness centrality (0.061) - this node is a cross-community bridge._
 - **Are the 20 inferred relationships involving `Base` (e.g. with `Supply` and `DosingTask`) actually correct?**
   _`Base` has 20 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 11 inferred relationships involving `FeedingPause` (e.g. with `Base` and `Feeding schedule CRUD + Feed Now + Cancel Feed + Feed Status.`) actually correct?**
@@ -142,3 +140,5 @@ _Questions this graph is uniquely positioned to answer:_
   _`MaintenanceTask` has 11 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `BLE gateway WebSocket connection manager bridging main.py and ha_client.py.  T`, `FastAPI application orchestrator for the ProjectNemo aquarium monitoring system.`, `Add new columns to existing tables. SQLite-safe: errors mean column exists.` to the rest of the system?**
   _35 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **Should `Community 0` be split into smaller, more focused modules?**
+  _Cohesion score 0.12 - nodes in this community are weakly interconnected._
