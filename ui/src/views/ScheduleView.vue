@@ -26,72 +26,85 @@
         <span class="meta">{{ todayLabel }}</span>
       </div>
       <hr class="divider">
-      <div class="tile-body">
-        <div v-if="calendarStore.todayTasks.length === 0" class="empty">
-          <span class="em">🎉</span>
-          <span>{{ locale === 'pl' ? 'Brak zadań na dziś' : 'No tasks for today' }}</span>
+      <div class="tile-body today-split">
+        <!-- Temperature widget -->
+        <div class="today-temp">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/>
+          </svg>
+          <span class="temp-value" :class="tempClass">
+            {{ sensorsStore.current.temperature != null ? sensorsStore.current.temperature + '°C' : '—' }}
+          </span>
+          <span class="temp-label">{{ locale === 'pl' ? 'temp.' : 'temp.' }}</span>
         </div>
-        <template v-else>
-          <div v-for="task in calendarStore.todayTasks" :key="task.id + '_' + task.date">
-            <div
-              class="task"
-              :class="{ done: task.completed, overdue: task.overdue_days > 0 && !task.completed }"
-              @click="!task.completed && toggleExpanded(task.id + '_' + task.date)"
-            >
-              <span class="task-ico">
-                <span v-if="task.completed" style="color:var(--success)">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="9"/><path d="M8 12.2l2.6 2.6L16 9"/>
-                  </svg>
-                </span>
-                <span v-else-if="task.overdue_days > 0" style="color:var(--danger)">
-                  <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M12 4l9 15H3l9-15z"/><path d="M12 10v4"/><circle cx="12" cy="16.5" r="0.6" fill="currentColor" stroke="none"/>
-                  </svg>
-                </span>
-                <span v-else style="color:var(--accent)">
-                  <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="9"/><path d="M12 7v5.5l3.5 2"/>
-                  </svg>
-                </span>
-              </span>
-              <span class="task-label">
-                <span class="t">{{ locale === 'pl' ? task.name_pl : task.name }}</span>
-              </span>
-              <span v-if="task.completed" class="task-badge b-done">{{ locale === 'pl' ? 'zrobione' : 'done' }}</span>
-              <span v-else-if="task.overdue_days > 0" class="task-badge b-overdue">{{ task.overdue_days }} {{ locale === 'pl' ? 'dni po' : 'days over' }}</span>
-              <span v-else class="task-badge b-pending">{{ locale === 'pl' ? 'dziś' : 'today' }}</span>
-            </div>
-            <div v-if="expandedTask === (task.id + '_' + task.date) && !task.completed" class="task-actions">
-              <div v-if="task.amount" style="font-size:13px;font-weight:600;color:var(--accent);background:var(--surface-2,rgba(255,255,255,0.04));border-radius:8px;padding:7px 12px">
-                {{ task.amount }}
-              </div>
-              <div v-if="task.notes_pl" style="font-size:12.5px;color:var(--text-muted);white-space:pre-line;line-height:1.65;background:var(--surface-2,rgba(255,255,255,0.04));border-radius:8px;padding:9px 12px">
-                {{ task.notes_pl }}
-              </div>
-              <div class="task-actions-btns">
-                <button class="btn btn-sm btn-success" @click="completeTask(task)">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M4 12.5l5 5 11-12"/>
-                  </svg>
-                  {{ locale === 'pl' ? 'Zrobione' : 'Done' }}
-                </button>
-                <button class="btn btn-sm" @click="expandedTask = null">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 1.5"/><path d="M5 4l4 2"/><path d="M19 4l-4 2"/>
-                  </svg>
-                  {{ locale === 'pl' ? 'Drzemka' : 'Snooze' }}
-                </button>
-                <button class="btn btn-sm" @click="expandedTask = null">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="3" y="4.5" width="18" height="16" rx="2.5"/><path d="M3 9.5h18"/><path d="M8 2.5v4"/><path d="M16 2.5v4"/>
-                  </svg>
-                  {{ locale === 'pl' ? 'Jutro' : 'Tomorrow' }}
-                </button>
-              </div>
-            </div>
+        <!-- Task list -->
+        <div class="today-tasks">
+          <div v-if="calendarStore.todayTasks.length === 0" class="empty">
+            <span class="em">🎉</span>
+            <span>{{ locale === 'pl' ? 'Brak zadań na dziś' : 'No tasks for today' }}</span>
           </div>
-        </template>
+          <template v-else>
+            <div v-for="task in calendarStore.todayTasks" :key="task.id + '_' + task.date">
+              <div
+                class="task"
+                :class="{ done: task.completed, overdue: task.overdue_days > 0 && !task.completed }"
+                @click="!task.completed && toggleExpanded(task.id + '_' + task.date)"
+              >
+                <span class="task-ico">
+                  <span v-if="task.completed" style="color:var(--success)">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="12" cy="12" r="9"/><path d="M8 12.2l2.6 2.6L16 9"/>
+                    </svg>
+                  </span>
+                  <span v-else-if="task.overdue_days > 0" style="color:var(--danger)">
+                    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M12 4l9 15H3l9-15z"/><path d="M12 10v4"/><circle cx="12" cy="16.5" r="0.6" fill="currentColor" stroke="none"/>
+                    </svg>
+                  </span>
+                  <span v-else style="color:var(--accent)">
+                    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="12" cy="12" r="9"/><path d="M12 7v5.5l3.5 2"/>
+                    </svg>
+                  </span>
+                </span>
+                <span class="task-label">
+                  <span class="t">{{ locale === 'pl' ? task.name_pl : task.name }}</span>
+                </span>
+                <span v-if="task.completed" class="task-badge b-done">{{ locale === 'pl' ? 'zrobione' : 'done' }}</span>
+                <span v-else-if="task.overdue_days > 0" class="task-badge b-overdue">{{ task.overdue_days }} {{ locale === 'pl' ? 'dni po' : 'days over' }}</span>
+                <span v-else class="task-badge b-pending">{{ locale === 'pl' ? 'dziś' : 'today' }}</span>
+              </div>
+              <div v-if="expandedTask === (task.id + '_' + task.date) && !task.completed" class="task-actions">
+                <div v-if="task.amount" style="font-size:13px;font-weight:600;color:var(--accent);background:var(--surface-2,rgba(255,255,255,0.04));border-radius:8px;padding:7px 12px">
+                  {{ task.amount }}
+                </div>
+                <div v-if="task.notes_pl" style="font-size:12.5px;color:var(--text-muted);white-space:pre-line;line-height:1.65;background:var(--surface-2,rgba(255,255,255,0.04));border-radius:8px;padding:9px 12px">
+                  {{ task.notes_pl }}
+                </div>
+                <div class="task-actions-btns">
+                  <button class="btn btn-sm btn-success" @click="completeTask(task)">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M4 12.5l5 5 11-12"/>
+                    </svg>
+                    {{ locale === 'pl' ? 'Zrobione' : 'Done' }}
+                  </button>
+                  <button class="btn btn-sm" @click="expandedTask = null">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 1.5"/><path d="M5 4l4 2"/><path d="M19 4l-4 2"/>
+                    </svg>
+                    {{ locale === 'pl' ? 'Drzemka' : 'Snooze' }}
+                  </button>
+                  <button class="btn btn-sm" @click="expandedTask = null">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="3" y="4.5" width="18" height="16" rx="2.5"/><path d="M3 9.5h18"/><path d="M8 2.5v4"/><path d="M16 2.5v4"/>
+                    </svg>
+                    {{ locale === 'pl' ? 'Jutro' : 'Tomorrow' }}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </template>
+        </div>
       </div>
       <hr class="divider">
       <div class="tile-body" style="padding-top:14px">
@@ -667,6 +680,12 @@ const todayLabel = computed(() => {
   })
 })
 
+const tempClass = computed(() => {
+  const t = sensorsStore.current.temperature
+  if (t == null) return 'temp-null'
+  return t >= 24.5 && t <= 27.5 ? 'temp-ok' : 'temp-warn'
+})
+
 function toggleExpanded(key) {
   expandedTask.value = expandedTask.value === key ? null : key
 }
@@ -894,5 +913,44 @@ onUnmounted(() => {
 }
 input[type='range'] {
   accent-color: var(--accent);
+}
+
+/* Today split layout */
+.today-split {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+.today-temp {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 50%;
+  flex-shrink: 0;
+  gap: 6px;
+  color: var(--text-muted);
+  padding: 10px 8px 6px;
+  border-right: 1px solid var(--border);
+}
+.temp-value {
+  font-size: 42px;
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.temp-ok { color: var(--success); }
+.temp-warn { color: var(--danger); }
+.temp-null { color: var(--text-muted); }
+.temp-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+.today-tasks {
+  flex: 1;
+  min-width: 0;
+  padding-left: 4px;
 }
 </style>

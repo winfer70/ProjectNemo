@@ -1231,7 +1231,7 @@
       "label": "current_sensors()",
       "file_type": "code",
       "source_file": "api\\routers\\sensors.py",
-      "source_location": "L14",
+      "source_location": "L15",
       "id": "sensors_current_sensors",
       "community": 11
     },
@@ -1239,7 +1239,7 @@
       "label": "sensor_history()",
       "file_type": "code",
       "source_file": "api\\routers\\sensors.py",
-      "source_location": "L27",
+      "source_location": "L32",
       "id": "sensors_sensor_history",
       "community": 11
     },
@@ -1423,7 +1423,7 @@
       "label": "seed()",
       "file_type": "code",
       "source_file": "api\\seed_data.py",
-      "source_location": "L378",
+      "source_location": "L389",
       "id": "seed_data_seed",
       "community": 1
     },
@@ -1439,8 +1439,8 @@
       "label": "Seeds reference data if tables are empty.",
       "file_type": "rationale",
       "source_file": "api\\seed_data.py",
-      "source_location": "L379",
-      "id": "seed_data_rationale_379",
+      "source_location": "L390",
+      "id": "seed_data_rationale_390",
       "community": 1
     },
     {
@@ -2780,6 +2780,18 @@
     {
       "relation": "imports_from",
       "confidence": "EXTRACTED",
+      "source_file": "api\\routers\\sensors.py",
+      "source_location": "L6",
+      "weight": 1.0,
+      "_src": "sensors",
+      "_tgt": "config",
+      "source": "config",
+      "target": "sensors",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
       "source_file": "api\\services\\ha_client.py",
       "source_location": "L5",
       "weight": 1.0,
@@ -3767,10 +3779,10 @@
       "source_file": "api\\seed_data.py",
       "source_location": "L12",
       "weight": 0.8,
-      "_src": "seed_data_rationale_379",
+      "_src": "seed_data_rationale_390",
       "_tgt": "orm_supply",
       "source": "orm_supply",
-      "target": "seed_data_rationale_379",
+      "target": "seed_data_rationale_390",
       "confidence_score": 0.5
     },
     {
@@ -4019,10 +4031,10 @@
       "source_file": "api\\seed_data.py",
       "source_location": "L12",
       "weight": 0.8,
-      "_src": "seed_data_rationale_379",
+      "_src": "seed_data_rationale_390",
       "_tgt": "orm_dosingtask",
       "source": "orm_dosingtask",
-      "target": "seed_data_rationale_379",
+      "target": "seed_data_rationale_390",
       "confidence_score": 0.5
     },
     {
@@ -4091,10 +4103,10 @@
       "source_file": "api\\seed_data.py",
       "source_location": "L12",
       "weight": 0.8,
-      "_src": "seed_data_rationale_379",
+      "_src": "seed_data_rationale_390",
       "_tgt": "orm_maintenancetask",
       "source": "orm_maintenancetask",
-      "target": "seed_data_rationale_379",
+      "target": "seed_data_rationale_390",
       "confidence_score": 0.5
     },
     {
@@ -4259,10 +4271,10 @@
       "source_file": "api\\seed_data.py",
       "source_location": "L12",
       "weight": 0.8,
-      "_src": "seed_data_rationale_379",
+      "_src": "seed_data_rationale_390",
       "_tgt": "orm_feedingschedule",
       "source": "orm_feedingschedule",
-      "target": "seed_data_rationale_379",
+      "target": "seed_data_rationale_390",
       "confidence_score": 0.5
     },
     {
@@ -4499,10 +4511,10 @@
       "source_file": "api\\seed_data.py",
       "source_location": "L12",
       "weight": 0.8,
-      "_src": "seed_data_rationale_379",
+      "_src": "seed_data_rationale_390",
       "_tgt": "orm_watertestparameter",
       "source": "orm_watertestparameter",
-      "target": "seed_data_rationale_379",
+      "target": "seed_data_rationale_390",
       "confidence_score": 0.5
     },
     {
@@ -4559,10 +4571,10 @@
       "source_file": "api\\seed_data.py",
       "source_location": "L12",
       "weight": 0.8,
-      "_src": "seed_data_rationale_379",
+      "_src": "seed_data_rationale_390",
       "_tgt": "orm_watertestsession",
       "source": "orm_watertestsession",
-      "target": "seed_data_rationale_379",
+      "target": "seed_data_rationale_390",
       "confidence_score": 0.5
     },
     {
@@ -4643,10 +4655,10 @@
       "source_file": "api\\seed_data.py",
       "source_location": "L12",
       "weight": 0.8,
-      "_src": "seed_data_rationale_379",
+      "_src": "seed_data_rationale_390",
       "_tgt": "orm_watertestreading",
       "source": "orm_watertestreading",
-      "target": "seed_data_rationale_379",
+      "target": "seed_data_rationale_390",
       "confidence_score": 0.5
     },
     {
@@ -4739,10 +4751,10 @@
       "source_file": "api\\seed_data.py",
       "source_location": "L12",
       "weight": 0.8,
-      "_src": "seed_data_rationale_379",
+      "_src": "seed_data_rationale_390",
       "_tgt": "orm_calendartask",
       "source": "orm_calendartask",
-      "target": "seed_data_rationale_379",
+      "target": "seed_data_rationale_390",
       "confidence_score": 0.5
     },
     {
@@ -4847,10 +4859,10 @@
       "source_file": "api\\seed_data.py",
       "source_location": "L12",
       "weight": 0.8,
-      "_src": "seed_data_rationale_379",
+      "_src": "seed_data_rationale_390",
       "_tgt": "orm_fish",
       "source": "orm_fish",
-      "target": "seed_data_rationale_379",
+      "target": "seed_data_rationale_390",
       "confidence_score": 0.5
     },
     {
@@ -4883,10 +4895,10 @@
       "source_file": "api\\seed_data.py",
       "source_location": "L12",
       "weight": 0.8,
-      "_src": "seed_data_rationale_379",
+      "_src": "seed_data_rationale_390",
       "_tgt": "orm_plant",
       "source": "orm_plant",
-      "target": "seed_data_rationale_379",
+      "target": "seed_data_rationale_390",
       "confidence_score": 0.5
     },
     {
@@ -6345,7 +6357,7 @@
       "relation": "uses",
       "confidence": "INFERRED",
       "source_file": "api\\routers\\sensors.py",
-      "source_location": "L6",
+      "source_location": "L7",
       "weight": 0.8,
       "_src": "sensors_rationale_1",
       "_tgt": "schemas_sensorcurrentout",
@@ -6357,7 +6369,7 @@
       "relation": "uses",
       "confidence": "INFERRED",
       "source_file": "api\\routers\\sensors.py",
-      "source_location": "L6",
+      "source_location": "L7",
       "weight": 0.8,
       "_src": "sensors_rationale_1",
       "_tgt": "schemas_sensorhistorypoint",
@@ -7401,7 +7413,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "api\\routers\\sensors.py",
-      "source_location": "L14",
+      "source_location": "L15",
       "weight": 1.0,
       "_src": "sensors",
       "_tgt": "sensors_current_sensors",
@@ -7413,7 +7425,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "api\\routers\\sensors.py",
-      "source_location": "L27",
+      "source_location": "L32",
       "weight": 1.0,
       "_src": "sensors",
       "_tgt": "sensors_sensor_history",
@@ -7761,7 +7773,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "api\\seed_data.py",
-      "source_location": "L378",
+      "source_location": "L389",
       "weight": 1.0,
       "_src": "seed_data",
       "_tgt": "seed_data_seed",
@@ -7785,12 +7797,12 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "api\\seed_data.py",
-      "source_location": "L379",
+      "source_location": "L390",
       "weight": 1.0,
-      "_src": "seed_data_rationale_379",
+      "_src": "seed_data_rationale_390",
       "_tgt": "seed_data_seed",
       "source": "seed_data_seed",
-      "target": "seed_data_rationale_379",
+      "target": "seed_data_rationale_390",
       "confidence_score": 1.0
     },
     {
