@@ -51,6 +51,7 @@ DEFAULT_SUPPLIES = [
     ("Filter Carbon Pad (Fluval)",      "Wkład Węglowy Carbon Pad (Fluval)",        "part",   1,      "pcs",  1),
     ("Quick-Clear Polishing Pad (Fluval)", "Gąbka Polerująca Quick-Clear (Fluval)", "part",   1,      "pcs",  1),
     ("Fluval Biomax / Seachem Matrix",  "Fluval Biomax / Seachem Matrix",           "part",   1,      "pcs",  1),
+    ("Aquavital Stress-Protect",        "Aquavital Stress-Protect",                         "liquid", 1,      "btl",  1),
 ]
 
 DEFAULT_DOSING_TASKS = [
@@ -60,7 +61,7 @@ DEFAULT_DOSING_TASKS = [
     ("Seachem Stability",      25.0,  "ml", "08:00","Bacteria boost: 30 ml/day Thu–Sun after Step 1; 25 ml once after Steps 2–4", "Bakterie: 30 ml/dzień czw–niedz po Kroku 1; 25 ml jednorazowo po Krokach 2–4"),
 ]
 
-DEFAULT_FEEDING_TIMES = ["08:00", "18:00"]
+DEFAULT_FEEDING_TIMES = ["19:00"]
 
 DEFAULT_MAINTENANCE_TASKS = [
     {
@@ -141,97 +142,6 @@ CALENDAR_TASKS = [
         "amount": "temp + filtr + ryby",
         "notes_pl": "Sprawdź temp 25-26°C, pracę filtra i bąbelki z tyłu. Czy wszystkie ryby widoczne i aktywne?",
     },
-    # ── Phase 1 morning: algae wafer for Amano shrimp (Jun 2–15, before flakes start) ──
-    {
-        "name": "Morning: Green Algae Wafer (Shrimp)",
-        "name_pl": "Rano: Zielony Wafel Algowy (Krewetki)",
-        "color": "#00b4d8",
-        "recurrence_type": "daily",
-        "interval_days": None,
-        "recurrence_days": [],
-        "start_date": "2026-06-02",
-        "end_date": "2026-06-15",
-        "amount": "1 wafel",
-        "notes_pl": "1 wafel algowy na piasek dla krewetek Amano. Tylko do 15 czerwca — od 16 czerwca (Krok 2) przełącz na płatki rano.",
-    },
-    # ── Phase 1 evening: crushed flakes for barbs + Gourami (Jun 2–15) ──────────────
-    {
-        "name": "Evening: Crushed Flakes (Barbs & Gourami)",
-        "name_pl": "Wieczór: Roztarte Płatki (Barwniki i Gurami)",
-        "color": "#4dd0e1",
-        "recurrence_type": "daily",
-        "interval_days": None,
-        "recurrence_days": [],
-        "start_date": "2026-06-02",
-        "end_date": "2026-06-15",
-        "amount": "szczypta (roztarte)",
-        "notes_pl": "Mała szczypta płatków mocno roztartych w palcach — dla barwników Penta i Gurami Perłowych. Tylko do 15 czerwca.",
-    },
-    # ── Morning flakes — from Step 2 (Tue 16 Jun 2026) ───────────────────────────────
-    {
-        "name": "Morning: JBL Pronovo Bel Flakes",
-        "name_pl": "Rano: JBL Pronovo Bel Płatki",
-        "color": "#4dd0e1",
-        "recurrence_type": "daily",
-        "interval_days": None,
-        "recurrence_days": [],
-        "start_date": "2026-06-16",
-        "end_date": None,
-        "amount": "szczypta (roztarte)",
-        "notes_pl": "Mała szczypta JBL Pronovo Bel MOCNO roztarta w palcach → do toni wodnej. Dla Tetry Kardynała, Gurami Perłowych i ławicy barwników Penta.",
-    },
-    # ── Odd evenings: algae wafers from Jun 17 (day after Step 2) ────────────────────
-    {
-        "name": "Evening: Green Algae Wafers",
-        "name_pl": "Wieczór: Zielone Wafle Algowe",
-        "color": "#00b4d8",
-        "recurrence_type": "every_n_days",
-        "interval_days": 2,
-        "recurrence_days": [],
-        "start_date": "2026-06-17",
-        "end_date": None,
-        "amount": "1–2 wafle",
-        "notes_pl": "Połóż na piasku dla otoinkluzów i krewetek — nieparzyste wieczory.\nW niedzielę: pomiń — zamiast tego podaj artemię.",
-    },
-    # ── Sunday artemia treat — from Step 2 onward (first Sun on/after 16 Jun = 21 Jun) ─
-    {
-        "name": "Sunday Treat: Artemia",
-        "name_pl": "Niedziela: Artemia (Przysmak)",
-        "color": "#ff8a65",
-        "recurrence_type": "weekdays",
-        "interval_days": None,
-        "recurrence_days": [6],  # Sunday
-        "start_date": "2026-06-21",
-        "end_date": None,
-        "amount": "¼ kostki mrożonej",
-        "notes_pl": "Rozmrożona ¼ kostki mrożonej artemii dla wszystkich ryb. Zamiast tabletek i waflów wieczorem.",
-    },
-    # ── Even evenings: Corydoras tablets — starts Step 2B (Tue 30 Jun 2026) ───────────
-    {
-        "name": "Evening: JBL Corydoras Tablets",
-        "name_pl": "Wieczór: Tabletki JBL Corydoras",
-        "color": "#29b6f6",
-        "recurrence_type": "every_n_days",
-        "interval_days": 2,
-        "recurrence_days": [],
-        "start_date": "2026-06-30",
-        "end_date": None,
-        "amount": "2–3 tabletki → piasek",
-        "notes_pl": "Wciśnij 2-3 tabletki w piasek przy kirysach Sterbai i otoinkluzach — parzyste wieczory.\nW niedzielę: pomiń — zamiast tego podaj artemię.",
-    },
-    # ── Seachem Stability — Step 1 post-add: 30 ml/day Thu 4 Jun → Sun 7 Jun ─────────
-    {
-        "name": "Seachem Stability 30ml",
-        "name_pl": "Seachem Stability 30ml",
-        "color": "#aed581",
-        "recurrence_type": "daily",
-        "interval_days": None,
-        "recurrence_days": [],
-        "start_date": "2026-06-04",
-        "end_date": "2026-06-07",
-        "amount": "30 ml",
-        "notes_pl": "Po dodaniu ryb Krok 1 (2 cze): 30 ml/dzień od czwartku 4 cze do niedzieli 7 cze, następnie STOP.",
-    },
     # ── Seachem Stability — Step 2A fish addition (Tue 16 Jun) ────────────────────────
     {
         "name": "Seachem Stability 25ml",
@@ -240,10 +150,10 @@ CALENDAR_TASKS = [
         "recurrence_type": "daily",
         "interval_days": None,
         "recurrence_days": [],
-        "start_date": "2026-06-16",
-        "end_date": "2026-06-16",
+        "start_date": "2026-06-13",
+        "end_date": "2026-06-13",
         "amount": "25 ml",
-        "notes_pl": "Jednorazowo po wpuszczeniu Kroku 2A (Penta Barb ×6, Tetra Kardynał ×12, Panda Garra ×2): wlej 25 ml Seachem Stability.",
+        "notes_pl": "Jednorazowo po wpuszczeniu Etap A (Bystrzyk Raccoon ×12, Panda Garra ×4, Gurami ×2): wlej 25 ml Seachem Stability.",
     },
     # ── Seachem Stability — Step 2B fish addition (Tue 30 Jun) ────────────────────────
     {
@@ -253,10 +163,10 @@ CALENDAR_TASKS = [
         "recurrence_type": "daily",
         "interval_days": None,
         "recurrence_days": [],
-        "start_date": "2026-06-30",
-        "end_date": "2026-06-30",
+        "start_date": "2026-06-25",
+        "end_date": "2026-06-25",
         "amount": "25 ml",
-        "notes_pl": "Jednorazowo po wpuszczeniu Kroku 2B (Tetra Kardynał ×6, Panda Garra ×2, Apistogramma Double Red ×2, Kiryski Sterbai ×8): wlej 25 ml Seachem Stability.",
+        "notes_pl": "Jednorazowo po wpuszczeniu Etap B (Ołówkoryba ×12, Otonek ×6): wlej 25 ml Seachem Stability.",
     },
     # ── Seachem Stability — Step 3 fish addition (Tue 14 Jul) ─────────────────────────
     {
@@ -266,10 +176,10 @@ CALENDAR_TASKS = [
         "recurrence_type": "daily",
         "interval_days": None,
         "recurrence_days": [],
-        "start_date": "2026-07-14",
-        "end_date": "2026-07-14",
+        "start_date": "2026-07-09",
+        "end_date": "2026-07-09",
         "amount": "25 ml",
-        "notes_pl": "Jednorazowo po wpuszczeniu Kroku 3 (Otoinkluzy ×6): wlej 25 ml Seachem Stability.",
+        "notes_pl": "Jednorazowo po wpuszczeniu Etap C (Apistogramma Double Red ×2): wlej 25 ml Seachem Stability.",
     },
     # ── ProFito — every Friday from mid-July (Fri 17 Jul, day after Step 4) ──────────
     {
@@ -284,21 +194,116 @@ CALENDAR_TASKS = [
         "amount": "½ dawki",
         "notes_pl": "Wlej połowę dawki zalecanej przez producenta na opakowaniu. Zawsze dzień po podmianie wody (czwartek → piątek). Zaczyna się od 17 lipca 2026.",
     },
-    # ── Weekly water change — every Thursday from Thu 4 Jun 2026 ─────────────────────
+    # ── Day-specific 19:00 feeding schedule ────────────────────────────────────────
     {
-        "name": "Weekly Water Change",
-        "name_pl": "Tygodniowa Wymiana Wody",
-        "color": "#29b6f6",
+        "name": "Monday: Flakes + ½ JBL Pronovo Tab",
+        "name_pl": "Poniedziałek: Płatki + ½ Tabletki JBL",
+        "color": "#4dd0e1",
         "recurrence_type": "weekdays",
         "interval_days": None,
-        "recurrence_days": [3],  # Thursday
-        "start_date": "2026-06-04",
+        "recurrence_days": [0],
+        "start_date": "2026-06-11",
         "end_date": None,
-        "amount": "~30L (~30%)",
-        "notes_pl": (
-            "Co czwartek: spuść ~30L (1 wiadro). Do wiadra świeżej wody z kranu: 2 ml Seachem Prime. Wyrównaj temp do zbiornika (±1°C).\n"
-            "Przed nalaniem: przetarcie przedniej szyby od środka czystą gąbką. Obcięcie żółtych/zniszczonych liści."
-        ),
+        "amount": "szczypta płatków + ½ tabletki JBL Pronovo",
+        "notes_pl": "19:00. Płatki (szczypta) + 1 tabletka JBL Pronovo łamana na pół. Rano: 15 ml Seachem Stability.",
+    },
+    {
+        "name": "Tuesday: Flakes",
+        "name_pl": "Wtorek: Płatki",
+        "color": "#4dd0e1",
+        "recurrence_type": "weekdays",
+        "interval_days": None,
+        "recurrence_days": [1],
+        "start_date": "2026-06-11",
+        "end_date": None,
+        "amount": "szczypta płatków",
+        "notes_pl": "19:00. Tylko płatki — szczypta mocno roztarta.",
+    },
+    {
+        "name": "Wednesday: ½ JBL Tab + ¼ Algae Wafer",
+        "name_pl": "Środa: ½ Tabletki JBL + ¼ Wafla",
+        "color": "#00b4d8",
+        "recurrence_type": "weekdays",
+        "interval_days": None,
+        "recurrence_days": [2],
+        "start_date": "2026-06-11",
+        "end_date": None,
+        "amount": "½ tabletki JBL + ¼ wafla algowego",
+        "notes_pl": "19:00. BEZ płatków. 1 tabletka JBL Pronovo łamana na pół + ¼ wafla algowego na piasek.",
+    },
+    {
+        "name": "Thursday: Flakes",
+        "name_pl": "Czwartek: Płatki",
+        "color": "#4dd0e1",
+        "recurrence_type": "weekdays",
+        "interval_days": None,
+        "recurrence_days": [3],
+        "start_date": "2026-06-11",
+        "end_date": None,
+        "amount": "szczypta płatków",
+        "notes_pl": "19:00. Tylko płatki — szczypta mocno roztarta.",
+    },
+    {
+        "name": "FRIDAY: FASTING DAY",
+        "name_pl": "PIĄTEK: DZIEŃ POSTU",
+        "color": "#ef9a9a",
+        "recurrence_type": "weekdays",
+        "interval_days": None,
+        "recurrence_days": [4],
+        "start_date": "2026-06-11",
+        "end_date": None,
+        "amount": "BRAK KARMIENIA",
+        "notes_pl": "Zero jedzenia przez cały piątek. Reset jelit ryb i filtra biologicznego. Nie podawaj nic, nawet wafla.",
+    },
+    {
+        "name": "Saturday: Flakes + ½ JBL Pronovo Tab",
+        "name_pl": "Sobota: Płatki + ½ Tabletki JBL",
+        "color": "#4dd0e1",
+        "recurrence_type": "weekdays",
+        "interval_days": None,
+        "recurrence_days": [5],
+        "start_date": "2026-06-11",
+        "end_date": None,
+        "amount": "szczypta płatków + ½ tabletki JBL Pronovo",
+        "notes_pl": "19:00. Płatki (szczypta) + 1 tabletka JBL Pronovo łamana na pół.",
+    },
+    {
+        "name": "Sunday: TEST DAY + Flakes + ¼ Algae Wafer",
+        "name_pl": "Niedziela: DZIEŃ TESTÓW + Płatki + ¼ Wafla",
+        "color": "#ff8a65",
+        "recurrence_type": "weekdays",
+        "interval_days": None,
+        "recurrence_days": [6],
+        "start_date": "2026-06-11",
+        "end_date": None,
+        "amount": "pasek testowy + mała szczypta + ¼ wafla",
+        "notes_pl": "Przetestuj strip + droplet: NO3, NO2, NH3, pH.\nJeśli NO3 < 25 ppm → brak podmiany. Jeśli NO3 > 25 lub NO2 > 0 → podmień wodę.\n\n19:00: mała szczypta płatków + ¼ wafla algowego na piasek.",
+    },
+    # ── Monday morning Seachem Stability dose (ongoing — support for new fish) ─────
+    {
+        "name": "Monday Morning: Seachem Stability 15ml",
+        "name_pl": "Poniedziałek Rano: Seachem Stability 15ml",
+        "color": "#aed581",
+        "recurrence_type": "weekdays",
+        "interval_days": None,
+        "recurrence_days": [0],
+        "start_date": "2026-06-11",
+        "end_date": "2026-07-31",
+        "amount": "15 ml",
+        "notes_pl": "Rano, przed pracą: 15 ml Seachem Stability wlej przy odpływie filtra. Wspiera bakterie po każdym dodaniu ryb.",
+    },
+    # ── Weekly water change — every Thursday from Thu 4 Jun 2026 ─────────────────────
+    {
+        "name": "Water Change (max 4 weeks)",
+        "name_pl": "Podmiana Wody (maks 4 tygodnie)",
+        "color": "#29b6f6",
+        "recurrence_type": "every_n_days",
+        "interval_days": 28,
+        "recurrence_days": [],
+        "start_date": "2026-06-21",
+        "end_date": None,
+        "amount": "~15% (~38L)",
+        "notes_pl": "WARUNEK: podmień wcześniej jeśli NO2 > 0 lub NO3 > 25 ppm lub NH3 > 0. Maks. 4 tygodnie bez podmiany niezależnie od wyników.\n\n~15% (ok. 38L) — do wiadra świeżej wody z kranu: 2 ml Seachem Prime. Wyrównaj temp do zbiornika (±1°C).\nNajbliższa podmiana: 21 czerwca 2026 (po Etap A). Długoterminowo: co 2–3 tygodnie.",
     },
     # ── Monthly substrate vacuum — last Saturday of month (first: Sat 27 Jun) ─────────
     {
@@ -356,14 +361,20 @@ CALENDAR_TASKS = [
 ]
 
 DEFAULT_FISH = [
-    {"name_en": "Pearl Gourami",               "name_pl": "Gurami Mozaikowe",                 "latin": "Trichopodus leerii",                   "qty": 2,  "zone": "Top/Mid",      "status": "in_tank", "temp": "24–28°C", "notes_pl": "Para (1M+1F). Ryba labiryntowa — potrzebuje dostępu do powierzchni.",   "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/69/Trichopodus_leerii_Natural_History_Museum_University_of_Pisa.jpg/330px-Trichopodus_leerii_Natural_History_Museum_University_of_Pisa.jpg"},
-    {"name_en": "Five-Banded Barb",            "name_pl": "Brzanka Pięciopręga",              "latin": "Desmopuntius pentazona",               "qty": 18, "zone": "Mid",          "status": "in_tank", "temp": "23–26°C", "notes_pl": "Ławica. 12 już w akwarium + 6 dochodzi 16 czerwca.",                    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/Cyprinidae_Desmopuntius_pentazona_1.jpg/330px-Cyprinidae_Desmopuntius_pentazona_1.jpg"},
-    {"name_en": "Cardinal Tetra",              "name_pl": "Neon Czerwony",                    "latin": "Paracheirodon axelrodi",               "qty": 18, "zone": "Mid",          "status": "in_tank", "temp": "23–27°C", "notes_pl": "Ławica. 12 szt. przybywa 16 czerwca, 6 szt. 30 czerwca.",             "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/eb/Cardinal_Paracheirodon_axelrodi_%283%29.jpg/330px-Cardinal_Paracheirodon_axelrodi_%283%29.jpg"},
-    {"name_en": "Corydoras Sterbai",           "name_pl": "Kirysek Sterbai",                  "latin": "Corydoras sterbai",                    "qty": 8,  "zone": "Bottom",       "status": "in_tank", "temp": "25–28°C", "notes_pl": "Dno/piasek. Przybywa 30 czerwca.",                                      "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/Corydoras_Sterbai.jpg/330px-Corydoras_Sterbai.jpg"},
-    {"name_en": "Panda Garra",                 "name_pl": "Garra Panda",                      "latin": "Garra flavatra",                       "qty": 4,  "zone": "Rocks/Wood",   "status": "in_tank", "temp": "23–27°C", "notes_pl": "2 szt. 16 czerwca, 2 szt. 30 czerwca. Potrzebuje biofilmu na skałach.", "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/Panda_Garra.jpg/330px-Panda_Garra.jpg"},
-    {"name_en": "Red Apistogramma Double Red", "name_pl": "Pielęgniczka Agassiza Double Red", "latin": 'Apistogramma agassizii "Double Red"',  "qty": 2,  "zone": "Bottom/Caves", "status": "in_tank", "temp": "24–27°C", "notes_pl": "Para. Przybywa 30 czerwca. Zajmują kokosy.",                             "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/Apistogramma_agassizii_in_aquarium.jpg/330px-Apistogramma_agassizii_in_aquarium.jpg"},
-    {"name_en": "Otocinclus",                  "name_pl": "Otonek Pospolity",                 "latin": "Otocinclus vittatus",                  "qty": 6,  "zone": "Leaves/Glass", "status": "in_tank", "temp": "22–26°C", "notes_pl": "Przybywa 14 lipca. Czyści liście i szyby.",                             "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/Otocinclus_vittatus.jpg/330px-Otocinclus_vittatus.jpg"},
-    {"name_en": "Amano Shrimp",                "name_pl": "Krewetka Amano",                   "latin": "Caridina multidentata",                "qty": 6,  "zone": "Everywhere",   "status": "in_tank", "temp": "20–27°C", "notes_pl": "Już w akwarium. Czyści biofilm z korzenia.",                            "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0b/Amano_Garnele_%2885281493%29.jpeg/330px-Amano_Garnele_%2885281493%29.jpeg"},
+    # ── Currently in tank (as of 11 June 2026) ──────────────────────────────────────
+    {"name_en": "Pearl Gourami",            "name_pl": "Gurami Mozaikowe",    "latin": "Trichopodus leerii",                  "qty": 1,  "zone": "Top/Mid",       "status": "in_tank",  "temp": "24–28°C", "notes_pl": "1 szt. (płeć nieznana). Surfuje po szybie — szuka towarzystwa. Etap A (13 cze): dosypujemy 2 szt. by uzupełnić harem 1M+2F.",    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/69/Trichopodus_leerii_Natural_History_Museum_University_of_Pisa.jpg/330px-Trichopodus_leerii_Natural_History_Museum_University_of_Pisa.jpg"},
+    {"name_en": "Five-Banded Barb (Penta)", "name_pl": "Brzanka Pięciopręga", "latin": "Desmopuntius pentazona",              "qty": 14, "zone": "Mid",            "status": "in_tank",  "temp": "23–26°C", "notes_pl": "Ławica 14 szt. Blade pomarańczowe — brak karotenoidów w diecie. Podaj artemię/cyklopsy dla koloru.",                              "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/Cyprinidae_Desmopuntius_pentazona_1.jpg/330px-Cyprinidae_Desmopuntius_pentazona_1.jpg"},
+    {"name_en": "False Julii Corydoras",    "name_pl": "Kirysek Fałszywy Julii","latin": "Corydoras trilineatus",             "qty": 7,  "zone": "Bottom (sand)", "status": "in_tank",  "temp": "22–26°C", "notes_pl": "7 szt. Bardzo energiczne — eksplorują całe 120 cm dna. Naturalne surfowanie po szybie (zachowanie nowego zbiornika).",          "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/Corydoras_trilineatus.jpg/330px-Corydoras_trilineatus.jpg"},
+    {"name_en": "Kuhli Loach",              "name_pl": "Wężyk Kuhli",          "latin": "Pangio kuhlii",                      "qty": 6,  "zone": "Caves/Cracks",  "status": "in_tank",  "temp": "24–30°C", "notes_pl": "6 szt. Nocne węgorze-czyściciele. Chowają się za korzeniam i w kokosnatch za dnia.",                                          "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/33/Pangio_kuhlii.jpg/330px-Pangio_kuhlii.jpg"},
+    {"name_en": "Amano Shrimp",             "name_pl": "Krewetka Amano",       "latin": "Caridina multidentata",              "qty": 5,  "zone": "Everywhere",    "status": "in_tank",  "temp": "20–27°C", "notes_pl": "5 szt. (2 padły ze stresu transportowego / niepowodzenia linki). Czyści biofilm z korzenia.",                                "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0b/Amano_Garnele_%2885281493%29.jpeg/330px-Amano_Garnele_%2885281493%29.jpeg"},
+    # ── Etap A — Sobota 13 Czerwca 2026 ──────────────────────────────────────────────
+    {"name_en": "Raccoon Tetra",            "name_pl": "Bystrzyk Szop",        "latin": "Hemigrammus pulcher",                "qty": 12, "zone": "Mid",            "status": "arriving", "temp": "23–27°C", "notes_pl": "12 szt. Etap A — sobota 13 czerwca 2026. Aklimatyzacja 45 min ze zgaszonym Aquasky.",                                        "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6c/Hemigrammus_pulcher.jpg/330px-Hemigrammus_pulcher.jpg"},
+    {"name_en": "Panda Garra",              "name_pl": "Garra Panda",          "latin": "Garra flavatra",                     "qty": 4,  "zone": "Rocks/Wood",    "status": "arriving", "temp": "23–27°C", "notes_pl": "4 szt. Etap A — sobota 13 czerwca 2026. Zeskrobują biofilm ze skał Dragon Stone.",                                      "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/Panda_Garra.jpg/330px-Panda_Garra.jpg"},
+    # ── Etap B — Czwartek 25 Czerwca 2026 ────────────────────────────────────────────
+    {"name_en": "Purple Pencilfish",        "name_pl": "Ołówkoryba Fioletowa", "latin": "Nannostomus sp.",                    "qty": 12, "zone": "Top/Mid",        "status": "arriving", "temp": "24–28°C", "notes_pl": "12 szt. Etap B — czwartek 25 czerwca 2026. Alternatywa: 8× Cherry Barb (Puntius titteya) przy dnie.",                      "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/Nannostomus_mortenthaleri.jpg/330px-Nannostomus_mortenthaleri.jpg"},
+    {"name_en": "Otocinclus",               "name_pl": "Otonek Pospolity",     "latin": "Otocinclus vittatus",                "qty": 6,  "zone": "Leaves/Glass",  "status": "arriving", "temp": "22–26°C", "notes_pl": "6 szt. Etap B — czwartek 25 czerwca 2026. Czyści liście Echinodorusa i szyby.",                                        "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/Otocinclus_vittatus.jpg/330px-Otocinclus_vittatus.jpg"},
+    # ── Etap C — Czwartek 9 Lipca 2026 ───────────────────────────────────────────────
+    {"name_en": "Red Apistogramma Double Red","name_pl": "Pielęgniczka Double Red","latin": "Apistogramma agassizii \"Double Red\"","qty": 2, "zone": "Bottom/Caves","status": "arriving","temp": "24–27°C", "notes_pl": "Para (1M+1F). Etap C — czwartek 9 lipca 2026. Kupić też Liście Catappa — naturalnie obniżają pH i działają antygrzybiczo.",  "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/Apistogramma_agassizii_in_aquarium.jpg/330px-Apistogramma_agassizii_in_aquarium.jpg"},
 ]
 
 DEFAULT_PLANTS = [
