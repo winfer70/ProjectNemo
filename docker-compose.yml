@@ -105,6 +105,9 @@ services:
       - N8N_WEBHOOK_SUPPLY=${N8N_WEBHOOK_SUPPLY}
       - N8N_WEBHOOK_DAILY=${N8N_WEBHOOK_DAILY}
       - TELEGRAM_LANG=${TELEGRAM_LANG}
+      - NTFY_URL=${NTFY_URL:-}
+      - NTFY_TOPIC=${NTFY_TOPIC:-aquarium}
+      - NTFY_TOKEN=${NTFY_TOKEN:-}
       - TAPO_FILTER_ENTITY=${TAPO_FILTER_ENTITY}
       - TAPO_HEATER_ENTITY=${TAPO_HEATER_ENTITY}
       - TAPO_LIGHT_ENTITY=${TAPO_LIGHT_ENTITY}
@@ -138,11 +141,26 @@ services:
     networks:
       - nemo-net
 
+  # ── ntfy push notification server ─────────────────────────────────────────
+  ntfy:
+    image: binwiederhier/ntfy
+    container_name: nemo-ntfy
+    command: serve --config /etc/ntfy/server.yml
+    restart: unless-stopped
+    ports:
+      - "8081:80"
+    volumes:
+      - ./ntfy/server.yml:/etc/ntfy/server.yml:ro
+      - ntfy-data:/var/lib/ntfy
+    networks:
+      - nemo-net
+
 # ── Named volumes ──────────────────────────────────────────────────────────
 volumes:
   influxdb-data:
   influxdb-config:
   nemo-db:
+  ntfy-data:
 
 # ── Network ────────────────────────────────────────────────────────────────
 networks:

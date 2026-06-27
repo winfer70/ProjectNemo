@@ -9,6 +9,7 @@ from fastapi import WebSocket, WebSocketDisconnect
 from config import settings
 from services.ha_client import ha_client
 from services.n8n_client import n8n_client
+from services.ntfy_client import ntfy_client
 
 logger = logging.getLogger("nemo.ws")
 
@@ -111,11 +112,21 @@ async def broadcast_change(domain: str):
     await _broadcast({"type": "invalidate", "domain": domain})
 
 
+def _power_entities(switch_id: str) -> tuple[str, str]:
+    """Derive Tapo power/energy sensor entity IDs from a switch entity ID."""
+    base = switch_id.removeprefix("switch.")
+    return f"sensor.{base}_current_consumption", f"sensor.{base}_today_s_consumption"
+
+
 async def live_push_loop():
     """Push sensor + device data every 30s and check for device-off alerts."""
     while True:
         try:
-            temp = await ha_client.get_state_float(settings.esphome_temp_entity)
+            temp = None
+            if settings.zigbee_temp_entity:
+                temp = await ha_client.get_state_float(settings.zigbee_temp_entity)
+            if temp is None:
+                temp = await ha_client.get_state_float(settings.esphome_temp_entity)
             ph = await ha_client.get_state_float(settings.esphome_ph_entity)
 
             now_dt = datetime.now(timezone.utc)
@@ -153,14 +164,17 @@ async def live_push_loop():
                             logger.warning("device-off alert failed for %s: %s", entity_id, exc)
                         _device_alert_sent.add(entity_id)
 
+                watts_entity, kwh_entity = _power_entities(entity_id)
+                watts = await ha_client.get_state_float(watts_entity) if state_str == "on" else None
+                kwh_today = await ha_client.get_state_float(kwh_entity)
                 devices.append({
                     "entity_id": entity_id,
                     "name": d["name"],
                     "name_pl": d["name_pl"],
                     "role": d["role"],
                     "state": state_str,
-                    "watts": state.get("attributes", {}).get("current_power_w"),
-                    "kwh_today": state.get("attributes", {}).get("today_energy_kwh"),
+                    "watts": watts,
+                    "kwh_today": kwh_today,
                 })
 
             await _broadcast({
