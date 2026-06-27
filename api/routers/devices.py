@@ -15,18 +15,28 @@ DEVICE_MAP = [
 ]
 
 
+def _power_entities(switch_id: str) -> tuple[str, str]:
+    """Derive Tapo power/energy sensor entity IDs from a switch entity ID."""
+    base = switch_id.removeprefix("switch.")
+    return f"sensor.{base}_current_consumption", f"sensor.{base}_today_s_consumption"
+
+
 @router.get("", response_model=list[DeviceOut])
 async def list_devices():
     devices = []
     for d in DEVICE_MAP:
         state_data = await ha_client.get_entity_state(d["entity_id"])
+        state_str = state_data.get("state", "unavailable")
+        watts_entity, kwh_entity = _power_entities(d["entity_id"])
+        watts = await ha_client.get_state_float(watts_entity) if state_str == "on" else None
+        kwh_today = await ha_client.get_state_float(kwh_entity)
         devices.append(DeviceOut(
             entity_id=d["entity_id"],
             name=d["name"],
             name_pl=d["name_pl"],
-            state=state_data.get("state", "unavailable"),
-            watts=state_data.get("attributes", {}).get("current_power_w"),
-            kwh_today=state_data.get("attributes", {}).get("today_energy_kwh"),
+            state=state_str,
+            watts=watts,
+            kwh_today=kwh_today,
             role=d["role"],
         ))
     return devices

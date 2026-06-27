@@ -18,6 +18,7 @@ from models.schemas import (
     SensorHistoryPoint,
 )
 from services.n8n_client import n8n_client
+from services.ntfy_client import ntfy_client
 from services.websocket_manager import broadcast_change
 from services import ollama_vision, scan_cache, strip_cv
 
@@ -248,6 +249,12 @@ async def create_session(
     # fire Telegram alerts for out-of-range readings
     for param, value in out_of_range_alerts:
         await n8n_client.water_test_alert(param, value)
+        await ntfy_client.send(
+            "Water test alert",
+            f"{param.name_en} out of range: {value} {param.unit or ''}".strip(),
+            priority=4,
+            tags=["test_tube"],
+        )
 
     # reload with relationships
     result = await db.execute(
