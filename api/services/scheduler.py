@@ -5,10 +5,12 @@ from datetime import datetime, timedelta, timezone
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from sqlalchemy import select, and_
 
+from config import settings
 from database import AsyncSessionLocal
 from models.orm import FeedingPause, MaintenanceTask, Supply, WaterTestSession
 from services.ha_client import ha_client
 from services.n8n_client import n8n_client
+from services.ntfy_client import ntfy_client
 from services.influx_client import influx_client
 
 logger = logging.getLogger("nemo.scheduler")
@@ -18,8 +20,12 @@ scheduler = AsyncIOScheduler(timezone="Europe/Dublin")
 
 @scheduler.scheduled_job("cron", hour=8, minute=5)
 async def daily_summary():
-    temp = await ha_client.get_state_float("sensor.nemo_sensor_temperature")
-    ph = await ha_client.get_state_float("sensor.nemo_sensor_ph")
+    temp = None
+    if settings.zigbee_temp_entity:
+        temp = await ha_client.get_state_float(settings.zigbee_temp_entity)
+    if temp is None:
+        temp = await ha_client.get_state_float(settings.esphome_temp_entity)
+    ph = await ha_client.get_state_float(settings.esphome_ph_entity)
 
     async with AsyncSessionLocal() as db:
         last_session = await db.execute(
@@ -48,6 +54,13 @@ async def daily_summary():
         if soonest and soonest.next_due
         else None,
     })
+    temp_str = f"{temp:.1f}°C" if temp is not None else "—"
+    await ntfy_client.send(
+        "Daily summary",
+        f"Temp: {temp_str} | pH: {ph or '—'} | Next: {soonest.name if soonest else 'none'}",
+        priority=2,
+        tags=["information_source"],
+    )
 
 
 @scheduler.scheduled_job("cron", hour=9, minute=0)
@@ -89,6 +102,36 @@ async def check_overdue():
         for supply in supply_result.scalars().all():
             if supply.current_amount <= supply.min_threshold:
                 await n8n_client.supply_low(supply)
+
+
+@scheduler.scheduled_job("cron", hour=18, minute=55)
+async def feeding_reminder():
+    """5-min warning before 19:00 feeding — trigger filter pause."""
+    await n8n_client.reminder(
+        "Feeding in 5 min — trigger 3-min filter pause at 19:00",
+        "Karmienie za 5 min — wcisnij pauze filtra o 19:00",
+    )
+    await ntfy_client.send(
+        "Feeding time",
+        "Trigger 3-min filter pause now. Feed: see today's rotation.",
+        priority=4,
+        tags=["fish"],
+    )
+
+
+@scheduler.scheduled_job("cron", day_of_week="sat", hour=9, minute=0)
+async def saturday_maintenance_reminder():
+    """Saturday morning: water change day reminder."""
+    await n8n_client.reminder(
+        "Water change day — produce 22L RO + 8L tap, blend 30L total",
+        "Dzien wymiany wody — przygotuj 22L RO + 8L kranowej, razem 30L",
+    )
+    await ntfy_client.send(
+        "Water change Saturday",
+        "Produce 22L RO + blend with 8L tap = 30L. Add Prime. Change 30L. AF Life Essence 25ml + Yokuchi 5 pumps.",
+        priority=4,
+        tags=["droplet"],
+    )
 
 
 @scheduler.scheduled_job("interval", seconds=30)

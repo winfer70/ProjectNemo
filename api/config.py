@@ -24,6 +24,10 @@ class Settings(BaseSettings):
     n8n_webhook_daily: str = ""
     telegram_lang: str = "both"
 
+    ntfy_url: str = ""
+    ntfy_topic: str = "aquarium"
+    ntfy_token: str = ""
+
     tapo_filter_entity: str = "switch.tapo_filter"
     tapo_heater_entity: str = "switch.tapo_heater"
     tapo_light_entity: str = "switch.tapo_light"
