@@ -169,7 +169,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, provide } from 'vue'
+import { ref, computed, onMounted, onUnmounted, provide, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import ScheduleView from './views/ScheduleView.vue'
 import LiveView from './views/LiveView.vue'
@@ -346,6 +346,8 @@ const _refreshMap = {
   calendar: () => { calendarStore.refetchCurrent(); calendarStore.fetchToday() },
 }
 
+const _lastDate = ref(new Date().toDateString())
+
 function _handleInvalidate(evt) {
   const fn = _refreshMap[evt.detail?.domain]
   if (fn) fn()
@@ -353,6 +355,14 @@ function _handleInvalidate(evt) {
 
 onMounted(() => {
   clockTimer = setInterval(() => { now.value = new Date() }, 1000)
+  watch(now, () => {
+    const d = now.value.toDateString()
+    if (d !== _lastDate.value) {
+      _lastDate.value = d
+      _refreshMap.calendar?.()
+      _refreshMap.schedule?.()
+    }
+  })
   fetchWeather()
   wxTimer = setInterval(fetchWeather, 30 * 60 * 1000)
   sensorsStore.connectWs()
