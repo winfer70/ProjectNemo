@@ -18,7 +18,7 @@ import time
 DB_PATH = "/app/data/nemo.db"
 WIKI_API = "https://en.wikipedia.org/w/api.php"
 THUMB_SIZE = 400
-DELAY_S = 0.8
+DELAY_S = 3.0
 
 
 def _query_wiki(title: str) -> str | None:
@@ -46,16 +46,18 @@ def _query_wiki(title: str) -> str | None:
 
 
 def fetch_wikipedia_image(latin: str) -> str | None:
-    """Try full latin, then genus+species, then genus only."""
+    """Try full latin, then genus+species (skipping cf./sp./var.), then genus only."""
     parts = latin.strip().split()
+    # Filter out qualifier words to extract real genus/species tokens
+    real_parts = [p for p in parts if p.lower() not in ("cf.", "sp.", "var.", "x", "subsp.")]
 
     candidates = [latin]
-    if len(parts) >= 2:
-        genus_species = f"{parts[0]} {parts[1]}"
+    if len(real_parts) >= 2:
+        genus_species = f"{real_parts[0]} {real_parts[1]}"
         if genus_species != latin:
             candidates.append(genus_species)
-    if len(parts) >= 1 and parts[0] not in ("cf.", "sp."):
-        genus = parts[0]
+    if len(real_parts) >= 1:
+        genus = real_parts[0]
         if genus not in candidates:
             candidates.append(genus)
 
