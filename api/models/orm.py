@@ -2,7 +2,7 @@
 import json
 from datetime import datetime
 
-from sqlalchemy import Boolean, Float, ForeignKey, Integer, String, Text, DateTime, func
+from sqlalchemy import Boolean, Float, ForeignKey, Integer, String, Text, DateTime, UniqueConstraint, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from database import Base
@@ -219,6 +219,9 @@ class CalendarTask(Base):
 class CalendarCompletion(Base):
     """Records that a CalendarTask was completed on a specific date."""
     __tablename__ = "calendar_completions"
+    __table_args__ = (
+        UniqueConstraint("task_id", "date", name="ux_calendar_completions_task_date"),
+    )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     task_id: Mapped[int] = mapped_column(ForeignKey("calendar_tasks.id"))

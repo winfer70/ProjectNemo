@@ -5,6 +5,7 @@ from datetime import date, datetime, timedelta
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy import select, and_
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database import get_db
@@ -245,6 +246,12 @@ async def toggle_complete(req: CompleteRequest, db: AsyncSession = Depends(get_d
         return {"completed": False}
     else:
         db.add(CalendarCompletion(task_id=req.task_id, date=req.date))
-        await db.commit()
+        try:
+            await db.commit()
+        except IntegrityError:
+            # A concurrent request (double-click, retry, etc.) already inserted
+            # the same (task_id, date) row — the unique index rejected ours.
+            # That's fine: the task is completed either way.
+            await db.rollback()
         await broadcast_change("calendar")
         return {"completed": True}
