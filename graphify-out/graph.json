@@ -9,7 +9,7 @@
       "source_file": "api\\ble_manager.py",
       "source_location": "L1",
       "id": "ble_manager",
-      "community": 8
+      "community": 7
     },
     {
       "label": "BLEConnectionManager",
@@ -17,7 +17,7 @@
       "source_file": "api\\ble_manager.py",
       "source_location": "L14",
       "id": "ble_manager_bleconnectionmanager",
-      "community": 8
+      "community": 7
     },
     {
       "label": ".__init__()",
@@ -25,7 +25,7 @@
       "source_file": "api\\ble_manager.py",
       "source_location": "L15",
       "id": "ble_manager_bleconnectionmanager_init",
-      "community": 8
+      "community": 7
     },
     {
       "label": ".connect()",
@@ -33,7 +33,7 @@
       "source_file": "api\\ble_manager.py",
       "source_location": "L18",
       "id": "ble_manager_bleconnectionmanager_connect",
-      "community": 8
+      "community": 7
     },
     {
       "label": ".disconnect()",
@@ -41,7 +41,7 @@
       "source_file": "api\\ble_manager.py",
       "source_location": "L23",
       "id": "ble_manager_bleconnectionmanager_disconnect",
-      "community": 8
+      "community": 7
     },
     {
       "label": ".broadcast()",
@@ -49,7 +49,7 @@
       "source_file": "api\\ble_manager.py",
       "source_location": "L27",
       "id": "ble_manager_bleconnectionmanager_broadcast",
-      "community": 8
+      "community": 7
     },
     {
       "label": "BLE gateway WebSocket connection manager bridging main.py and ha_client.py.\r \r T",
@@ -57,7 +57,7 @@
       "source_file": "api\\ble_manager.py",
       "source_location": "L1",
       "id": "ble_manager_rationale_1",
-      "community": 8
+      "community": 7
     },
     {
       "label": "config.py",
@@ -65,7 +65,7 @@
       "source_file": "api\\config.py",
       "source_location": "L1",
       "id": "config",
-      "community": 3
+      "community": 2
     },
     {
       "label": "Settings",
@@ -73,7 +73,7 @@
       "source_file": "api\\config.py",
       "source_location": "L4",
       "id": "config_settings",
-      "community": 3
+      "community": 2
     },
     {
       "label": "BaseSettings",
@@ -81,7 +81,7 @@
       "source_file": "",
       "source_location": "",
       "id": "basesettings",
-      "community": 3
+      "community": 2
     },
     {
       "label": "database.py",
@@ -89,7 +89,7 @@
       "source_file": "api\\database.py",
       "source_location": "L1",
       "id": "database",
-      "community": 2
+      "community": 3
     },
     {
       "label": "Base",
@@ -97,7 +97,7 @@
       "source_file": "api\\database.py",
       "source_location": "L15",
       "id": "database_base",
-      "community": 1
+      "community": 0
     },
     {
       "label": "DeclarativeBase",
@@ -105,7 +105,7 @@
       "source_file": "",
       "source_location": "",
       "id": "declarativebase",
-      "community": 1
+      "community": 0
     },
     {
       "label": "get_db()",
@@ -113,7 +113,7 @@
       "source_file": "api\\database.py",
       "source_location": "L19",
       "id": "database_get_db",
-      "community": 2
+      "community": 3
     },
     {
       "label": "init_db()",
@@ -121,7 +121,7 @@
       "source_file": "api\\database.py",
       "source_location": "L24",
       "id": "database_init_db",
-      "community": 2
+      "community": 3
     },
     {
       "label": "main.js",
@@ -129,7 +129,7 @@
       "source_file": "ui\\src\\main.js",
       "source_location": "L1",
       "id": "main",
-      "community": 8
+      "community": 7
     },
     {
       "label": "ble_ws()",
@@ -137,7 +137,7 @@
       "source_file": "api\\main.py",
       "source_location": "L41",
       "id": "main_ble_ws",
-      "community": 8
+      "community": 7
     },
     {
       "label": "websocket_live()",
@@ -145,7 +145,7 @@
       "source_file": "api\\main.py",
       "source_location": "L51",
       "id": "main_websocket_live",
-      "community": 8
+      "community": 7
     },
     {
       "label": "_run_migrations()",
@@ -153,7 +153,7 @@
       "source_file": "api\\main.py",
       "source_location": "L55",
       "id": "main_run_migrations",
-      "community": 8
+      "community": 7
     },
     {
       "label": "on_startup()",
@@ -161,7 +161,7 @@
       "source_file": "api\\main.py",
       "source_location": "L71",
       "id": "main_on_startup",
-      "community": 8
+      "community": 7
     },
     {
       "label": "on_shutdown()",
@@ -169,7 +169,7 @@
       "source_file": "api\\main.py",
       "source_location": "L81",
       "id": "main_on_shutdown",
-      "community": 8
+      "community": 7
     },
     {
       "label": "health()",
@@ -177,7 +177,7 @@
       "source_file": "api\\main.py",
       "source_location": "L86",
       "id": "main_health",
-      "community": 8
+      "community": 7
     },
     {
       "label": "FastAPI application orchestrator for the ProjectNemo aquarium monitoring system.",
@@ -185,7 +185,7 @@
       "source_file": "api\\main.py",
       "source_location": "L1",
       "id": "main_rationale_1",
-      "community": 8
+      "community": 7
     },
     {
       "label": "Add new columns to existing tables. SQLite-safe: errors mean column exists.",
@@ -193,7 +193,7 @@
       "source_file": "api\\main.py",
       "source_location": "L56",
       "id": "main_rationale_56",
-      "community": 8
+      "community": 7
     },
     {
       "label": "__init__.py",
@@ -201,7 +201,7 @@
       "source_file": "homeassistant\\config\\custom_components\\fluvalble\\__init__.py",
       "source_location": "L1",
       "id": "init",
-      "community": 17
+      "community": 19
     },
     {
       "label": "orm.py",
@@ -209,7 +209,7 @@
       "source_file": "api\\models\\orm.py",
       "source_location": "L1",
       "id": "orm",
-      "community": 1
+      "community": 0
     },
     {
       "label": "Supply",
@@ -217,7 +217,7 @@
       "source_file": "api\\models\\orm.py",
       "source_location": "L11",
       "id": "orm_supply",
-      "community": 1
+      "community": 0
     },
     {
       "label": "Base",
@@ -225,7 +225,7 @@
       "source_file": "",
       "source_location": "",
       "id": "base",
-      "community": 1
+      "community": 0
     },
     {
       "label": "DosingTask",
@@ -233,7 +233,7 @@
       "source_file": "api\\models\\orm.py",
       "source_location": "L29",
       "id": "orm_dosingtask",
-      "community": 1
+      "community": 0
     },
     {
       "label": "DoseLog",
@@ -241,7 +241,7 @@
       "source_file": "api\\models\\orm.py",
       "source_location": "L44",
       "id": "orm_doselog",
-      "community": 1
+      "community": 0
     },
     {
       "label": "MaintenanceTask",
@@ -249,7 +249,7 @@
       "source_file": "api\\models\\orm.py",
       "source_location": "L56",
       "id": "orm_maintenancetask",
-      "community": 1
+      "community": 0
     },
     {
       "label": "steps()",
@@ -257,7 +257,7 @@
       "source_file": "api\\models\\orm.py",
       "source_location": "L73",
       "id": "orm_steps",
-      "community": 1
+      "community": 0
     },
     {
       "label": "required_parts()",
@@ -265,7 +265,7 @@
       "source_file": "api\\models\\orm.py",
       "source_location": "L81",
       "id": "orm_required_parts",
-      "community": 1
+      "community": 0
     },
     {
       "label": "MaintenanceLog",
@@ -273,7 +273,7 @@
       "source_file": "api\\models\\orm.py",
       "source_location": "L89",
       "id": "orm_maintenancelog",
-      "community": 1
+      "community": 0
     },
     {
       "label": "parts_replaced()",
@@ -281,7 +281,7 @@
       "source_file": "api\\models\\orm.py",
       "source_location": "L101",
       "id": "orm_parts_replaced",
-      "community": 1
+      "community": 0
     },
     {
       "label": "FeedingSchedule",
@@ -289,7 +289,7 @@
       "source_file": "api\\models\\orm.py",
       "source_location": "L109",
       "id": "orm_feedingschedule",
-      "community": 1
+      "community": 0
     },
     {
       "label": "FeedingLog",
@@ -297,7 +297,7 @@
       "source_file": "api\\models\\orm.py",
       "source_location": "L120",
       "id": "orm_feedinglog",
-      "community": 0
+      "community": 1
     },
     {
       "label": "FeedingPause",
@@ -305,7 +305,7 @@
       "source_file": "api\\models\\orm.py",
       "source_location": "L132",
       "id": "orm_feedingpause",
-      "community": 1
+      "community": 0
     },
     {
       "label": "paused_entities()",
@@ -313,7 +313,7 @@
       "source_file": "api\\models\\orm.py",
       "source_location": "L144",
       "id": "orm_paused_entities",
-      "community": 1
+      "community": 0
     },
     {
       "label": "WaterTestParameter",
@@ -321,7 +321,7 @@
       "source_file": "api\\models\\orm.py",
       "source_location": "L152",
       "id": "orm_watertestparameter",
-      "community": 1
+      "community": 0
     },
     {
       "label": "WaterTestSession",
@@ -329,7 +329,7 @@
       "source_file": "api\\models\\orm.py",
       "source_location": "L167",
       "id": "orm_watertestsession",
-      "community": 1
+      "community": 0
     },
     {
       "label": "WaterTestReading",
@@ -337,7 +337,7 @@
       "source_file": "api\\models\\orm.py",
       "source_location": "L177",
       "id": "orm_watertestreading",
-      "community": 1
+      "community": 0
     },
     {
       "label": "CalendarTask",
@@ -345,7 +345,7 @@
       "source_file": "api\\models\\orm.py",
       "source_location": "L191",
       "id": "orm_calendartask",
-      "community": 7
+      "community": 6
     },
     {
       "label": "recurrence_days()",
@@ -353,7 +353,7 @@
       "source_file": "api\\models\\orm.py",
       "source_location": "L211",
       "id": "orm_recurrence_days",
-      "community": 1
+      "community": 0
     },
     {
       "label": "CalendarCompletion",
@@ -361,47 +361,47 @@
       "source_file": "api\\models\\orm.py",
       "source_location": "L219",
       "id": "orm_calendarcompletion",
-      "community": 7
+      "community": 6
     },
     {
       "label": "Fish",
       "file_type": "code",
       "source_file": "api\\models\\orm.py",
-      "source_location": "L231",
+      "source_location": "L234",
       "id": "orm_fish",
-      "community": 1
+      "community": 0
     },
     {
       "label": "Plant",
       "file_type": "code",
       "source_file": "api\\models\\orm.py",
-      "source_location": "L247",
+      "source_location": "L250",
       "id": "orm_plant",
-      "community": 1
+      "community": 0
     },
     {
       "label": "StripScanCache",
       "file_type": "code",
       "source_file": "api\\models\\orm.py",
-      "source_location": "L260",
+      "source_location": "L263",
       "id": "orm_stripscancache",
-      "community": 1
+      "community": 0
     },
     {
       "label": "ai_result()",
       "file_type": "code",
       "source_file": "api\\models\\orm.py",
-      "source_location": "L271",
+      "source_location": "L274",
       "id": "orm_ai_result",
-      "community": 1
+      "community": 0
     },
     {
       "label": "corrected_result()",
       "file_type": "code",
       "source_file": "api\\models\\orm.py",
-      "source_location": "L279",
+      "source_location": "L282",
       "id": "orm_corrected_result",
-      "community": 1
+      "community": 0
     },
     {
       "label": "SQLAlchemy ORM model definitions \u2014 imported by all routers and seed_data.py.",
@@ -409,7 +409,7 @@
       "source_file": "api\\models\\orm.py",
       "source_location": "L1",
       "id": "orm_rationale_1",
-      "community": 1
+      "community": 0
     },
     {
       "label": "Tracks active device pauses for feeding mode.",
@@ -417,7 +417,7 @@
       "source_file": "api\\models\\orm.py",
       "source_location": "L133",
       "id": "orm_rationale_133",
-      "community": 1
+      "community": 0
     },
     {
       "label": "A recurring aquarium care task shown in the calendar.",
@@ -425,7 +425,7 @@
       "source_file": "api\\models\\orm.py",
       "source_location": "L192",
       "id": "orm_rationale_192",
-      "community": 7
+      "community": 6
     },
     {
       "label": "Records that a CalendarTask was completed on a specific date.",
@@ -433,7 +433,7 @@
       "source_file": "api\\models\\orm.py",
       "source_location": "L220",
       "id": "orm_rationale_220",
-      "community": 7
+      "community": 6
     },
     {
       "label": "schemas.py",
@@ -441,7 +441,7 @@
       "source_file": "api\\models\\schemas.py",
       "source_location": "L1",
       "id": "schemas",
-      "community": 0
+      "community": 1
     },
     {
       "label": "SupplyBase",
@@ -449,7 +449,7 @@
       "source_file": "api\\models\\schemas.py",
       "source_location": "L10",
       "id": "schemas_supplybase",
-      "community": 0
+      "community": 1
     },
     {
       "label": "BaseModel",
@@ -457,7 +457,7 @@
       "source_file": "",
       "source_location": "",
       "id": "basemodel",
-      "community": 0
+      "community": 1
     },
     {
       "label": "SupplyCreate",
@@ -465,7 +465,7 @@
       "source_file": "api\\models\\schemas.py",
       "source_location": "L21",
       "id": "schemas_supplycreate",
-      "community": 0
+      "community": 1
     },
     {
       "label": "SupplyUpdate",
@@ -473,7 +473,7 @@
       "source_file": "api\\models\\schemas.py",
       "source_location": "L25",
       "id": "schemas_supplyupdate",
-      "community": 0
+      "community": 1
     },
     {
       "label": "SupplyOut",
@@ -481,7 +481,7 @@
       "source_file": "api\\models\\schemas.py",
       "source_location": "L32",
       "id": "schemas_supplyout",
-      "community": 0
+      "community": 1
     },
     {
       "label": "DosingTaskOut",
@@ -489,7 +489,7 @@
       "source_file": "api\\models\\schemas.py",
       "source_location": "L41",
       "id": "schemas_dosingtaskout",
-      "community": 0
+      "community": 1
     },
     {
       "label": "DoseCompleteRequest",
@@ -497,7 +497,7 @@
       "source_file": "api\\models\\schemas.py",
       "source_location": "L58",
       "id": "schemas_dosecompleterequest",
-      "community": 0
+      "community": 1
     },
     {
       "label": "RestockRequest",
@@ -505,7 +505,7 @@
       "source_file": "api\\models\\schemas.py",
       "source_location": "L62",
       "id": "schemas_restockrequest",
-      "community": 0
+      "community": 1
     },
     {
       "label": "DosingTaskCreate",
@@ -513,7 +513,7 @@
       "source_file": "api\\models\\schemas.py",
       "source_location": "L66",
       "id": "schemas_dosingtaskcreate",
-      "community": 0
+      "community": 1
     },
     {
       "label": "DosingTaskUpdate",
@@ -521,7 +521,7 @@
       "source_file": "api\\models\\schemas.py",
       "source_location": "L75",
       "id": "schemas_dosingtaskupdate",
-      "community": 0
+      "community": 1
     },
     {
       "label": "MaintenanceTaskOut",
@@ -529,7 +529,7 @@
       "source_file": "api\\models\\schemas.py",
       "source_location": "L86",
       "id": "schemas_maintenancetaskout",
-      "community": 0
+      "community": 1
     },
     {
       "label": "MaintenanceCompleteRequest",
@@ -537,7 +537,7 @@
       "source_file": "api\\models\\schemas.py",
       "source_location": "L101",
       "id": "schemas_maintenancecompleterequest",
-      "community": 0
+      "community": 1
     },
     {
       "label": "MaintenanceStartRequest",
@@ -545,7 +545,7 @@
       "source_file": "api\\models\\schemas.py",
       "source_location": "L106",
       "id": "schemas_maintenancestartrequest",
-      "community": 0
+      "community": 1
     },
     {
       "label": "FeedingScheduleOut",
@@ -553,7 +553,7 @@
       "source_file": "api\\models\\schemas.py",
       "source_location": "L112",
       "id": "schemas_feedingscheduleout",
-      "community": 0
+      "community": 1
     },
     {
       "label": "FeedingScheduleCreate",
@@ -561,7 +561,7 @@
       "source_file": "api\\models\\schemas.py",
       "source_location": "L120",
       "id": "schemas_feedingschedulecreate",
-      "community": 0
+      "community": 1
     },
     {
       "label": "FeedingLogOut",
@@ -569,7 +569,7 @@
       "source_file": "api\\models\\schemas.py",
       "source_location": "L126",
       "id": "schemas_feedinglogout",
-      "community": 0
+      "community": 1
     },
     {
       "label": "FeedingStatusOut",
@@ -577,7 +577,7 @@
       "source_file": "api\\models\\schemas.py",
       "source_location": "L135",
       "id": "schemas_feedingstatusout",
-      "community": 0
+      "community": 1
     },
     {
       "label": "WaterTestParameterOut",
@@ -585,7 +585,7 @@
       "source_file": "api\\models\\schemas.py",
       "source_location": "L143",
       "id": "schemas_watertestparameterout",
-      "community": 4
+      "community": 1
     },
     {
       "label": "WaterTestReadingIn",
@@ -593,7 +593,7 @@
       "source_file": "api\\models\\schemas.py",
       "source_location": "L155",
       "id": "schemas_watertestreadingin",
-      "community": 0
+      "community": 1
     },
     {
       "label": "WaterTestSessionCreate",
@@ -601,7 +601,7 @@
       "source_file": "api\\models\\schemas.py",
       "source_location": "L161",
       "id": "schemas_watertestsessioncreate",
-      "community": 4
+      "community": 1
     },
     {
       "label": "WaterTestReadingOut",
@@ -609,7 +609,7 @@
       "source_file": "api\\models\\schemas.py",
       "source_location": "L168",
       "id": "schemas_watertestreadingout",
-      "community": 4
+      "community": 1
     },
     {
       "label": "WaterTestSessionOut",
@@ -617,7 +617,7 @@
       "source_file": "api\\models\\schemas.py",
       "source_location": "L181",
       "id": "schemas_watertestsessionout",
-      "community": 4
+      "community": 1
     },
     {
       "label": "SensorCurrentOut",
@@ -625,7 +625,7 @@
       "source_file": "api\\models\\schemas.py",
       "source_location": "L191",
       "id": "schemas_sensorcurrentout",
-      "community": 0
+      "community": 1
     },
     {
       "label": "SensorHistoryPoint",
@@ -633,7 +633,7 @@
       "source_file": "api\\models\\schemas.py",
       "source_location": "L199",
       "id": "schemas_sensorhistorypoint",
-      "community": 4
+      "community": 1
     },
     {
       "label": "DeviceOut",
@@ -641,7 +641,7 @@
       "source_file": "api\\models\\schemas.py",
       "source_location": "L204",
       "id": "schemas_deviceout",
-      "community": 0
+      "community": 2
     },
     {
       "label": "FluvalChannels",
@@ -649,7 +649,7 @@
       "source_file": "api\\models\\schemas.py",
       "source_location": "L214",
       "id": "schemas_fluvalchannels",
-      "community": 0
+      "community": 2
     },
     {
       "label": "FishCreate",
@@ -657,7 +657,7 @@
       "source_file": "api\\models\\schemas.py",
       "source_location": "L224",
       "id": "schemas_fishcreate",
-      "community": 0
+      "community": 1
     },
     {
       "label": "FishUpdate",
@@ -665,7 +665,7 @@
       "source_file": "api\\models\\schemas.py",
       "source_location": "L236",
       "id": "schemas_fishupdate",
-      "community": 0
+      "community": 1
     },
     {
       "label": "FishOut",
@@ -673,7 +673,7 @@
       "source_file": "api\\models\\schemas.py",
       "source_location": "L248",
       "id": "schemas_fishout",
-      "community": 0
+      "community": 1
     },
     {
       "label": "PlantCreate",
@@ -681,7 +681,7 @@
       "source_file": "api\\models\\schemas.py",
       "source_location": "L263",
       "id": "schemas_plantcreate",
-      "community": 0
+      "community": 1
     },
     {
       "label": "PlantUpdate",
@@ -689,7 +689,7 @@
       "source_file": "api\\models\\schemas.py",
       "source_location": "L272",
       "id": "schemas_plantupdate",
-      "community": 0
+      "community": 1
     },
     {
       "label": "PlantOut",
@@ -697,7 +697,7 @@
       "source_file": "api\\models\\schemas.py",
       "source_location": "L281",
       "id": "schemas_plantout",
-      "community": 0
+      "community": 1
     },
     {
       "label": "ImageResult",
@@ -705,7 +705,7 @@
       "source_file": "api\\models\\schemas.py",
       "source_location": "L293",
       "id": "schemas_imageresult",
-      "community": 0
+      "community": 1
     },
     {
       "label": "ImageSearchResult",
@@ -713,7 +713,7 @@
       "source_file": "api\\models\\schemas.py",
       "source_location": "L299",
       "id": "schemas_imagesearchresult",
-      "community": 0
+      "community": 1
     },
     {
       "label": "CalendarTaskCreate",
@@ -721,7 +721,7 @@
       "source_file": "api\\models\\schemas.py",
       "source_location": "L311",
       "id": "schemas_calendartaskcreate",
-      "community": 7
+      "community": 6
     },
     {
       "label": "CalendarTaskUpdate",
@@ -729,7 +729,7 @@
       "source_file": "api\\models\\schemas.py",
       "source_location": "L324",
       "id": "schemas_calendartaskupdate",
-      "community": 7
+      "community": 6
     },
     {
       "label": "Pydantic schemas for API request/response validation.",
@@ -737,7 +737,7 @@
       "source_file": "api\\models\\schemas.py",
       "source_location": "L1",
       "id": "schemas_rationale_1",
-      "community": 0
+      "community": 1
     },
     {
       "label": "calendar.js",
@@ -745,79 +745,79 @@
       "source_file": "ui\\src\\stores\\calendar.js",
       "source_location": "L1",
       "id": "calendar",
-      "community": 7
+      "community": 6
     },
     {
       "label": "_task_applies()",
       "file_type": "code",
       "source_file": "api\\routers\\calendar.py",
-      "source_location": "L18",
+      "source_location": "L19",
       "id": "calendar_task_applies",
-      "community": 7
+      "community": 6
     },
     {
       "label": "list_tasks()",
       "file_type": "code",
       "source_file": "api\\routers\\calendar.py",
-      "source_location": "L42",
+      "source_location": "L43",
       "id": "calendar_list_tasks",
-      "community": 7
+      "community": 6
     },
     {
       "label": "create_task()",
       "file_type": "code",
       "source_file": "api\\routers\\calendar.py",
-      "source_location": "L65",
+      "source_location": "L66",
       "id": "calendar_create_task",
-      "community": 7
+      "community": 6
     },
     {
       "label": "update_task()",
       "file_type": "code",
       "source_file": "api\\routers\\calendar.py",
-      "source_location": "L87",
+      "source_location": "L88",
       "id": "calendar_update_task",
-      "community": 7
+      "community": 6
     },
     {
       "label": "delete_task()",
       "file_type": "code",
       "source_file": "api\\routers\\calendar.py",
-      "source_location": "L106",
+      "source_location": "L107",
       "id": "calendar_delete_task",
-      "community": 7
+      "community": 6
     },
     {
       "label": "get_today()",
       "file_type": "code",
       "source_file": "api\\routers\\calendar.py",
-      "source_location": "L119",
+      "source_location": "L120",
       "id": "calendar_get_today",
-      "community": 7
+      "community": 6
     },
     {
       "label": "get_month()",
       "file_type": "code",
       "source_file": "api\\routers\\calendar.py",
-      "source_location": "L186",
+      "source_location": "L187",
       "id": "calendar_get_month",
-      "community": 7
+      "community": 6
     },
     {
       "label": "CompleteRequest",
       "file_type": "code",
       "source_file": "api\\routers\\calendar.py",
-      "source_location": "L225",
+      "source_location": "L226",
       "id": "calendar_completerequest",
-      "community": 7
+      "community": 6
     },
     {
       "label": "toggle_complete()",
       "file_type": "code",
       "source_file": "api\\routers\\calendar.py",
-      "source_location": "L231",
+      "source_location": "L232",
       "id": "calendar_toggle_complete",
-      "community": 7
+      "community": 6
     },
     {
       "label": "Calendar router \u2014 recurring aquarium care tasks with per-day completion tracking",
@@ -825,31 +825,31 @@
       "source_file": "api\\routers\\calendar.py",
       "source_location": "L1",
       "id": "calendar_rationale_1",
-      "community": 7
+      "community": 6
     },
     {
       "label": "Return True if this task is scheduled on the given date.",
       "file_type": "rationale",
       "source_file": "api\\routers\\calendar.py",
-      "source_location": "L19",
-      "id": "calendar_rationale_19",
-      "community": 7
+      "source_location": "L20",
+      "id": "calendar_rationale_20",
+      "community": 6
     },
     {
       "label": "List all active calendar tasks.",
       "file_type": "rationale",
       "source_file": "api\\routers\\calendar.py",
-      "source_location": "L43",
-      "id": "calendar_rationale_43",
-      "community": 7
+      "source_location": "L44",
+      "id": "calendar_rationale_44",
+      "community": 6
     },
     {
       "label": "Return tasks due today + overdue tasks from last 7 days.",
       "file_type": "rationale",
       "source_file": "api\\routers\\calendar.py",
-      "source_location": "L120",
-      "id": "calendar_rationale_120",
-      "community": 7
+      "source_location": "L121",
+      "id": "calendar_rationale_121",
+      "community": 6
     },
     {
       "label": "devices.py",
@@ -857,31 +857,39 @@
       "source_file": "api\\routers\\devices.py",
       "source_location": "L1",
       "id": "devices",
-      "community": 3
+      "community": 2
+    },
+    {
+      "label": "_power_entities()",
+      "file_type": "code",
+      "source_file": "api\\routers\\devices.py",
+      "source_location": "L18",
+      "id": "devices_power_entities",
+      "community": 2
     },
     {
       "label": "list_devices()",
       "file_type": "code",
       "source_file": "api\\routers\\devices.py",
-      "source_location": "L19",
+      "source_location": "L25",
       "id": "devices_list_devices",
-      "community": 3
+      "community": 2
     },
     {
       "label": "toggle_device()",
       "file_type": "code",
       "source_file": "api\\routers\\devices.py",
-      "source_location": "L36",
+      "source_location": "L46",
       "id": "devices_toggle_device",
-      "community": 3
+      "community": 2
     },
     {
       "label": "set_fluval_channels()",
       "file_type": "code",
       "source_file": "api\\routers\\devices.py",
-      "source_location": "L45",
+      "source_location": "L55",
       "id": "devices_set_fluval_channels",
-      "community": 3
+      "community": 2
     },
     {
       "label": "Device control \u2014 Tapo P110 toggle + Fluval RGBW sliders.",
@@ -889,7 +897,15 @@
       "source_file": "api\\routers\\devices.py",
       "source_location": "L1",
       "id": "devices_rationale_1",
-      "community": 0
+      "community": 2
+    },
+    {
+      "label": "Derive Tapo power/energy sensor entity IDs from a switch entity ID.",
+      "file_type": "rationale",
+      "source_file": "api\\routers\\devices.py",
+      "source_location": "L19",
+      "id": "devices_rationale_19",
+      "community": 2
     },
     {
       "label": "dosing.py",
@@ -897,7 +913,7 @@
       "source_file": "api\\routers\\dosing.py",
       "source_location": "L1",
       "id": "dosing",
-      "community": 13
+      "community": 14
     },
     {
       "label": "_build_task_out()",
@@ -905,7 +921,7 @@
       "source_file": "api\\routers\\dosing.py",
       "source_location": "L17",
       "id": "dosing_build_task_out",
-      "community": 13
+      "community": 14
     },
     {
       "label": "list_dosing_tasks()",
@@ -913,7 +929,7 @@
       "source_file": "api\\routers\\dosing.py",
       "source_location": "L37",
       "id": "dosing_list_dosing_tasks",
-      "community": 13
+      "community": 14
     },
     {
       "label": "create_dosing_task()",
@@ -921,7 +937,7 @@
       "source_file": "api\\routers\\dosing.py",
       "source_location": "L48",
       "id": "dosing_create_dosing_task",
-      "community": 13
+      "community": 14
     },
     {
       "label": "update_dosing_task()",
@@ -929,7 +945,7 @@
       "source_file": "api\\routers\\dosing.py",
       "source_location": "L64",
       "id": "dosing_update_dosing_task",
-      "community": 13
+      "community": 14
     },
     {
       "label": "complete_dose()",
@@ -937,7 +953,7 @@
       "source_file": "api\\routers\\dosing.py",
       "source_location": "L85",
       "id": "dosing_complete_dose",
-      "community": 13
+      "community": 14
     },
     {
       "label": "restock_supply()",
@@ -945,7 +961,7 @@
       "source_file": "api\\routers\\dosing.py",
       "source_location": "L117",
       "id": "dosing_restock_supply",
-      "community": 13
+      "community": 14
     },
     {
       "label": "Daily dosing tasks \u2014 complete dose, restock supplies, CRUD.",
@@ -953,7 +969,7 @@
       "source_file": "api\\routers\\dosing.py",
       "source_location": "L1",
       "id": "dosing_rationale_1",
-      "community": 0
+      "community": 1
     },
     {
       "label": "Add amount to supply current_amount (resupply flow).",
@@ -961,7 +977,7 @@
       "source_file": "api\\routers\\dosing.py",
       "source_location": "L122",
       "id": "dosing_rationale_122",
-      "community": 0
+      "community": 1
     },
     {
       "label": "maintenance.js",
@@ -969,7 +985,7 @@
       "source_file": "ui\\src\\stores\\maintenance.js",
       "source_location": "L1",
       "id": "maintenance",
-      "community": 2
+      "community": 13
     },
     {
       "label": "_days_until()",
@@ -977,7 +993,7 @@
       "source_file": "api\\routers\\maintenance.py",
       "source_location": "L18",
       "id": "maintenance_days_until",
-      "community": 2
+      "community": 13
     },
     {
       "label": "_to_out()",
@@ -985,7 +1001,7 @@
       "source_file": "api\\routers\\maintenance.py",
       "source_location": "L25",
       "id": "maintenance_to_out",
-      "community": 2
+      "community": 13
     },
     {
       "label": "list_maintenance()",
@@ -993,7 +1009,7 @@
       "source_file": "api\\routers\\maintenance.py",
       "source_location": "L42",
       "id": "maintenance_list_maintenance",
-      "community": 2
+      "community": 13
     },
     {
       "label": "get_steps()",
@@ -1001,7 +1017,7 @@
       "source_file": "api\\routers\\maintenance.py",
       "source_location": "L48",
       "id": "maintenance_get_steps",
-      "community": 2
+      "community": 13
     },
     {
       "label": "start_maintenance()",
@@ -1009,7 +1025,7 @@
       "source_file": "api\\routers\\maintenance.py",
       "source_location": "L62",
       "id": "maintenance_start_maintenance",
-      "community": 2
+      "community": 13
     },
     {
       "label": "complete_maintenance()",
@@ -1017,7 +1033,7 @@
       "source_file": "api\\routers\\maintenance.py",
       "source_location": "L80",
       "id": "maintenance_complete_maintenance",
-      "community": 2
+      "community": 13
     },
     {
       "label": "Maintenance tasks \u2014 list, start, complete with checkboxes.",
@@ -1041,7 +1057,7 @@
       "source_file": "ui\\src\\stores\\obsada.js",
       "source_location": "L1",
       "id": "obsada",
-      "community": 2
+      "community": 12
     },
     {
       "label": "list_fish()",
@@ -1049,7 +1065,7 @@
       "source_file": "api\\routers\\obsada.py",
       "source_location": "L21",
       "id": "obsada_list_fish",
-      "community": 2
+      "community": 12
     },
     {
       "label": "create_fish()",
@@ -1057,7 +1073,7 @@
       "source_file": "api\\routers\\obsada.py",
       "source_location": "L27",
       "id": "obsada_create_fish",
-      "community": 2
+      "community": 12
     },
     {
       "label": "update_fish()",
@@ -1065,7 +1081,7 @@
       "source_file": "api\\routers\\obsada.py",
       "source_location": "L36",
       "id": "obsada_update_fish",
-      "community": 2
+      "community": 12
     },
     {
       "label": "delete_fish()",
@@ -1073,7 +1089,7 @@
       "source_file": "api\\routers\\obsada.py",
       "source_location": "L48",
       "id": "obsada_delete_fish",
-      "community": 2
+      "community": 12
     },
     {
       "label": "list_plants()",
@@ -1081,7 +1097,7 @@
       "source_file": "api\\routers\\obsada.py",
       "source_location": "L59",
       "id": "obsada_list_plants",
-      "community": 2
+      "community": 12
     },
     {
       "label": "create_plant()",
@@ -1089,7 +1105,7 @@
       "source_file": "api\\routers\\obsada.py",
       "source_location": "L65",
       "id": "obsada_create_plant",
-      "community": 2
+      "community": 12
     },
     {
       "label": "update_plant()",
@@ -1097,7 +1113,7 @@
       "source_file": "api\\routers\\obsada.py",
       "source_location": "L74",
       "id": "obsada_update_plant",
-      "community": 2
+      "community": 12
     },
     {
       "label": "delete_plant()",
@@ -1105,7 +1121,7 @@
       "source_file": "api\\routers\\obsada.py",
       "source_location": "L86",
       "id": "obsada_delete_plant",
-      "community": 2
+      "community": 12
     },
     {
       "label": "species_search()",
@@ -1113,7 +1129,7 @@
       "source_file": "api\\routers\\obsada.py",
       "source_location": "L97",
       "id": "obsada_species_search",
-      "community": 2
+      "community": 12
     },
     {
       "label": "Obsada (livestock) CRUD + species image search.",
@@ -1121,7 +1137,7 @@
       "source_file": "api\\routers\\obsada.py",
       "source_location": "L1",
       "id": "obsada_rationale_1",
-      "community": 0
+      "community": 1
     },
     {
       "label": "schedule.js",
@@ -1193,7 +1209,7 @@
       "source_file": "api\\routers\\schedule.py",
       "source_location": "L1",
       "id": "schedule_rationale_1",
-      "community": 0
+      "community": 1
     },
     {
       "label": "Return current feeding pause state.",
@@ -1201,7 +1217,7 @@
       "source_file": "api\\routers\\schedule.py",
       "source_location": "L57",
       "id": "schedule_rationale_57",
-      "community": 0
+      "community": 1
     },
     {
       "label": "Pause filter + air pump for 3 min, log feed.",
@@ -1209,7 +1225,7 @@
       "source_file": "api\\routers\\schedule.py",
       "source_location": "L82",
       "id": "schedule_rationale_82",
-      "community": 0
+      "community": 1
     },
     {
       "label": "Immediately cancel feeding pause and resume devices.",
@@ -1217,7 +1233,7 @@
       "source_file": "api\\routers\\schedule.py",
       "source_location": "L103",
       "id": "schedule_rationale_103",
-      "community": 0
+      "community": 1
     },
     {
       "label": "sensors.js",
@@ -1225,7 +1241,7 @@
       "source_file": "ui\\src\\stores\\sensors.js",
       "source_location": "L1",
       "id": "sensors",
-      "community": 11
+      "community": 10
     },
     {
       "label": "current_sensors()",
@@ -1233,7 +1249,7 @@
       "source_file": "api\\routers\\sensors.py",
       "source_location": "L15",
       "id": "sensors_current_sensors",
-      "community": 11
+      "community": 10
     },
     {
       "label": "sensor_history()",
@@ -1241,7 +1257,7 @@
       "source_file": "api\\routers\\sensors.py",
       "source_location": "L32",
       "id": "sensors_sensor_history",
-      "community": 11
+      "community": 10
     },
     {
       "label": "Continuous sensor data \u2014 current state + history from InfluxDB.",
@@ -1249,7 +1265,7 @@
       "source_file": "api\\routers\\sensors.py",
       "source_location": "L1",
       "id": "sensors_rationale_1",
-      "community": 11
+      "community": 10
     },
     {
       "label": "supplies.py",
@@ -1257,7 +1273,7 @@
       "source_file": "api\\routers\\supplies.py",
       "source_location": "L1",
       "id": "supplies",
-      "community": 2
+      "community": 3
     },
     {
       "label": "_to_out()",
@@ -1265,7 +1281,7 @@
       "source_file": "api\\routers\\supplies.py",
       "source_location": "L14",
       "id": "supplies_to_out",
-      "community": 2
+      "community": 3
     },
     {
       "label": "list_supplies()",
@@ -1273,7 +1289,7 @@
       "source_file": "api\\routers\\supplies.py",
       "source_location": "L21",
       "id": "supplies_list_supplies",
-      "community": 2
+      "community": 3
     },
     {
       "label": "create_supply()",
@@ -1281,7 +1297,7 @@
       "source_file": "api\\routers\\supplies.py",
       "source_location": "L27",
       "id": "supplies_create_supply",
-      "community": 2
+      "community": 3
     },
     {
       "label": "update_supply()",
@@ -1289,7 +1305,7 @@
       "source_file": "api\\routers\\supplies.py",
       "source_location": "L37",
       "id": "supplies_update_supply",
-      "community": 2
+      "community": 3
     },
     {
       "label": "restock_supply()",
@@ -1297,7 +1313,7 @@
       "source_file": "api\\routers\\supplies.py",
       "source_location": "L52",
       "id": "supplies_restock_supply",
-      "community": 2
+      "community": 3
     },
     {
       "label": "Supplies / inventory CRUD + restock.",
@@ -1305,7 +1321,7 @@
       "source_file": "api\\routers\\supplies.py",
       "source_location": "L1",
       "id": "supplies_rationale_1",
-      "community": 0
+      "community": 1
     },
     {
       "label": "water_tests.py",
@@ -1313,79 +1329,79 @@
       "source_file": "api\\routers\\water_tests.py",
       "source_location": "L1",
       "id": "water_tests",
-      "community": 4
+      "community": 3
     },
     {
       "label": "_reading_out()",
       "file_type": "code",
       "source_file": "api\\routers\\water_tests.py",
-      "source_location": "L35",
+      "source_location": "L36",
       "id": "water_tests_reading_out",
-      "community": 4
+      "community": 3
     },
     {
       "label": "_build_scan_response()",
       "file_type": "code",
       "source_file": "api\\routers\\water_tests.py",
-      "source_location": "L50",
+      "source_location": "L51",
       "id": "water_tests_build_scan_response",
-      "community": 4
+      "community": 3
     },
     {
       "label": "analyze_strip()",
       "file_type": "code",
       "source_file": "api\\routers\\water_tests.py",
-      "source_location": "L86",
+      "source_location": "L87",
       "id": "water_tests_analyze_strip",
-      "community": 4
+      "community": 3
     },
     {
       "label": "debug_strip()",
       "file_type": "code",
       "source_file": "api\\routers\\water_tests.py",
-      "source_location": "L130",
+      "source_location": "L131",
       "id": "water_tests_debug_strip",
-      "community": 4
+      "community": 3
     },
     {
       "label": "list_parameters()",
       "file_type": "code",
       "source_file": "api\\routers\\water_tests.py",
-      "source_location": "L149",
+      "source_location": "L150",
       "id": "water_tests_list_parameters",
-      "community": 4
+      "community": 3
     },
     {
       "label": "list_sessions()",
       "file_type": "code",
       "source_file": "api\\routers\\water_tests.py",
-      "source_location": "L155",
+      "source_location": "L156",
       "id": "water_tests_list_sessions",
-      "community": 4
+      "community": 3
     },
     {
       "label": "latest_session()",
       "file_type": "code",
       "source_file": "api\\routers\\water_tests.py",
-      "source_location": "L180",
+      "source_location": "L181",
       "id": "water_tests_latest_session",
-      "community": 4
+      "community": 3
     },
     {
       "label": "create_session()",
       "file_type": "code",
       "source_file": "api\\routers\\water_tests.py",
-      "source_location": "L199",
+      "source_location": "L200",
       "id": "water_tests_create_session",
-      "community": 4
+      "community": 3
     },
     {
       "label": "parameter_trend()",
       "file_type": "code",
       "source_file": "api\\routers\\water_tests.py",
-      "source_location": "L268",
+      "source_location": "L275",
       "id": "water_tests_parameter_trend",
-      "community": 4
+      "community": 3
     },
     {
       "label": "Water test sessions + readings + trends.",
@@ -1393,23 +1409,151 @@
       "source_file": "api\\routers\\water_tests.py",
       "source_location": "L1",
       "id": "water_tests_rationale_1",
-      "community": 4
+      "community": 1
     },
     {
       "label": "Build the analyze_strip JSON response including out_of_range flags.",
       "file_type": "rationale",
       "source_file": "api\\routers\\water_tests.py",
-      "source_location": "L57",
-      "id": "water_tests_rationale_57",
-      "community": 4
+      "source_location": "L58",
+      "id": "water_tests_rationale_58",
+      "community": 1
     },
     {
       "label": "Return annotated JPEG + per-row HSV debug data.\r \r     Response JSON:\r       ima",
       "file_type": "rationale",
       "source_file": "api\\routers\\water_tests.py",
-      "source_location": "L131",
-      "id": "water_tests_rationale_131",
-      "community": 4
+      "source_location": "L132",
+      "id": "water_tests_rationale_132",
+      "community": 1
+    },
+    {
+      "label": "fetch_plant_images.py",
+      "file_type": "code",
+      "source_file": "api\\scripts\\fetch_plant_images.py",
+      "source_location": "L1",
+      "id": "fetch_plant_images",
+      "community": 17
+    },
+    {
+      "label": "_query_wiki()",
+      "file_type": "code",
+      "source_file": "api\\scripts\\fetch_plant_images.py",
+      "source_location": "L24",
+      "id": "fetch_plant_images_query_wiki",
+      "community": 17
+    },
+    {
+      "label": "fetch_wikipedia_image()",
+      "file_type": "code",
+      "source_file": "api\\scripts\\fetch_plant_images.py",
+      "source_location": "L48",
+      "id": "fetch_plant_images_fetch_wikipedia_image",
+      "community": 17
+    },
+    {
+      "label": "main()",
+      "file_type": "code",
+      "source_file": "api\\scripts\\fetch_plant_images.py",
+      "source_location": "L72",
+      "id": "fetch_plant_images_main",
+      "community": 17
+    },
+    {
+      "label": "Try full latin, then genus+species (skipping cf./sp./var.), then genus only.",
+      "file_type": "rationale",
+      "source_file": "api\\scripts\\fetch_plant_images.py",
+      "source_location": "L49",
+      "id": "fetch_plant_images_rationale_49",
+      "community": 17
+    },
+    {
+      "label": "update_schedule_v2.py",
+      "file_type": "code",
+      "source_file": "api\\scripts\\update_schedule_v2.py",
+      "source_location": "L1",
+      "id": "update_schedule_v2",
+      "community": 11
+    },
+    {
+      "label": "find_db()",
+      "file_type": "code",
+      "source_file": "api\\scripts\\update_schedule_v2.py",
+      "source_location": "L35",
+      "id": "update_schedule_v2_find_db",
+      "community": 11
+    },
+    {
+      "label": "migrate_supplies()",
+      "file_type": "code",
+      "source_file": "api\\scripts\\update_schedule_v2.py",
+      "source_location": "L245",
+      "id": "update_schedule_v2_migrate_supplies",
+      "community": 11
+    },
+    {
+      "label": "migrate_dosing_tasks()",
+      "file_type": "code",
+      "source_file": "api\\scripts\\update_schedule_v2.py",
+      "source_location": "L273",
+      "id": "update_schedule_v2_migrate_dosing_tasks",
+      "community": 11
+    },
+    {
+      "label": "migrate_calendar_tasks()",
+      "file_type": "code",
+      "source_file": "api\\scripts\\update_schedule_v2.py",
+      "source_location": "L306",
+      "id": "update_schedule_v2_migrate_calendar_tasks",
+      "community": 11
+    },
+    {
+      "label": "migrate_fish()",
+      "file_type": "code",
+      "source_file": "api\\scripts\\update_schedule_v2.py",
+      "source_location": "L380",
+      "id": "update_schedule_v2_migrate_fish",
+      "community": 11
+    },
+    {
+      "label": "main()",
+      "file_type": "code",
+      "source_file": "api\\scripts\\update_schedule_v2.py",
+      "source_location": "L401",
+      "id": "update_schedule_v2_main",
+      "community": 11
+    },
+    {
+      "label": "Insert supplies that do not already exist (checked by name).\r     Returns a mapp",
+      "file_type": "rationale",
+      "source_file": "api\\scripts\\update_schedule_v2.py",
+      "source_location": "L246",
+      "id": "update_schedule_v2_rationale_246",
+      "community": 11
+    },
+    {
+      "label": "Insert dosing tasks linked to the new supplies.\r     Skips silently if a dosing",
+      "file_type": "rationale",
+      "source_file": "api\\scripts\\update_schedule_v2.py",
+      "source_location": "L274",
+      "id": "update_schedule_v2_rationale_274",
+      "community": 11
+    },
+    {
+      "label": "1. Delete all calendar tasks whose name (EN or PL) contains 'feed' or\r        'k",
+      "file_type": "rationale",
+      "source_file": "api\\scripts\\update_schedule_v2.py",
+      "source_location": "L307",
+      "id": "update_schedule_v2_rationale_307",
+      "community": 11
+    },
+    {
+      "label": "Update fish qty and notes_pl by latin name.\r     Logs a warning if a latin name",
+      "file_type": "rationale",
+      "source_file": "api\\scripts\\update_schedule_v2.py",
+      "source_location": "L381",
+      "id": "update_schedule_v2_rationale_381",
+      "community": 11
     },
     {
       "label": "seed_data.py",
@@ -1417,15 +1561,15 @@
       "source_file": "api\\seed_data.py",
       "source_location": "L1",
       "id": "seed_data",
-      "community": 1
+      "community": 0
     },
     {
       "label": "seed()",
       "file_type": "code",
       "source_file": "api\\seed_data.py",
-      "source_location": "L389",
+      "source_location": "L398",
       "id": "seed_data_seed",
-      "community": 1
+      "community": 0
     },
     {
       "label": "Database seeder for ProjectNemo reference data \u2014 called once by main.py on start",
@@ -1433,15 +1577,15 @@
       "source_file": "api\\seed_data.py",
       "source_location": "L1",
       "id": "seed_data_rationale_1",
-      "community": 1
+      "community": 0
     },
     {
       "label": "Seeds reference data if tables are empty.",
       "file_type": "rationale",
       "source_file": "api\\seed_data.py",
-      "source_location": "L390",
-      "id": "seed_data_rationale_390",
-      "community": 1
+      "source_location": "L399",
+      "id": "seed_data_rationale_399",
+      "community": 0
     },
     {
       "label": "ha_client.py",
@@ -1449,7 +1593,7 @@
       "source_file": "api\\services\\ha_client.py",
       "source_location": "L1",
       "id": "ha_client",
-      "community": 8
+      "community": 7
     },
     {
       "label": "HAClient",
@@ -1457,7 +1601,7 @@
       "source_file": "api\\services\\ha_client.py",
       "source_location": "L8",
       "id": "ha_client_haclient",
-      "community": 9
+      "community": 8
     },
     {
       "label": ".__init__()",
@@ -1465,7 +1609,7 @@
       "source_file": "api\\services\\ha_client.py",
       "source_location": "L9",
       "id": "ha_client_haclient_init",
-      "community": 9
+      "community": 8
     },
     {
       "label": ".get_entity_state()",
@@ -1473,7 +1617,7 @@
       "source_file": "api\\services\\ha_client.py",
       "source_location": "L16",
       "id": "ha_client_haclient_get_entity_state",
-      "community": 9
+      "community": 8
     },
     {
       "label": ".get_state_float()",
@@ -1481,7 +1625,7 @@
       "source_file": "api\\services\\ha_client.py",
       "source_location": "L27",
       "id": "ha_client_haclient_get_state_float",
-      "community": 9
+      "community": 8
     },
     {
       "label": ".toggle_entity()",
@@ -1489,7 +1633,7 @@
       "source_file": "api\\services\\ha_client.py",
       "source_location": "L34",
       "id": "ha_client_haclient_toggle_entity",
-      "community": 9
+      "community": 8
     },
     {
       "label": ".call_service()",
@@ -1497,7 +1641,7 @@
       "source_file": "api\\services\\ha_client.py",
       "source_location": "L43",
       "id": "ha_client_haclient_call_service",
-      "community": 9
+      "community": 8
     },
     {
       "label": ".turn_on_entity()",
@@ -1505,7 +1649,7 @@
       "source_file": "api\\services\\ha_client.py",
       "source_location": "L52",
       "id": "ha_client_haclient_turn_on_entity",
-      "community": 9
+      "community": 8
     },
     {
       "label": ".turn_off_entity()",
@@ -1513,7 +1657,7 @@
       "source_file": "api\\services\\ha_client.py",
       "source_location": "L56",
       "id": "ha_client_haclient_turn_off_entity",
-      "community": 9
+      "community": 8
     },
     {
       "label": ".pause_devices_for_feeding()",
@@ -1521,7 +1665,7 @@
       "source_file": "api\\services\\ha_client.py",
       "source_location": "L60",
       "id": "ha_client_haclient_pause_devices_for_feeding",
-      "community": 9
+      "community": 8
     },
     {
       "label": ".resume_devices()",
@@ -1529,7 +1673,7 @@
       "source_file": "api\\services\\ha_client.py",
       "source_location": "L65",
       "id": "ha_client_haclient_resume_devices",
-      "community": 9
+      "community": 8
     },
     {
       "label": ".pause_filter_for_feeding()",
@@ -1537,7 +1681,7 @@
       "source_file": "api\\services\\ha_client.py",
       "source_location": "L70",
       "id": "ha_client_haclient_pause_filter_for_feeding",
-      "community": 9
+      "community": 8
     },
     {
       "label": ".set_fluval_channels()",
@@ -1545,7 +1689,7 @@
       "source_file": "api\\services\\ha_client.py",
       "source_location": "L74",
       "id": "ha_client_haclient_set_fluval_channels",
-      "community": 9
+      "community": 8
     },
     {
       "label": "Home Assistant REST API client.",
@@ -1553,7 +1697,7 @@
       "source_file": "api\\services\\ha_client.py",
       "source_location": "L1",
       "id": "ha_client_rationale_1",
-      "community": 8
+      "community": 7
     },
     {
       "label": "Turn off multiple devices for feeding mode.",
@@ -1561,7 +1705,7 @@
       "source_file": "api\\services\\ha_client.py",
       "source_location": "L61",
       "id": "ha_client_rationale_61",
-      "community": 9
+      "community": 8
     },
     {
       "label": "Turn on devices after feeding pause ends.",
@@ -1569,7 +1713,7 @@
       "source_file": "api\\services\\ha_client.py",
       "source_location": "L66",
       "id": "ha_client_rationale_66",
-      "community": 9
+      "community": 8
     },
     {
       "label": "Legacy: turn off filter only.",
@@ -1577,7 +1721,7 @@
       "source_file": "api\\services\\ha_client.py",
       "source_location": "L71",
       "id": "ha_client_rationale_71",
-      "community": 9
+      "community": 8
     },
     {
       "label": "Broadcast Fluval RGBW channel values to the tablet BLE gateway.",
@@ -1585,7 +1729,7 @@
       "source_file": "api\\services\\ha_client.py",
       "source_location": "L75",
       "id": "ha_client_rationale_75",
-      "community": 9
+      "community": 8
     },
     {
       "label": "image_search.py",
@@ -1593,7 +1737,7 @@
       "source_file": "api\\services\\image_search.py",
       "source_location": "L1",
       "id": "image_search",
-      "community": 16
+      "community": 18
     },
     {
       "label": "_commons_images()",
@@ -1601,7 +1745,7 @@
       "source_file": "api\\services\\image_search.py",
       "source_location": "L14",
       "id": "image_search_commons_images",
-      "community": 16
+      "community": 18
     },
     {
       "label": "search_species()",
@@ -1609,7 +1753,7 @@
       "source_file": "api\\services\\image_search.py",
       "source_location": "L45",
       "id": "image_search_search_species",
-      "community": 16
+      "community": 18
     },
     {
       "label": "Species image and metadata search \u2014 Wikipedia summary + Wikimedia Commons fallba",
@@ -1617,7 +1761,7 @@
       "source_file": "api\\services\\image_search.py",
       "source_location": "L1",
       "id": "image_search_rationale_1",
-      "community": 16
+      "community": 18
     },
     {
       "label": "influx_client.py",
@@ -1625,7 +1769,7 @@
       "source_file": "api\\services\\influx_client.py",
       "source_location": "L1",
       "id": "influx_client",
-      "community": 4
+      "community": 2
     },
     {
       "label": "InfluxClient",
@@ -1633,7 +1777,7 @@
       "source_file": "api\\services\\influx_client.py",
       "source_location": "L11",
       "id": "influx_client_influxclient",
-      "community": 4
+      "community": 2
     },
     {
       "label": ".__init__()",
@@ -1641,7 +1785,7 @@
       "source_file": "api\\services\\influx_client.py",
       "source_location": "L12",
       "id": "influx_client_influxclient_init",
-      "community": 4
+      "community": 2
     },
     {
       "label": ".write_sensor()",
@@ -1649,7 +1793,7 @@
       "source_file": "api\\services\\influx_client.py",
       "source_location": "L21",
       "id": "influx_client_influxclient_write_sensor",
-      "community": 4
+      "community": 2
     },
     {
       "label": ".write_power()",
@@ -1657,7 +1801,7 @@
       "source_file": "api\\services\\influx_client.py",
       "source_location": "L30",
       "id": "influx_client_influxclient_write_power",
-      "community": 4
+      "community": 2
     },
     {
       "label": ".query_history()",
@@ -1665,7 +1809,7 @@
       "source_file": "api\\services\\influx_client.py",
       "source_location": "L39",
       "id": "influx_client_influxclient_query_history",
-      "community": 4
+      "community": 2
     },
     {
       "label": "InfluxDB v2 client \u2014 write sensor data, query history.",
@@ -1673,7 +1817,7 @@
       "source_file": "api\\services\\influx_client.py",
       "source_location": "L1",
       "id": "influx_client_rationale_1",
-      "community": 4
+      "community": 2
     },
     {
       "label": "n8n_client.py",
@@ -1681,7 +1825,7 @@
       "source_file": "api\\services\\n8n_client.py",
       "source_location": "L1",
       "id": "n8n_client",
-      "community": 12
+      "community": 2
     },
     {
       "label": "N8NClient",
@@ -1689,7 +1833,7 @@
       "source_file": "api\\services\\n8n_client.py",
       "source_location": "L7",
       "id": "n8n_client_n8nclient",
-      "community": 12
+      "community": 2
     },
     {
       "label": "._post()",
@@ -1697,7 +1841,7 @@
       "source_file": "api\\services\\n8n_client.py",
       "source_location": "L8",
       "id": "n8n_client_n8nclient_post",
-      "community": 12
+      "community": 2
     },
     {
       "label": ".alert()",
@@ -1705,7 +1849,7 @@
       "source_file": "api\\services\\n8n_client.py",
       "source_location": "L18",
       "id": "n8n_client_n8nclient_alert",
-      "community": 12
+      "community": 2
     },
     {
       "label": ".reminder()",
@@ -1713,7 +1857,7 @@
       "source_file": "api\\services\\n8n_client.py",
       "source_location": "L25",
       "id": "n8n_client_n8nclient_reminder",
-      "community": 12
+      "community": 2
     },
     {
       "label": ".supply_low()",
@@ -1721,7 +1865,7 @@
       "source_file": "api\\services\\n8n_client.py",
       "source_location": "L32",
       "id": "n8n_client_n8nclient_supply_low",
-      "community": 12
+      "community": 2
     },
     {
       "label": ".water_test_alert()",
@@ -1729,7 +1873,7 @@
       "source_file": "api\\services\\n8n_client.py",
       "source_location": "L42",
       "id": "n8n_client_n8nclient_water_test_alert",
-      "community": 12
+      "community": 2
     },
     {
       "label": ".maintenance_completed()",
@@ -1737,7 +1881,7 @@
       "source_file": "api\\services\\n8n_client.py",
       "source_location": "L55",
       "id": "n8n_client_n8nclient_maintenance_completed",
-      "community": 12
+      "community": 2
     },
     {
       "label": ".daily_summary()",
@@ -1745,7 +1889,7 @@
       "source_file": "api\\services\\n8n_client.py",
       "source_location": "L61",
       "id": "n8n_client_n8nclient_daily_summary",
-      "community": 12
+      "community": 2
     },
     {
       "label": "n8n webhook client \u2014 fires Telegram notifications.",
@@ -1753,7 +1897,39 @@
       "source_file": "api\\services\\n8n_client.py",
       "source_location": "L1",
       "id": "n8n_client_rationale_1",
-      "community": 12
+      "community": 2
+    },
+    {
+      "label": "ntfy_client.py",
+      "file_type": "code",
+      "source_file": "api\\services\\ntfy_client.py",
+      "source_location": "L1",
+      "id": "ntfy_client",
+      "community": 2
+    },
+    {
+      "label": "NtfyClient",
+      "file_type": "code",
+      "source_file": "api\\services\\ntfy_client.py",
+      "source_location": "L11",
+      "id": "ntfy_client_ntfyclient",
+      "community": 2
+    },
+    {
+      "label": ".send()",
+      "file_type": "code",
+      "source_file": "api\\services\\ntfy_client.py",
+      "source_location": "L12",
+      "id": "ntfy_client_ntfyclient_send",
+      "community": 2
+    },
+    {
+      "label": "ntfy push notification client.",
+      "file_type": "rationale",
+      "source_file": "api\\services\\ntfy_client.py",
+      "source_location": "L1",
+      "id": "ntfy_client_rationale_1",
+      "community": 2
     },
     {
       "label": "ollama_vision.py",
@@ -1761,7 +1937,7 @@
       "source_file": "api\\services\\ollama_vision.py",
       "source_location": "L1",
       "id": "ollama_vision",
-      "community": 3
+      "community": 2
     },
     {
       "label": "_resize()",
@@ -1769,7 +1945,7 @@
       "source_file": "api\\services\\ollama_vision.py",
       "source_location": "L51",
       "id": "ollama_vision_resize",
-      "community": 3
+      "community": 2
     },
     {
       "label": "analyze_strip()",
@@ -1777,7 +1953,7 @@
       "source_file": "api\\services\\ollama_vision.py",
       "source_location": "L60",
       "id": "ollama_vision_analyze_strip",
-      "community": 3
+      "community": 2
     },
     {
       "label": "Test strip analysis via llava-phi3 on REDACTED-HOST Ollama.",
@@ -1785,7 +1961,7 @@
       "source_file": "api\\services\\ollama_vision.py",
       "source_location": "L1",
       "id": "ollama_vision_rationale_1",
-      "community": 3
+      "community": 2
     },
     {
       "label": "scan_cache.py",
@@ -1793,7 +1969,7 @@
       "source_file": "api\\services\\scan_cache.py",
       "source_location": "L1",
       "id": "scan_cache",
-      "community": 14
+      "community": 15
     },
     {
       "label": "_compute_hashes()",
@@ -1801,7 +1977,7 @@
       "source_file": "api\\services\\scan_cache.py",
       "source_location": "L17",
       "id": "scan_cache_compute_hashes",
-      "community": 14
+      "community": 15
     },
     {
       "label": "lookup()",
@@ -1809,7 +1985,7 @@
       "source_file": "api\\services\\scan_cache.py",
       "source_location": "L24",
       "id": "scan_cache_lookup",
-      "community": 14
+      "community": 15
     },
     {
       "label": "store()",
@@ -1817,7 +1993,7 @@
       "source_file": "api\\services\\scan_cache.py",
       "source_location": "L47",
       "id": "scan_cache_store",
-      "community": 14
+      "community": 15
     },
     {
       "label": "save_correction()",
@@ -1825,7 +2001,7 @@
       "source_file": "api\\services\\scan_cache.py",
       "source_location": "L56",
       "id": "scan_cache_save_correction",
-      "community": 14
+      "community": 15
     },
     {
       "label": "SHA256 + perceptual hash cache for strip scan results.",
@@ -1833,7 +2009,7 @@
       "source_file": "api\\services\\scan_cache.py",
       "source_location": "L1",
       "id": "scan_cache_rationale_1",
-      "community": 14
+      "community": 15
     },
     {
       "label": "scheduler.py",
@@ -1841,31 +2017,47 @@
       "source_file": "api\\services\\scheduler.py",
       "source_location": "L1",
       "id": "scheduler",
-      "community": 2
+      "community": 0
     },
     {
       "label": "daily_summary()",
       "file_type": "code",
       "source_file": "api\\services\\scheduler.py",
-      "source_location": "L20",
+      "source_location": "L22",
       "id": "scheduler_daily_summary",
-      "community": 2
+      "community": 0
     },
     {
       "label": "check_overdue()",
       "file_type": "code",
       "source_file": "api\\services\\scheduler.py",
-      "source_location": "L54",
+      "source_location": "L67",
       "id": "scheduler_check_overdue",
-      "community": 2
+      "community": 0
+    },
+    {
+      "label": "feeding_reminder()",
+      "file_type": "code",
+      "source_file": "api\\services\\scheduler.py",
+      "source_location": "L108",
+      "id": "scheduler_feeding_reminder",
+      "community": 0
+    },
+    {
+      "label": "saturday_maintenance_reminder()",
+      "file_type": "code",
+      "source_file": "api\\services\\scheduler.py",
+      "source_location": "L123",
+      "id": "scheduler_saturday_maintenance_reminder",
+      "community": 0
     },
     {
       "label": "resume_feeding_pauses()",
       "file_type": "code",
       "source_file": "api\\services\\scheduler.py",
-      "source_location": "L95",
+      "source_location": "L138",
       "id": "scheduler_resume_feeding_pauses",
-      "community": 2
+      "community": 0
     },
     {
       "label": "APScheduler jobs \u2014 daily summary, overdue checks, feeding pause auto-resume.",
@@ -1873,15 +2065,31 @@
       "source_file": "api\\services\\scheduler.py",
       "source_location": "L1",
       "id": "scheduler_rationale_1",
-      "community": 1
+      "community": 0
+    },
+    {
+      "label": "5-min warning before 19:00 feeding \u2014 trigger filter pause.",
+      "file_type": "rationale",
+      "source_file": "api\\services\\scheduler.py",
+      "source_location": "L109",
+      "id": "scheduler_rationale_109",
+      "community": 0
+    },
+    {
+      "label": "Saturday morning: water change day reminder.",
+      "file_type": "rationale",
+      "source_file": "api\\services\\scheduler.py",
+      "source_location": "L124",
+      "id": "scheduler_rationale_124",
+      "community": 0
     },
     {
       "label": "Auto-resume devices whose feeding pause timer has expired.",
       "file_type": "rationale",
       "source_file": "api\\services\\scheduler.py",
-      "source_location": "L96",
-      "id": "scheduler_rationale_96",
-      "community": 1
+      "source_location": "L139",
+      "id": "scheduler_rationale_139",
+      "community": 0
     },
     {
       "label": "strip_cv (# Name clash 2026-06-05 1e3t9kC #).py",
@@ -1905,7 +2113,7 @@
       "source_file": "",
       "source_location": "",
       "id": "exception",
-      "community": 5
+      "community": 4
     },
     {
       "label": "_to_bgr()",
@@ -2089,7 +2297,7 @@
       "source_file": "api\\services\\strip_cv.py",
       "source_location": "L1",
       "id": "strip_cv",
-      "community": 6
+      "community": 4
     },
     {
       "label": "CVDetectionError",
@@ -2097,7 +2305,7 @@
       "source_file": "api\\services\\strip_cv.py",
       "source_location": "L94",
       "id": "strip_cv_cvdetectionerror",
-      "community": 6
+      "community": 4
     },
     {
       "label": "_to_bgr()",
@@ -2105,7 +2313,7 @@
       "source_file": "api\\services\\strip_cv.py",
       "source_location": "L100",
       "id": "strip_cv_to_bgr",
-      "community": 6
+      "community": 4
     },
     {
       "label": "_hsv_dist()",
@@ -2113,7 +2321,7 @@
       "source_file": "api\\services\\strip_cv.py",
       "source_location": "L105",
       "id": "strip_cv_hsv_dist",
-      "community": 6
+      "community": 4
     },
     {
       "label": "_roi_median_hsv()",
@@ -2121,7 +2329,7 @@
       "source_file": "api\\services\\strip_cv.py",
       "source_location": "L112",
       "id": "strip_cv_roi_median_hsv",
-      "community": 6
+      "community": 4
     },
     {
       "label": "_sample_at_strip_x()",
@@ -2129,7 +2337,7 @@
       "source_file": "api\\services\\strip_cv.py",
       "source_location": "L124",
       "id": "strip_cv_sample_at_strip_x",
-      "community": 6
+      "community": 4
     },
     {
       "label": "_find_cells()",
@@ -2137,7 +2345,7 @@
       "source_file": "api\\services\\strip_cv.py",
       "source_location": "L165",
       "id": "strip_cv_find_cells",
-      "community": 6
+      "community": 4
     },
     {
       "label": "_cluster_rows()",
@@ -2145,7 +2353,7 @@
       "source_file": "api\\services\\strip_cv.py",
       "source_location": "L194",
       "id": "strip_cv_cluster_rows",
-      "community": 6
+      "community": 4
     },
     {
       "label": "_detect_orientation()",
@@ -2153,7 +2361,7 @@
       "source_file": "api\\services\\strip_cv.py",
       "source_location": "L210",
       "id": "strip_cv_detect_orientation",
-      "community": 6
+      "community": 4
     },
     {
       "label": "_find_strip_column_x()",
@@ -2161,7 +2369,7 @@
       "source_file": "api\\services\\strip_cv.py",
       "source_location": "L270",
       "id": "strip_cv_find_strip_column_x",
-      "community": 6
+      "community": 4
     },
     {
       "label": "_assign_pads_by_column()",
@@ -2169,7 +2377,7 @@
       "source_file": "api\\services\\strip_cv.py",
       "source_location": "L328",
       "id": "strip_cv_assign_pads_by_column",
-      "community": 6
+      "community": 4
     },
     {
       "label": "_enforce_pad_x_consistency()",
@@ -2177,7 +2385,7 @@
       "source_file": "api\\services\\strip_cv.py",
       "source_location": "L350",
       "id": "strip_cv_enforce_pad_x_consistency",
-      "community": 6
+      "community": 4
     },
     {
       "label": "_match_to_ref()",
@@ -2185,7 +2393,7 @@
       "source_file": "api\\services\\strip_cv.py",
       "source_location": "L394",
       "id": "strip_cv_match_to_ref",
-      "community": 6
+      "community": 4
     },
     {
       "label": "_is_oor()",
@@ -2193,7 +2401,7 @@
       "source_file": "api\\services\\strip_cv.py",
       "source_location": "L413",
       "id": "strip_cv_is_oor",
-      "community": 6
+      "community": 4
     },
     {
       "label": "debug_analyze_strip()",
@@ -2201,7 +2409,7 @@
       "source_file": "api\\services\\strip_cv.py",
       "source_location": "L425",
       "id": "strip_cv_debug_analyze_strip",
-      "community": 6
+      "community": 4
     },
     {
       "label": "analyze_strip()",
@@ -2209,7 +2417,7 @@
       "source_file": "api\\services\\strip_cv.py",
       "source_location": "L512",
       "id": "strip_cv_analyze_strip",
-      "community": 6
+      "community": 4
     },
     {
       "label": "OpenCV-based aquarium test strip colour reader.\r \r Expects an image containing b",
@@ -2217,7 +2425,7 @@
       "source_file": "api\\services\\strip_cv.py",
       "source_location": "L1",
       "id": "strip_cv_rationale_1",
-      "community": 6
+      "community": 4
     },
     {
       "label": "Sample pad HSV at strip column x.\r \r     y-centre is derived from cells near str",
@@ -2225,7 +2433,7 @@
       "source_file": "api\\services\\strip_cv.py",
       "source_location": "L130",
       "id": "strip_cv_rationale_130",
-      "community": 6
+      "community": 4
     },
     {
       "label": "Detect inverted strip via reference chart hue fingerprinting.\r \r     Normal orie",
@@ -2233,7 +2441,7 @@
       "source_file": "api\\services\\strip_cv.py",
       "source_location": "L216",
       "id": "strip_cv_rationale_216",
-      "community": 6
+      "community": 4
     },
     {
       "label": "Find x-centre of the strip pad column.\r \r     The strip is a narrow vertical col",
@@ -2241,7 +2449,7 @@
       "source_file": "api\\services\\strip_cv.py",
       "source_location": "L271",
       "id": "strip_cv_rationale_271",
-      "community": 6
+      "community": 4
     },
     {
       "label": "Assign pads using strip-column x detection instead of gap heuristic.\r \r     For",
@@ -2249,7 +2457,7 @@
       "source_file": "api\\services\\strip_cv.py",
       "source_location": "L329",
       "id": "strip_cv_rationale_329",
-      "community": 6
+      "community": 4
     },
     {
       "label": "Global pass: all strip pads should share a consistent x-centre.\r \r     If a row'",
@@ -2257,7 +2465,7 @@
       "source_file": "api\\services\\strip_cv.py",
       "source_location": "L353",
       "id": "strip_cv_rationale_353",
-      "community": 6
+      "community": 4
     },
     {
       "label": "Return (annotated_jpeg_bytes, per_row_debug_list).\r \r     Annotated image:",
@@ -2265,7 +2473,7 @@
       "source_file": "api\\services\\strip_cv.py",
       "source_location": "L426",
       "id": "strip_cv_rationale_426",
-      "community": 6
+      "community": 4
     },
     {
       "label": "Analyse a test strip photo.\r \r     Returns:\r         {param_key: {value: float|N",
@@ -2273,7 +2481,7 @@
       "source_file": "api\\services\\strip_cv.py",
       "source_location": "L516",
       "id": "strip_cv_rationale_516",
-      "community": 6
+      "community": 4
     },
     {
       "label": "websocket_manager.py",
@@ -2281,63 +2489,71 @@
       "source_file": "api\\services\\websocket_manager.py",
       "source_location": "L1",
       "id": "websocket_manager",
-      "community": 3
+      "community": 0
     },
     {
       "label": "_get_entity_names()",
       "file_type": "code",
       "source_file": "api\\services\\websocket_manager.py",
-      "source_location": "L25",
+      "source_location": "L26",
       "id": "websocket_manager_get_entity_names",
-      "community": 3
+      "community": 0
     },
     {
       "label": "_get_device_meta()",
       "file_type": "code",
       "source_file": "api\\services\\websocket_manager.py",
-      "source_location": "L40",
+      "source_location": "L41",
       "id": "websocket_manager_get_device_meta",
-      "community": 3
+      "community": 0
     },
     {
       "label": "_get_suppressed_entities()",
       "file_type": "code",
       "source_file": "api\\services\\websocket_manager.py",
-      "source_location": "L52",
+      "source_location": "L53",
       "id": "websocket_manager_get_suppressed_entities",
-      "community": 3
+      "community": 0
     },
     {
       "label": "ws_endpoint()",
       "file_type": "code",
       "source_file": "api\\services\\websocket_manager.py",
-      "source_location": "L85",
+      "source_location": "L86",
       "id": "websocket_manager_ws_endpoint",
-      "community": 3
+      "community": 0
     },
     {
       "label": "_broadcast()",
       "file_type": "code",
       "source_file": "api\\services\\websocket_manager.py",
-      "source_location": "L99",
+      "source_location": "L100",
       "id": "websocket_manager_broadcast",
-      "community": 3
+      "community": 0
     },
     {
       "label": "broadcast_change()",
       "file_type": "code",
       "source_file": "api\\services\\websocket_manager.py",
-      "source_location": "L109",
+      "source_location": "L110",
       "id": "websocket_manager_broadcast_change",
-      "community": 3
+      "community": 0
+    },
+    {
+      "label": "_power_entities()",
+      "file_type": "code",
+      "source_file": "api\\services\\websocket_manager.py",
+      "source_location": "L115",
+      "id": "websocket_manager_power_entities",
+      "community": 0
     },
     {
       "label": "live_push_loop()",
       "file_type": "code",
       "source_file": "api\\services\\websocket_manager.py",
-      "source_location": "L114",
+      "source_location": "L121",
       "id": "websocket_manager_live_push_loop",
-      "community": 3
+      "community": 0
     },
     {
       "label": "WebSocket live push + device-off alerting.",
@@ -2345,31 +2561,39 @@
       "source_file": "api\\services\\websocket_manager.py",
       "source_location": "L1",
       "id": "websocket_manager_rationale_1",
-      "community": 1
+      "community": 0
     },
     {
       "label": "Return entity IDs that should NOT trigger device-off alerts.",
       "file_type": "rationale",
       "source_file": "api\\services\\websocket_manager.py",
-      "source_location": "L53",
-      "id": "websocket_manager_rationale_53",
-      "community": 1
+      "source_location": "L54",
+      "id": "websocket_manager_rationale_54",
+      "community": 0
     },
     {
       "label": "Notify all WS clients that a domain's data changed so they re-fetch.",
       "file_type": "rationale",
       "source_file": "api\\services\\websocket_manager.py",
-      "source_location": "L110",
-      "id": "websocket_manager_rationale_110",
-      "community": 1
+      "source_location": "L111",
+      "id": "websocket_manager_rationale_111",
+      "community": 0
+    },
+    {
+      "label": "Derive Tapo power/energy sensor entity IDs from a switch entity ID.",
+      "file_type": "rationale",
+      "source_file": "api\\services\\websocket_manager.py",
+      "source_location": "L116",
+      "id": "websocket_manager_rationale_116",
+      "community": 0
     },
     {
       "label": "Push sensor + device data every 30s and check for device-off alerts.",
       "file_type": "rationale",
       "source_file": "api\\services\\websocket_manager.py",
-      "source_location": "L115",
-      "id": "websocket_manager_rationale_115",
-      "community": 1
+      "source_location": "L122",
+      "id": "websocket_manager_rationale_122",
+      "community": 0
     },
     {
       "label": "Fluval Shaker RGBW BLE custom component for Home Assistant.\r \r Extends mrzottel/",
@@ -2377,7 +2601,7 @@
       "source_file": "homeassistant\\config\\custom_components\\fluvalble\\__init__.py",
       "source_location": "L1",
       "id": "init_rationale_1",
-      "community": 17
+      "community": 19
     },
     {
       "label": "config_flow.py",
@@ -2385,7 +2609,7 @@
       "source_file": "homeassistant\\config\\custom_components\\fluvalble\\config_flow.py",
       "source_location": "L1",
       "id": "config_flow",
-      "community": 15
+      "community": 16
     },
     {
       "label": "FluvalBLEConfigFlow",
@@ -2393,7 +2617,7 @@
       "source_file": "homeassistant\\config\\custom_components\\fluvalble\\config_flow.py",
       "source_location": "L14",
       "id": "config_flow_fluvalbleconfigflow",
-      "community": 15
+      "community": 16
     },
     {
       "label": ".async_step_user()",
@@ -2401,7 +2625,7 @@
       "source_file": "homeassistant\\config\\custom_components\\fluvalble\\config_flow.py",
       "source_location": "L17",
       "id": "config_flow_fluvalbleconfigflow_async_step_user",
-      "community": 15
+      "community": 16
     },
     {
       "label": ".async_step_bluetooth()",
@@ -2409,7 +2633,7 @@
       "source_file": "homeassistant\\config\\custom_components\\fluvalble\\config_flow.py",
       "source_location": "L33",
       "id": "config_flow_fluvalbleconfigflow_async_step_bluetooth",
-      "community": 15
+      "community": 16
     },
     {
       "label": "Config flow for Fluval Shaker BLE.",
@@ -2417,7 +2641,7 @@
       "source_file": "homeassistant\\config\\custom_components\\fluvalble\\config_flow.py",
       "source_location": "L1",
       "id": "config_flow_rationale_1",
-      "community": 15
+      "community": 16
     },
     {
       "label": "Handle Bluetooth discovery \u2014 auto-populate MAC.",
@@ -2425,7 +2649,7 @@
       "source_file": "homeassistant\\config\\custom_components\\fluvalble\\config_flow.py",
       "source_location": "L34",
       "id": "config_flow_rationale_34",
-      "community": 15
+      "community": 16
     },
     {
       "label": "number.py",
@@ -2433,7 +2657,7 @@
       "source_file": "homeassistant\\config\\custom_components\\fluvalble\\number.py",
       "source_location": "L1",
       "id": "number",
-      "community": 10
+      "community": 9
     },
     {
       "label": "async_setup_entry()",
@@ -2441,7 +2665,7 @@
       "source_file": "homeassistant\\config\\custom_components\\fluvalble\\number.py",
       "source_location": "L31",
       "id": "number_async_setup_entry",
-      "community": 10
+      "community": 9
     },
     {
       "label": "FluvalChannelNumber",
@@ -2449,7 +2673,7 @@
       "source_file": "homeassistant\\config\\custom_components\\fluvalble\\number.py",
       "source_location": "L44",
       "id": "number_fluvalchannelnumber",
-      "community": 10
+      "community": 9
     },
     {
       "label": "NumberEntity",
@@ -2457,7 +2681,7 @@
       "source_file": "",
       "source_location": "",
       "id": "numberentity",
-      "community": 10
+      "community": 9
     },
     {
       "label": ".__init__()",
@@ -2465,7 +2689,7 @@
       "source_file": "homeassistant\\config\\custom_components\\fluvalble\\number.py",
       "source_location": "L51",
       "id": "number_fluvalchannelnumber_init",
-      "community": 10
+      "community": 9
     },
     {
       "label": ".async_set_native_value()",
@@ -2473,7 +2697,7 @@
       "source_file": "homeassistant\\config\\custom_components\\fluvalble\\number.py",
       "source_location": "L60",
       "id": "number_fluvalchannelnumber_async_set_native_value",
-      "community": 10
+      "community": 9
     },
     {
       "label": "Number entities for each Fluval RGBW channel.",
@@ -2481,7 +2705,7 @@
       "source_file": "homeassistant\\config\\custom_components\\fluvalble\\number.py",
       "source_location": "L1",
       "id": "number_rationale_1",
-      "community": 10
+      "community": 9
     },
     {
       "label": "protocol.py",
@@ -2489,7 +2713,7 @@
       "source_file": "homeassistant\\config\\custom_components\\fluvalble\\protocol.py",
       "source_location": "L1",
       "id": "protocol",
-      "community": 10
+      "community": 9
     },
     {
       "label": "_xor_encrypt()",
@@ -2497,7 +2721,7 @@
       "source_file": "homeassistant\\config\\custom_components\\fluvalble\\protocol.py",
       "source_location": "L16",
       "id": "protocol_xor_encrypt",
-      "community": 10
+      "community": 9
     },
     {
       "label": "build_set_channels_command()",
@@ -2505,7 +2729,7 @@
       "source_file": "homeassistant\\config\\custom_components\\fluvalble\\protocol.py",
       "source_location": "L20",
       "id": "protocol_build_set_channels_command",
-      "community": 10
+      "community": 9
     },
     {
       "label": "build_single_channel_command()",
@@ -2513,7 +2737,7 @@
       "source_file": "homeassistant\\config\\custom_components\\fluvalble\\protocol.py",
       "source_location": "L44",
       "id": "protocol_build_single_channel_command",
-      "community": 10
+      "community": 9
     },
     {
       "label": "Fluval Shaker BLE protocol implementation.",
@@ -2521,7 +2745,7 @@
       "source_file": "homeassistant\\config\\custom_components\\fluvalble\\protocol.py",
       "source_location": "L1",
       "id": "protocol_rationale_1",
-      "community": 10
+      "community": 9
     },
     {
       "label": "Build the BLE write payload for setting all channels simultaneously.\r     r, g,",
@@ -2529,7 +2753,7 @@
       "source_file": "homeassistant\\config\\custom_components\\fluvalble\\protocol.py",
       "source_location": "L21",
       "id": "protocol_rationale_21",
-      "community": 10
+      "community": 9
     },
     {
       "label": "Build command to update a single channel without touching others.",
@@ -2537,7 +2761,7 @@
       "source_file": "homeassistant\\config\\custom_components\\fluvalble\\protocol.py",
       "source_location": "L45",
       "id": "protocol_rationale_45",
-      "community": 10
+      "community": 9
     },
     {
       "label": "bleService.js",
@@ -2545,7 +2769,7 @@
       "source_file": "ui\\src\\services\\bleService.js",
       "source_location": "L1",
       "id": "bleservice",
-      "community": 11
+      "community": 10
     },
     {
       "label": "_cmd1()",
@@ -2553,7 +2777,7 @@
       "source_file": "ui\\src\\services\\bleService.js",
       "source_location": "L43",
       "id": "bleservice_cmd1",
-      "community": 11
+      "community": 10
     },
     {
       "label": "_enqueue()",
@@ -2561,7 +2785,7 @@
       "source_file": "ui\\src\\services\\bleService.js",
       "source_location": "L51",
       "id": "bleservice_enqueue",
-      "community": 11
+      "community": 10
     },
     {
       "label": "connect()",
@@ -2569,7 +2793,7 @@
       "source_file": "ui\\src\\services\\bleService.js",
       "source_location": "L71",
       "id": "bleservice_connect",
-      "community": 11
+      "community": 10
     },
     {
       "label": "isConnected()",
@@ -2577,7 +2801,7 @@
       "source_file": "ui\\src\\services\\bleService.js",
       "source_location": "L121",
       "id": "bleservice_isconnected",
-      "community": 11
+      "community": 10
     },
     {
       "label": "setChannels()",
@@ -2585,7 +2809,7 @@
       "source_file": "ui\\src\\services\\bleService.js",
       "source_location": "L126",
       "id": "bleservice_setchannels",
-      "community": 11
+      "community": 10
     },
     {
       "label": "_doSetChannels()",
@@ -2593,7 +2817,7 @@
       "source_file": "ui\\src\\services\\bleService.js",
       "source_location": "L132",
       "id": "bleservice_dosetchannels",
-      "community": 11
+      "community": 10
     },
     {
       "label": "disconnect()",
@@ -2601,7 +2825,7 @@
       "source_file": "ui\\src\\services\\bleService.js",
       "source_location": "L148",
       "id": "bleservice_disconnect",
-      "community": 11
+      "community": 10
     },
     {
       "label": "waterTests.js",
@@ -2609,7 +2833,7 @@
       "source_file": "ui\\src\\stores\\waterTests.js",
       "source_location": "L1",
       "id": "watertests",
-      "community": 18
+      "community": 20
     },
     {
       "label": "vite.config.js",
@@ -2617,7 +2841,7 @@
       "source_file": "ui\\vite.config.js",
       "source_location": "L1",
       "id": "vite_config",
-      "community": 19
+      "community": 21
     }
   ],
   "links": [
@@ -2828,6 +3052,18 @@
     {
       "relation": "imports_from",
       "confidence": "EXTRACTED",
+      "source_file": "api\\services\\ntfy_client.py",
+      "source_location": "L6",
+      "weight": 1.0,
+      "_src": "ntfy_client",
+      "_tgt": "config",
+      "source": "config",
+      "target": "ntfy_client",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
       "source_file": "api\\services\\ollama_vision.py",
       "source_location": "L11",
       "weight": 1.0,
@@ -2835,6 +3071,18 @@
       "_tgt": "config",
       "source": "config",
       "target": "ollama_vision",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "api\\services\\scheduler.py",
+      "source_location": "L8",
+      "weight": 1.0,
+      "_src": "scheduler",
+      "_tgt": "config",
+      "source": "config",
+      "target": "scheduler",
       "confidence_score": 1.0
     },
     {
@@ -2925,7 +3173,7 @@
       "relation": "imports_from",
       "confidence": "EXTRACTED",
       "source_file": "api\\routers\\calendar.py",
-      "source_location": "L10",
+      "source_location": "L11",
       "weight": 1.0,
       "_src": "calendar",
       "_tgt": "database",
@@ -3009,7 +3257,7 @@
       "relation": "imports_from",
       "confidence": "EXTRACTED",
       "source_file": "api\\services\\scheduler.py",
-      "source_location": "L8",
+      "source_location": "L9",
       "weight": 1.0,
       "_src": "scheduler",
       "_tgt": "database",
@@ -3621,7 +3869,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "api\\models\\orm.py",
-      "source_location": "L231",
+      "source_location": "L234",
       "weight": 1.0,
       "_src": "orm",
       "_tgt": "orm_fish",
@@ -3633,7 +3881,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "api\\models\\orm.py",
-      "source_location": "L247",
+      "source_location": "L250",
       "weight": 1.0,
       "_src": "orm",
       "_tgt": "orm_plant",
@@ -3645,7 +3893,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "api\\models\\orm.py",
-      "source_location": "L260",
+      "source_location": "L263",
       "weight": 1.0,
       "_src": "orm",
       "_tgt": "orm_stripscancache",
@@ -3657,7 +3905,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "api\\models\\orm.py",
-      "source_location": "L275",
+      "source_location": "L278",
       "weight": 1.0,
       "_src": "orm",
       "_tgt": "orm_ai_result",
@@ -3669,7 +3917,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "api\\models\\orm.py",
-      "source_location": "L283",
+      "source_location": "L286",
       "weight": 1.0,
       "_src": "orm",
       "_tgt": "orm_corrected_result",
@@ -3779,17 +4027,17 @@
       "source_file": "api\\seed_data.py",
       "source_location": "L12",
       "weight": 0.8,
-      "_src": "seed_data_rationale_390",
+      "_src": "seed_data_rationale_399",
       "_tgt": "orm_supply",
       "source": "orm_supply",
-      "target": "seed_data_rationale_390",
+      "target": "seed_data_rationale_399",
       "confidence_score": 0.5
     },
     {
       "relation": "uses",
       "confidence": "INFERRED",
       "source_file": "api\\services\\scheduler.py",
-      "source_location": "L9",
+      "source_location": "L10",
       "weight": 0.8,
       "_src": "scheduler_rationale_1",
       "_tgt": "orm_supply",
@@ -3801,12 +4049,36 @@
       "relation": "uses",
       "confidence": "INFERRED",
       "source_file": "api\\services\\scheduler.py",
-      "source_location": "L9",
+      "source_location": "L10",
       "weight": 0.8,
-      "_src": "scheduler_rationale_96",
+      "_src": "scheduler_rationale_109",
       "_tgt": "orm_supply",
       "source": "orm_supply",
-      "target": "scheduler_rationale_96",
+      "target": "scheduler_rationale_109",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "api\\services\\scheduler.py",
+      "source_location": "L10",
+      "weight": 0.8,
+      "_src": "scheduler_rationale_124",
+      "_tgt": "orm_supply",
+      "source": "orm_supply",
+      "target": "scheduler_rationale_124",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "api\\services\\scheduler.py",
+      "source_location": "L10",
+      "weight": 0.8,
+      "_src": "scheduler_rationale_139",
+      "_tgt": "orm_supply",
+      "source": "orm_supply",
+      "target": "scheduler_rationale_139",
       "confidence_score": 0.5
     },
     {
@@ -3957,7 +4229,7 @@
       "relation": "inherits",
       "confidence": "EXTRACTED",
       "source_file": "api\\models\\orm.py",
-      "source_location": "L231",
+      "source_location": "L234",
       "weight": 1.0,
       "_src": "orm_fish",
       "_tgt": "base",
@@ -3969,7 +4241,7 @@
       "relation": "inherits",
       "confidence": "EXTRACTED",
       "source_file": "api\\models\\orm.py",
-      "source_location": "L247",
+      "source_location": "L250",
       "weight": 1.0,
       "_src": "orm_plant",
       "_tgt": "base",
@@ -3981,7 +4253,7 @@
       "relation": "inherits",
       "confidence": "EXTRACTED",
       "source_file": "api\\models\\orm.py",
-      "source_location": "L260",
+      "source_location": "L263",
       "weight": 1.0,
       "_src": "orm_stripscancache",
       "_tgt": "base",
@@ -4031,10 +4303,10 @@
       "source_file": "api\\seed_data.py",
       "source_location": "L12",
       "weight": 0.8,
-      "_src": "seed_data_rationale_390",
+      "_src": "seed_data_rationale_399",
       "_tgt": "orm_dosingtask",
       "source": "orm_dosingtask",
-      "target": "seed_data_rationale_390",
+      "target": "seed_data_rationale_399",
       "confidence_score": 0.5
     },
     {
@@ -4103,17 +4375,17 @@
       "source_file": "api\\seed_data.py",
       "source_location": "L12",
       "weight": 0.8,
-      "_src": "seed_data_rationale_390",
+      "_src": "seed_data_rationale_399",
       "_tgt": "orm_maintenancetask",
       "source": "orm_maintenancetask",
-      "target": "seed_data_rationale_390",
+      "target": "seed_data_rationale_399",
       "confidence_score": 0.5
     },
     {
       "relation": "uses",
       "confidence": "INFERRED",
       "source_file": "api\\services\\scheduler.py",
-      "source_location": "L9",
+      "source_location": "L10",
       "weight": 0.8,
       "_src": "scheduler_rationale_1",
       "_tgt": "orm_maintenancetask",
@@ -4125,19 +4397,43 @@
       "relation": "uses",
       "confidence": "INFERRED",
       "source_file": "api\\services\\scheduler.py",
-      "source_location": "L9",
+      "source_location": "L10",
       "weight": 0.8,
-      "_src": "scheduler_rationale_96",
+      "_src": "scheduler_rationale_109",
       "_tgt": "orm_maintenancetask",
       "source": "orm_maintenancetask",
-      "target": "scheduler_rationale_96",
+      "target": "scheduler_rationale_109",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "api\\services\\scheduler.py",
+      "source_location": "L10",
+      "weight": 0.8,
+      "_src": "scheduler_rationale_124",
+      "_tgt": "orm_maintenancetask",
+      "source": "orm_maintenancetask",
+      "target": "scheduler_rationale_124",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "api\\services\\scheduler.py",
+      "source_location": "L10",
+      "weight": 0.8,
+      "_src": "scheduler_rationale_139",
+      "_tgt": "orm_maintenancetask",
+      "source": "orm_maintenancetask",
+      "target": "scheduler_rationale_139",
       "confidence_score": 0.5
     },
     {
       "relation": "uses",
       "confidence": "INFERRED",
       "source_file": "api\\services\\websocket_manager.py",
-      "source_location": "L57",
+      "source_location": "L58",
       "weight": 0.8,
       "_src": "websocket_manager_rationale_1",
       "_tgt": "orm_maintenancetask",
@@ -4149,36 +4445,48 @@
       "relation": "uses",
       "confidence": "INFERRED",
       "source_file": "api\\services\\websocket_manager.py",
-      "source_location": "L57",
+      "source_location": "L58",
       "weight": 0.8,
-      "_src": "websocket_manager_rationale_53",
+      "_src": "websocket_manager_rationale_54",
       "_tgt": "orm_maintenancetask",
       "source": "orm_maintenancetask",
-      "target": "websocket_manager_rationale_53",
+      "target": "websocket_manager_rationale_54",
       "confidence_score": 0.5
     },
     {
       "relation": "uses",
       "confidence": "INFERRED",
       "source_file": "api\\services\\websocket_manager.py",
-      "source_location": "L57",
+      "source_location": "L58",
       "weight": 0.8,
-      "_src": "websocket_manager_rationale_110",
+      "_src": "websocket_manager_rationale_111",
       "_tgt": "orm_maintenancetask",
       "source": "orm_maintenancetask",
-      "target": "websocket_manager_rationale_110",
+      "target": "websocket_manager_rationale_111",
       "confidence_score": 0.5
     },
     {
       "relation": "uses",
       "confidence": "INFERRED",
       "source_file": "api\\services\\websocket_manager.py",
-      "source_location": "L57",
+      "source_location": "L58",
       "weight": 0.8,
-      "_src": "websocket_manager_rationale_115",
+      "_src": "websocket_manager_rationale_116",
       "_tgt": "orm_maintenancetask",
       "source": "orm_maintenancetask",
-      "target": "websocket_manager_rationale_115",
+      "target": "websocket_manager_rationale_116",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "api\\services\\websocket_manager.py",
+      "source_location": "L58",
+      "weight": 0.8,
+      "_src": "websocket_manager_rationale_122",
+      "_tgt": "orm_maintenancetask",
+      "source": "orm_maintenancetask",
+      "target": "websocket_manager_rationale_122",
       "confidence_score": 0.5
     },
     {
@@ -4271,10 +4579,10 @@
       "source_file": "api\\seed_data.py",
       "source_location": "L12",
       "weight": 0.8,
-      "_src": "seed_data_rationale_390",
+      "_src": "seed_data_rationale_399",
       "_tgt": "orm_feedingschedule",
       "source": "orm_feedingschedule",
-      "target": "seed_data_rationale_390",
+      "target": "seed_data_rationale_399",
       "confidence_score": 0.5
     },
     {
@@ -4389,7 +4697,7 @@
       "relation": "uses",
       "confidence": "INFERRED",
       "source_file": "api\\services\\scheduler.py",
-      "source_location": "L9",
+      "source_location": "L10",
       "weight": 0.8,
       "_src": "scheduler_rationale_1",
       "_tgt": "orm_feedingpause",
@@ -4401,19 +4709,43 @@
       "relation": "uses",
       "confidence": "INFERRED",
       "source_file": "api\\services\\scheduler.py",
-      "source_location": "L9",
+      "source_location": "L10",
       "weight": 0.8,
-      "_src": "scheduler_rationale_96",
+      "_src": "scheduler_rationale_109",
       "_tgt": "orm_feedingpause",
       "source": "orm_feedingpause",
-      "target": "scheduler_rationale_96",
+      "target": "scheduler_rationale_109",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "api\\services\\scheduler.py",
+      "source_location": "L10",
+      "weight": 0.8,
+      "_src": "scheduler_rationale_124",
+      "_tgt": "orm_feedingpause",
+      "source": "orm_feedingpause",
+      "target": "scheduler_rationale_124",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "api\\services\\scheduler.py",
+      "source_location": "L10",
+      "weight": 0.8,
+      "_src": "scheduler_rationale_139",
+      "_tgt": "orm_feedingpause",
+      "source": "orm_feedingpause",
+      "target": "scheduler_rationale_139",
       "confidence_score": 0.5
     },
     {
       "relation": "uses",
       "confidence": "INFERRED",
       "source_file": "api\\services\\websocket_manager.py",
-      "source_location": "L57",
+      "source_location": "L58",
       "weight": 0.8,
       "_src": "websocket_manager_rationale_1",
       "_tgt": "orm_feedingpause",
@@ -4425,36 +4757,48 @@
       "relation": "uses",
       "confidence": "INFERRED",
       "source_file": "api\\services\\websocket_manager.py",
-      "source_location": "L57",
+      "source_location": "L58",
       "weight": 0.8,
-      "_src": "websocket_manager_rationale_53",
+      "_src": "websocket_manager_rationale_54",
       "_tgt": "orm_feedingpause",
       "source": "orm_feedingpause",
-      "target": "websocket_manager_rationale_53",
+      "target": "websocket_manager_rationale_54",
       "confidence_score": 0.5
     },
     {
       "relation": "uses",
       "confidence": "INFERRED",
       "source_file": "api\\services\\websocket_manager.py",
-      "source_location": "L57",
+      "source_location": "L58",
       "weight": 0.8,
-      "_src": "websocket_manager_rationale_110",
+      "_src": "websocket_manager_rationale_111",
       "_tgt": "orm_feedingpause",
       "source": "orm_feedingpause",
-      "target": "websocket_manager_rationale_110",
+      "target": "websocket_manager_rationale_111",
       "confidence_score": 0.5
     },
     {
       "relation": "uses",
       "confidence": "INFERRED",
       "source_file": "api\\services\\websocket_manager.py",
-      "source_location": "L57",
+      "source_location": "L58",
       "weight": 0.8,
-      "_src": "websocket_manager_rationale_115",
+      "_src": "websocket_manager_rationale_116",
       "_tgt": "orm_feedingpause",
       "source": "orm_feedingpause",
-      "target": "websocket_manager_rationale_115",
+      "target": "websocket_manager_rationale_116",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "api\\services\\websocket_manager.py",
+      "source_location": "L58",
+      "weight": 0.8,
+      "_src": "websocket_manager_rationale_122",
+      "_tgt": "orm_feedingpause",
+      "source": "orm_feedingpause",
+      "target": "websocket_manager_rationale_122",
       "confidence_score": 0.5
     },
     {
@@ -4475,10 +4819,10 @@
       "source_file": "api\\routers\\water_tests.py",
       "source_location": "L12",
       "weight": 0.8,
-      "_src": "water_tests_rationale_57",
+      "_src": "water_tests_rationale_58",
       "_tgt": "orm_watertestparameter",
       "source": "orm_watertestparameter",
-      "target": "water_tests_rationale_57",
+      "target": "water_tests_rationale_58",
       "confidence_score": 0.5
     },
     {
@@ -4487,10 +4831,10 @@
       "source_file": "api\\routers\\water_tests.py",
       "source_location": "L12",
       "weight": 0.8,
-      "_src": "water_tests_rationale_131",
+      "_src": "water_tests_rationale_132",
       "_tgt": "orm_watertestparameter",
       "source": "orm_watertestparameter",
-      "target": "water_tests_rationale_131",
+      "target": "water_tests_rationale_132",
       "confidence_score": 0.5
     },
     {
@@ -4511,10 +4855,10 @@
       "source_file": "api\\seed_data.py",
       "source_location": "L12",
       "weight": 0.8,
-      "_src": "seed_data_rationale_390",
+      "_src": "seed_data_rationale_399",
       "_tgt": "orm_watertestparameter",
       "source": "orm_watertestparameter",
-      "target": "seed_data_rationale_390",
+      "target": "seed_data_rationale_399",
       "confidence_score": 0.5
     },
     {
@@ -4535,10 +4879,10 @@
       "source_file": "api\\routers\\water_tests.py",
       "source_location": "L12",
       "weight": 0.8,
-      "_src": "water_tests_rationale_57",
+      "_src": "water_tests_rationale_58",
       "_tgt": "orm_watertestsession",
       "source": "orm_watertestsession",
-      "target": "water_tests_rationale_57",
+      "target": "water_tests_rationale_58",
       "confidence_score": 0.5
     },
     {
@@ -4547,10 +4891,10 @@
       "source_file": "api\\routers\\water_tests.py",
       "source_location": "L12",
       "weight": 0.8,
-      "_src": "water_tests_rationale_131",
+      "_src": "water_tests_rationale_132",
       "_tgt": "orm_watertestsession",
       "source": "orm_watertestsession",
-      "target": "water_tests_rationale_131",
+      "target": "water_tests_rationale_132",
       "confidence_score": 0.5
     },
     {
@@ -4571,17 +4915,17 @@
       "source_file": "api\\seed_data.py",
       "source_location": "L12",
       "weight": 0.8,
-      "_src": "seed_data_rationale_390",
+      "_src": "seed_data_rationale_399",
       "_tgt": "orm_watertestsession",
       "source": "orm_watertestsession",
-      "target": "seed_data_rationale_390",
+      "target": "seed_data_rationale_399",
       "confidence_score": 0.5
     },
     {
       "relation": "uses",
       "confidence": "INFERRED",
       "source_file": "api\\services\\scheduler.py",
-      "source_location": "L9",
+      "source_location": "L10",
       "weight": 0.8,
       "_src": "scheduler_rationale_1",
       "_tgt": "orm_watertestsession",
@@ -4593,12 +4937,36 @@
       "relation": "uses",
       "confidence": "INFERRED",
       "source_file": "api\\services\\scheduler.py",
-      "source_location": "L9",
+      "source_location": "L10",
       "weight": 0.8,
-      "_src": "scheduler_rationale_96",
+      "_src": "scheduler_rationale_109",
       "_tgt": "orm_watertestsession",
       "source": "orm_watertestsession",
-      "target": "scheduler_rationale_96",
+      "target": "scheduler_rationale_109",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "api\\services\\scheduler.py",
+      "source_location": "L10",
+      "weight": 0.8,
+      "_src": "scheduler_rationale_124",
+      "_tgt": "orm_watertestsession",
+      "source": "orm_watertestsession",
+      "target": "scheduler_rationale_124",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "api\\services\\scheduler.py",
+      "source_location": "L10",
+      "weight": 0.8,
+      "_src": "scheduler_rationale_139",
+      "_tgt": "orm_watertestsession",
+      "source": "orm_watertestsession",
+      "target": "scheduler_rationale_139",
       "confidence_score": 0.5
     },
     {
@@ -4619,10 +4987,10 @@
       "source_file": "api\\routers\\water_tests.py",
       "source_location": "L12",
       "weight": 0.8,
-      "_src": "water_tests_rationale_57",
+      "_src": "water_tests_rationale_58",
       "_tgt": "orm_watertestreading",
       "source": "orm_watertestreading",
-      "target": "water_tests_rationale_57",
+      "target": "water_tests_rationale_58",
       "confidence_score": 0.5
     },
     {
@@ -4631,10 +4999,10 @@
       "source_file": "api\\routers\\water_tests.py",
       "source_location": "L12",
       "weight": 0.8,
-      "_src": "water_tests_rationale_131",
+      "_src": "water_tests_rationale_132",
       "_tgt": "orm_watertestreading",
       "source": "orm_watertestreading",
-      "target": "water_tests_rationale_131",
+      "target": "water_tests_rationale_132",
       "confidence_score": 0.5
     },
     {
@@ -4655,10 +5023,10 @@
       "source_file": "api\\seed_data.py",
       "source_location": "L12",
       "weight": 0.8,
-      "_src": "seed_data_rationale_390",
+      "_src": "seed_data_rationale_399",
       "_tgt": "orm_watertestreading",
       "source": "orm_watertestreading",
-      "target": "seed_data_rationale_390",
+      "target": "seed_data_rationale_399",
       "confidence_score": 0.5
     },
     {
@@ -4677,7 +5045,7 @@
       "relation": "uses",
       "confidence": "INFERRED",
       "source_file": "api\\routers\\calendar.py",
-      "source_location": "L11",
+      "source_location": "L12",
       "weight": 0.8,
       "_src": "calendar_completerequest",
       "_tgt": "orm_calendartask",
@@ -4689,7 +5057,7 @@
       "relation": "uses",
       "confidence": "INFERRED",
       "source_file": "api\\routers\\calendar.py",
-      "source_location": "L11",
+      "source_location": "L12",
       "weight": 0.8,
       "_src": "calendar_rationale_1",
       "_tgt": "orm_calendartask",
@@ -4701,36 +5069,36 @@
       "relation": "uses",
       "confidence": "INFERRED",
       "source_file": "api\\routers\\calendar.py",
-      "source_location": "L11",
+      "source_location": "L12",
       "weight": 0.8,
-      "_src": "calendar_rationale_19",
+      "_src": "calendar_rationale_20",
       "_tgt": "orm_calendartask",
       "source": "orm_calendartask",
-      "target": "calendar_rationale_19",
+      "target": "calendar_rationale_20",
       "confidence_score": 0.5
     },
     {
       "relation": "uses",
       "confidence": "INFERRED",
       "source_file": "api\\routers\\calendar.py",
-      "source_location": "L11",
+      "source_location": "L12",
       "weight": 0.8,
-      "_src": "calendar_rationale_43",
+      "_src": "calendar_rationale_44",
       "_tgt": "orm_calendartask",
       "source": "orm_calendartask",
-      "target": "calendar_rationale_43",
+      "target": "calendar_rationale_44",
       "confidence_score": 0.5
     },
     {
       "relation": "uses",
       "confidence": "INFERRED",
       "source_file": "api\\routers\\calendar.py",
-      "source_location": "L11",
+      "source_location": "L12",
       "weight": 0.8,
-      "_src": "calendar_rationale_120",
+      "_src": "calendar_rationale_121",
       "_tgt": "orm_calendartask",
       "source": "orm_calendartask",
-      "target": "calendar_rationale_120",
+      "target": "calendar_rationale_121",
       "confidence_score": 0.5
     },
     {
@@ -4751,10 +5119,10 @@
       "source_file": "api\\seed_data.py",
       "source_location": "L12",
       "weight": 0.8,
-      "_src": "seed_data_rationale_390",
+      "_src": "seed_data_rationale_399",
       "_tgt": "orm_calendartask",
       "source": "orm_calendartask",
-      "target": "seed_data_rationale_390",
+      "target": "seed_data_rationale_399",
       "confidence_score": 0.5
     },
     {
@@ -4773,7 +5141,7 @@
       "relation": "uses",
       "confidence": "INFERRED",
       "source_file": "api\\routers\\calendar.py",
-      "source_location": "L11",
+      "source_location": "L12",
       "weight": 0.8,
       "_src": "calendar_completerequest",
       "_tgt": "orm_calendarcompletion",
@@ -4785,7 +5153,7 @@
       "relation": "uses",
       "confidence": "INFERRED",
       "source_file": "api\\routers\\calendar.py",
-      "source_location": "L11",
+      "source_location": "L12",
       "weight": 0.8,
       "_src": "calendar_rationale_1",
       "_tgt": "orm_calendarcompletion",
@@ -4797,36 +5165,36 @@
       "relation": "uses",
       "confidence": "INFERRED",
       "source_file": "api\\routers\\calendar.py",
-      "source_location": "L11",
+      "source_location": "L12",
       "weight": 0.8,
-      "_src": "calendar_rationale_19",
+      "_src": "calendar_rationale_20",
       "_tgt": "orm_calendarcompletion",
       "source": "orm_calendarcompletion",
-      "target": "calendar_rationale_19",
+      "target": "calendar_rationale_20",
       "confidence_score": 0.5
     },
     {
       "relation": "uses",
       "confidence": "INFERRED",
       "source_file": "api\\routers\\calendar.py",
-      "source_location": "L11",
+      "source_location": "L12",
       "weight": 0.8,
-      "_src": "calendar_rationale_43",
+      "_src": "calendar_rationale_44",
       "_tgt": "orm_calendarcompletion",
       "source": "orm_calendarcompletion",
-      "target": "calendar_rationale_43",
+      "target": "calendar_rationale_44",
       "confidence_score": 0.5
     },
     {
       "relation": "uses",
       "confidence": "INFERRED",
       "source_file": "api\\routers\\calendar.py",
-      "source_location": "L11",
+      "source_location": "L12",
       "weight": 0.8,
-      "_src": "calendar_rationale_120",
+      "_src": "calendar_rationale_121",
       "_tgt": "orm_calendarcompletion",
       "source": "orm_calendarcompletion",
-      "target": "calendar_rationale_120",
+      "target": "calendar_rationale_121",
       "confidence_score": 0.5
     },
     {
@@ -4859,10 +5227,10 @@
       "source_file": "api\\seed_data.py",
       "source_location": "L12",
       "weight": 0.8,
-      "_src": "seed_data_rationale_390",
+      "_src": "seed_data_rationale_399",
       "_tgt": "orm_fish",
       "source": "orm_fish",
-      "target": "seed_data_rationale_390",
+      "target": "seed_data_rationale_399",
       "confidence_score": 0.5
     },
     {
@@ -4895,10 +5263,10 @@
       "source_file": "api\\seed_data.py",
       "source_location": "L12",
       "weight": 0.8,
-      "_src": "seed_data_rationale_390",
+      "_src": "seed_data_rationale_399",
       "_tgt": "orm_plant",
       "source": "orm_plant",
-      "target": "seed_data_rationale_390",
+      "target": "seed_data_rationale_399",
       "confidence_score": 0.5
     },
     {
@@ -5769,7 +6137,7 @@
       "relation": "inherits",
       "confidence": "EXTRACTED",
       "source_file": "api\\routers\\calendar.py",
-      "source_location": "L225",
+      "source_location": "L226",
       "weight": 1.0,
       "_src": "calendar_completerequest",
       "_tgt": "basemodel",
@@ -6227,10 +6595,10 @@
       "source_file": "api\\routers\\water_tests.py",
       "source_location": "L13",
       "weight": 0.8,
-      "_src": "water_tests_rationale_57",
+      "_src": "water_tests_rationale_58",
       "_tgt": "schemas_watertestparameterout",
       "source": "schemas_watertestparameterout",
-      "target": "water_tests_rationale_57",
+      "target": "water_tests_rationale_58",
       "confidence_score": 0.5
     },
     {
@@ -6239,10 +6607,10 @@
       "source_file": "api\\routers\\water_tests.py",
       "source_location": "L13",
       "weight": 0.8,
-      "_src": "water_tests_rationale_131",
+      "_src": "water_tests_rationale_132",
       "_tgt": "schemas_watertestparameterout",
       "source": "schemas_watertestparameterout",
-      "target": "water_tests_rationale_131",
+      "target": "water_tests_rationale_132",
       "confidence_score": 0.5
     },
     {
@@ -6263,10 +6631,10 @@
       "source_file": "api\\routers\\water_tests.py",
       "source_location": "L13",
       "weight": 0.8,
-      "_src": "water_tests_rationale_57",
+      "_src": "water_tests_rationale_58",
       "_tgt": "schemas_watertestsessioncreate",
       "source": "schemas_watertestsessioncreate",
-      "target": "water_tests_rationale_57",
+      "target": "water_tests_rationale_58",
       "confidence_score": 0.5
     },
     {
@@ -6275,10 +6643,10 @@
       "source_file": "api\\routers\\water_tests.py",
       "source_location": "L13",
       "weight": 0.8,
-      "_src": "water_tests_rationale_131",
+      "_src": "water_tests_rationale_132",
       "_tgt": "schemas_watertestsessioncreate",
       "source": "schemas_watertestsessioncreate",
-      "target": "water_tests_rationale_131",
+      "target": "water_tests_rationale_132",
       "confidence_score": 0.5
     },
     {
@@ -6299,10 +6667,10 @@
       "source_file": "api\\routers\\water_tests.py",
       "source_location": "L13",
       "weight": 0.8,
-      "_src": "water_tests_rationale_57",
+      "_src": "water_tests_rationale_58",
       "_tgt": "schemas_watertestreadingout",
       "source": "schemas_watertestreadingout",
-      "target": "water_tests_rationale_57",
+      "target": "water_tests_rationale_58",
       "confidence_score": 0.5
     },
     {
@@ -6311,10 +6679,10 @@
       "source_file": "api\\routers\\water_tests.py",
       "source_location": "L13",
       "weight": 0.8,
-      "_src": "water_tests_rationale_131",
+      "_src": "water_tests_rationale_132",
       "_tgt": "schemas_watertestreadingout",
       "source": "schemas_watertestreadingout",
-      "target": "water_tests_rationale_131",
+      "target": "water_tests_rationale_132",
       "confidence_score": 0.5
     },
     {
@@ -6335,10 +6703,10 @@
       "source_file": "api\\routers\\water_tests.py",
       "source_location": "L13",
       "weight": 0.8,
-      "_src": "water_tests_rationale_57",
+      "_src": "water_tests_rationale_58",
       "_tgt": "schemas_watertestsessionout",
       "source": "schemas_watertestsessionout",
-      "target": "water_tests_rationale_57",
+      "target": "water_tests_rationale_58",
       "confidence_score": 0.5
     },
     {
@@ -6347,10 +6715,10 @@
       "source_file": "api\\routers\\water_tests.py",
       "source_location": "L13",
       "weight": 0.8,
-      "_src": "water_tests_rationale_131",
+      "_src": "water_tests_rationale_132",
       "_tgt": "schemas_watertestsessionout",
       "source": "schemas_watertestsessionout",
-      "target": "water_tests_rationale_131",
+      "target": "water_tests_rationale_132",
       "confidence_score": 0.5
     },
     {
@@ -6395,10 +6763,10 @@
       "source_file": "api\\routers\\water_tests.py",
       "source_location": "L13",
       "weight": 0.8,
-      "_src": "water_tests_rationale_57",
+      "_src": "water_tests_rationale_58",
       "_tgt": "schemas_sensorhistorypoint",
       "source": "schemas_sensorhistorypoint",
-      "target": "water_tests_rationale_57",
+      "target": "water_tests_rationale_58",
       "confidence_score": 0.5
     },
     {
@@ -6407,10 +6775,10 @@
       "source_file": "api\\routers\\water_tests.py",
       "source_location": "L13",
       "weight": 0.8,
-      "_src": "water_tests_rationale_131",
+      "_src": "water_tests_rationale_132",
       "_tgt": "schemas_sensorhistorypoint",
       "source": "schemas_sensorhistorypoint",
-      "target": "water_tests_rationale_131",
+      "target": "water_tests_rationale_132",
       "confidence_score": 0.5
     },
     {
@@ -6455,10 +6823,34 @@
       "source_file": "api\\routers\\devices.py",
       "source_location": "L5",
       "weight": 0.8,
+      "_src": "devices_rationale_19",
+      "_tgt": "schemas_deviceout",
+      "source": "schemas_deviceout",
+      "target": "devices_rationale_19",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "api\\routers\\devices.py",
+      "source_location": "L5",
+      "weight": 0.8,
       "_src": "devices_rationale_1",
       "_tgt": "schemas_fluvalchannels",
       "source": "schemas_fluvalchannels",
       "target": "devices_rationale_1",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "api\\routers\\devices.py",
+      "source_location": "L5",
+      "weight": 0.8,
+      "_src": "devices_rationale_19",
+      "_tgt": "schemas_fluvalchannels",
+      "source": "schemas_fluvalchannels",
+      "target": "devices_rationale_19",
       "confidence_score": 0.5
     },
     {
@@ -6549,7 +6941,7 @@
       "relation": "uses",
       "confidence": "INFERRED",
       "source_file": "api\\routers\\calendar.py",
-      "source_location": "L12",
+      "source_location": "L13",
       "weight": 0.8,
       "_src": "calendar_completerequest",
       "_tgt": "schemas_calendartaskcreate",
@@ -6561,7 +6953,7 @@
       "relation": "uses",
       "confidence": "INFERRED",
       "source_file": "api\\routers\\calendar.py",
-      "source_location": "L12",
+      "source_location": "L13",
       "weight": 0.8,
       "_src": "calendar_rationale_1",
       "_tgt": "schemas_calendartaskcreate",
@@ -6573,43 +6965,43 @@
       "relation": "uses",
       "confidence": "INFERRED",
       "source_file": "api\\routers\\calendar.py",
-      "source_location": "L12",
+      "source_location": "L13",
       "weight": 0.8,
-      "_src": "calendar_rationale_19",
+      "_src": "calendar_rationale_20",
       "_tgt": "schemas_calendartaskcreate",
       "source": "schemas_calendartaskcreate",
-      "target": "calendar_rationale_19",
+      "target": "calendar_rationale_20",
       "confidence_score": 0.5
     },
     {
       "relation": "uses",
       "confidence": "INFERRED",
       "source_file": "api\\routers\\calendar.py",
-      "source_location": "L12",
+      "source_location": "L13",
       "weight": 0.8,
-      "_src": "calendar_rationale_43",
+      "_src": "calendar_rationale_44",
       "_tgt": "schemas_calendartaskcreate",
       "source": "schemas_calendartaskcreate",
-      "target": "calendar_rationale_43",
+      "target": "calendar_rationale_44",
       "confidence_score": 0.5
     },
     {
       "relation": "uses",
       "confidence": "INFERRED",
       "source_file": "api\\routers\\calendar.py",
-      "source_location": "L12",
+      "source_location": "L13",
       "weight": 0.8,
-      "_src": "calendar_rationale_120",
+      "_src": "calendar_rationale_121",
       "_tgt": "schemas_calendartaskcreate",
       "source": "schemas_calendartaskcreate",
-      "target": "calendar_rationale_120",
+      "target": "calendar_rationale_121",
       "confidence_score": 0.5
     },
     {
       "relation": "uses",
       "confidence": "INFERRED",
       "source_file": "api\\routers\\calendar.py",
-      "source_location": "L12",
+      "source_location": "L13",
       "weight": 0.8,
       "_src": "calendar_completerequest",
       "_tgt": "schemas_calendartaskupdate",
@@ -6621,7 +7013,7 @@
       "relation": "uses",
       "confidence": "INFERRED",
       "source_file": "api\\routers\\calendar.py",
-      "source_location": "L12",
+      "source_location": "L13",
       "weight": 0.8,
       "_src": "calendar_rationale_1",
       "_tgt": "schemas_calendartaskupdate",
@@ -6633,36 +7025,36 @@
       "relation": "uses",
       "confidence": "INFERRED",
       "source_file": "api\\routers\\calendar.py",
-      "source_location": "L12",
+      "source_location": "L13",
       "weight": 0.8,
-      "_src": "calendar_rationale_19",
+      "_src": "calendar_rationale_20",
       "_tgt": "schemas_calendartaskupdate",
       "source": "schemas_calendartaskupdate",
-      "target": "calendar_rationale_19",
+      "target": "calendar_rationale_20",
       "confidence_score": 0.5
     },
     {
       "relation": "uses",
       "confidence": "INFERRED",
       "source_file": "api\\routers\\calendar.py",
-      "source_location": "L12",
+      "source_location": "L13",
       "weight": 0.8,
-      "_src": "calendar_rationale_43",
+      "_src": "calendar_rationale_44",
       "_tgt": "schemas_calendartaskupdate",
       "source": "schemas_calendartaskupdate",
-      "target": "calendar_rationale_43",
+      "target": "calendar_rationale_44",
       "confidence_score": 0.5
     },
     {
       "relation": "uses",
       "confidence": "INFERRED",
       "source_file": "api\\routers\\calendar.py",
-      "source_location": "L12",
+      "source_location": "L13",
       "weight": 0.8,
-      "_src": "calendar_rationale_120",
+      "_src": "calendar_rationale_121",
       "_tgt": "schemas_calendartaskupdate",
       "source": "schemas_calendartaskupdate",
-      "target": "calendar_rationale_120",
+      "target": "calendar_rationale_121",
       "confidence_score": 0.5
     },
     {
@@ -6681,7 +7073,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "api\\routers\\calendar.py",
-      "source_location": "L18",
+      "source_location": "L19",
       "weight": 1.0,
       "_src": "calendar",
       "_tgt": "calendar_task_applies",
@@ -6693,7 +7085,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "api\\routers\\calendar.py",
-      "source_location": "L42",
+      "source_location": "L43",
       "weight": 1.0,
       "_src": "calendar",
       "_tgt": "calendar_list_tasks",
@@ -6705,7 +7097,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "api\\routers\\calendar.py",
-      "source_location": "L65",
+      "source_location": "L66",
       "weight": 1.0,
       "_src": "calendar",
       "_tgt": "calendar_create_task",
@@ -6717,7 +7109,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "api\\routers\\calendar.py",
-      "source_location": "L87",
+      "source_location": "L88",
       "weight": 1.0,
       "_src": "calendar",
       "_tgt": "calendar_update_task",
@@ -6729,7 +7121,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "api\\routers\\calendar.py",
-      "source_location": "L106",
+      "source_location": "L107",
       "weight": 1.0,
       "_src": "calendar",
       "_tgt": "calendar_delete_task",
@@ -6741,7 +7133,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "api\\routers\\calendar.py",
-      "source_location": "L119",
+      "source_location": "L120",
       "weight": 1.0,
       "_src": "calendar",
       "_tgt": "calendar_get_today",
@@ -6753,7 +7145,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "api\\routers\\calendar.py",
-      "source_location": "L186",
+      "source_location": "L187",
       "weight": 1.0,
       "_src": "calendar",
       "_tgt": "calendar_get_month",
@@ -6765,7 +7157,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "api\\routers\\calendar.py",
-      "source_location": "L225",
+      "source_location": "L226",
       "weight": 1.0,
       "_src": "calendar",
       "_tgt": "calendar_completerequest",
@@ -6777,7 +7169,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "api\\routers\\calendar.py",
-      "source_location": "L231",
+      "source_location": "L232",
       "weight": 1.0,
       "_src": "calendar",
       "_tgt": "calendar_toggle_complete",
@@ -6801,7 +7193,7 @@
       "relation": "calls",
       "confidence": "INFERRED",
       "source_file": "api\\routers\\calendar.py",
-      "source_location": "L136",
+      "source_location": "L137",
       "weight": 0.8,
       "_src": "calendar_get_today",
       "_tgt": "calendar_task_applies",
@@ -6813,7 +7205,7 @@
       "relation": "calls",
       "confidence": "INFERRED",
       "source_file": "api\\routers\\calendar.py",
-      "source_location": "L207",
+      "source_location": "L208",
       "weight": 0.8,
       "_src": "calendar_get_month",
       "_tgt": "calendar_task_applies",
@@ -6825,43 +7217,55 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "api\\routers\\calendar.py",
-      "source_location": "L19",
+      "source_location": "L20",
       "weight": 1.0,
-      "_src": "calendar_rationale_19",
+      "_src": "calendar_rationale_20",
       "_tgt": "calendar_task_applies",
       "source": "calendar_task_applies",
-      "target": "calendar_rationale_19",
+      "target": "calendar_rationale_20",
       "confidence_score": 1.0
     },
     {
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "api\\routers\\calendar.py",
-      "source_location": "L43",
+      "source_location": "L44",
       "weight": 1.0,
-      "_src": "calendar_rationale_43",
+      "_src": "calendar_rationale_44",
       "_tgt": "calendar_list_tasks",
       "source": "calendar_list_tasks",
-      "target": "calendar_rationale_43",
+      "target": "calendar_rationale_44",
       "confidence_score": 1.0
     },
     {
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "api\\routers\\calendar.py",
-      "source_location": "L120",
+      "source_location": "L121",
       "weight": 1.0,
-      "_src": "calendar_rationale_120",
+      "_src": "calendar_rationale_121",
       "_tgt": "calendar_get_today",
       "source": "calendar_get_today",
-      "target": "calendar_rationale_120",
+      "target": "calendar_rationale_121",
       "confidence_score": 1.0
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "api\\routers\\devices.py",
-      "source_location": "L19",
+      "source_location": "L18",
+      "weight": 1.0,
+      "_src": "devices",
+      "_tgt": "devices_power_entities",
+      "source": "devices",
+      "target": "devices_power_entities",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "api\\routers\\devices.py",
+      "source_location": "L25",
       "weight": 1.0,
       "_src": "devices",
       "_tgt": "devices_list_devices",
@@ -6873,7 +7277,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "api\\routers\\devices.py",
-      "source_location": "L36",
+      "source_location": "L46",
       "weight": 1.0,
       "_src": "devices",
       "_tgt": "devices_toggle_device",
@@ -6885,7 +7289,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "api\\routers\\devices.py",
-      "source_location": "L45",
+      "source_location": "L55",
       "weight": 1.0,
       "_src": "devices",
       "_tgt": "devices_set_fluval_channels",
@@ -6903,6 +7307,30 @@
       "_tgt": "devices",
       "source": "devices",
       "target": "devices_rationale_1",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "source_file": "api\\routers\\devices.py",
+      "source_location": "L30",
+      "weight": 0.8,
+      "_src": "devices_list_devices",
+      "_tgt": "devices_power_entities",
+      "source": "devices_power_entities",
+      "target": "devices_list_devices",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "api\\routers\\devices.py",
+      "source_location": "L19",
+      "weight": 1.0,
+      "_src": "devices_rationale_19",
+      "_tgt": "devices_power_entities",
+      "source": "devices_power_entities",
+      "target": "devices_rationale_19",
       "confidence_score": 1.0
     },
     {
@@ -7581,7 +8009,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "api\\routers\\water_tests.py",
-      "source_location": "L35",
+      "source_location": "L36",
       "weight": 1.0,
       "_src": "water_tests",
       "_tgt": "water_tests_reading_out",
@@ -7593,7 +8021,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "api\\routers\\water_tests.py",
-      "source_location": "L50",
+      "source_location": "L51",
       "weight": 1.0,
       "_src": "water_tests",
       "_tgt": "water_tests_build_scan_response",
@@ -7605,7 +8033,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "api\\routers\\water_tests.py",
-      "source_location": "L86",
+      "source_location": "L87",
       "weight": 1.0,
       "_src": "water_tests",
       "_tgt": "water_tests_analyze_strip",
@@ -7617,7 +8045,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "api\\routers\\water_tests.py",
-      "source_location": "L130",
+      "source_location": "L131",
       "weight": 1.0,
       "_src": "water_tests",
       "_tgt": "water_tests_debug_strip",
@@ -7629,7 +8057,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "api\\routers\\water_tests.py",
-      "source_location": "L149",
+      "source_location": "L150",
       "weight": 1.0,
       "_src": "water_tests",
       "_tgt": "water_tests_list_parameters",
@@ -7641,7 +8069,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "api\\routers\\water_tests.py",
-      "source_location": "L155",
+      "source_location": "L156",
       "weight": 1.0,
       "_src": "water_tests",
       "_tgt": "water_tests_list_sessions",
@@ -7653,7 +8081,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "api\\routers\\water_tests.py",
-      "source_location": "L180",
+      "source_location": "L181",
       "weight": 1.0,
       "_src": "water_tests",
       "_tgt": "water_tests_latest_session",
@@ -7665,7 +8093,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "api\\routers\\water_tests.py",
-      "source_location": "L199",
+      "source_location": "L200",
       "weight": 1.0,
       "_src": "water_tests",
       "_tgt": "water_tests_create_session",
@@ -7677,7 +8105,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "api\\routers\\water_tests.py",
-      "source_location": "L268",
+      "source_location": "L275",
       "weight": 1.0,
       "_src": "water_tests",
       "_tgt": "water_tests_parameter_trend",
@@ -7701,7 +8129,7 @@
       "relation": "calls",
       "confidence": "INFERRED",
       "source_file": "api\\routers\\water_tests.py",
-      "source_location": "L173",
+      "source_location": "L174",
       "weight": 0.8,
       "_src": "water_tests_list_sessions",
       "_tgt": "water_tests_reading_out",
@@ -7713,7 +8141,7 @@
       "relation": "calls",
       "confidence": "INFERRED",
       "source_file": "api\\routers\\water_tests.py",
-      "source_location": "L194",
+      "source_location": "L195",
       "weight": 0.8,
       "_src": "water_tests_latest_session",
       "_tgt": "water_tests_reading_out",
@@ -7725,7 +8153,7 @@
       "relation": "calls",
       "confidence": "INFERRED",
       "source_file": "api\\routers\\water_tests.py",
-      "source_location": "L263",
+      "source_location": "L270",
       "weight": 0.8,
       "_src": "water_tests_create_session",
       "_tgt": "water_tests_reading_out",
@@ -7737,7 +8165,7 @@
       "relation": "calls",
       "confidence": "INFERRED",
       "source_file": "api\\routers\\water_tests.py",
-      "source_location": "L99",
+      "source_location": "L100",
       "weight": 0.8,
       "_src": "water_tests_analyze_strip",
       "_tgt": "water_tests_build_scan_response",
@@ -7749,31 +8177,283 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "api\\routers\\water_tests.py",
-      "source_location": "L57",
+      "source_location": "L58",
       "weight": 1.0,
-      "_src": "water_tests_rationale_57",
+      "_src": "water_tests_rationale_58",
       "_tgt": "water_tests_build_scan_response",
       "source": "water_tests_build_scan_response",
-      "target": "water_tests_rationale_57",
+      "target": "water_tests_rationale_58",
       "confidence_score": 1.0
     },
     {
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "api\\routers\\water_tests.py",
-      "source_location": "L131",
+      "source_location": "L132",
       "weight": 1.0,
-      "_src": "water_tests_rationale_131",
+      "_src": "water_tests_rationale_132",
       "_tgt": "water_tests_debug_strip",
       "source": "water_tests_debug_strip",
-      "target": "water_tests_rationale_131",
+      "target": "water_tests_rationale_132",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "api\\scripts\\fetch_plant_images.py",
+      "source_location": "L24",
+      "weight": 1.0,
+      "_src": "fetch_plant_images",
+      "_tgt": "fetch_plant_images_query_wiki",
+      "source": "fetch_plant_images",
+      "target": "fetch_plant_images_query_wiki",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "api\\scripts\\fetch_plant_images.py",
+      "source_location": "L48",
+      "weight": 1.0,
+      "_src": "fetch_plant_images",
+      "_tgt": "fetch_plant_images_fetch_wikipedia_image",
+      "source": "fetch_plant_images",
+      "target": "fetch_plant_images_fetch_wikipedia_image",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "api\\scripts\\fetch_plant_images.py",
+      "source_location": "L72",
+      "weight": 1.0,
+      "_src": "fetch_plant_images",
+      "_tgt": "fetch_plant_images_main",
+      "source": "fetch_plant_images",
+      "target": "fetch_plant_images_main",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "source_file": "api\\scripts\\fetch_plant_images.py",
+      "source_location": "L66",
+      "weight": 0.8,
+      "_src": "fetch_plant_images_fetch_wikipedia_image",
+      "_tgt": "fetch_plant_images_query_wiki",
+      "source": "fetch_plant_images_query_wiki",
+      "target": "fetch_plant_images_fetch_wikipedia_image",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "source_file": "api\\scripts\\fetch_plant_images.py",
+      "source_location": "L92",
+      "weight": 0.8,
+      "_src": "fetch_plant_images_main",
+      "_tgt": "fetch_plant_images_fetch_wikipedia_image",
+      "source": "fetch_plant_images_fetch_wikipedia_image",
+      "target": "fetch_plant_images_main",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "api\\scripts\\fetch_plant_images.py",
+      "source_location": "L49",
+      "weight": 1.0,
+      "_src": "fetch_plant_images_rationale_49",
+      "_tgt": "fetch_plant_images_fetch_wikipedia_image",
+      "source": "fetch_plant_images_fetch_wikipedia_image",
+      "target": "fetch_plant_images_rationale_49",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "api\\scripts\\update_schedule_v2.py",
+      "source_location": "L35",
+      "weight": 1.0,
+      "_src": "update_schedule_v2",
+      "_tgt": "update_schedule_v2_find_db",
+      "source": "update_schedule_v2",
+      "target": "update_schedule_v2_find_db",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "api\\scripts\\update_schedule_v2.py",
+      "source_location": "L245",
+      "weight": 1.0,
+      "_src": "update_schedule_v2",
+      "_tgt": "update_schedule_v2_migrate_supplies",
+      "source": "update_schedule_v2",
+      "target": "update_schedule_v2_migrate_supplies",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "api\\scripts\\update_schedule_v2.py",
+      "source_location": "L273",
+      "weight": 1.0,
+      "_src": "update_schedule_v2",
+      "_tgt": "update_schedule_v2_migrate_dosing_tasks",
+      "source": "update_schedule_v2",
+      "target": "update_schedule_v2_migrate_dosing_tasks",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "api\\scripts\\update_schedule_v2.py",
+      "source_location": "L306",
+      "weight": 1.0,
+      "_src": "update_schedule_v2",
+      "_tgt": "update_schedule_v2_migrate_calendar_tasks",
+      "source": "update_schedule_v2",
+      "target": "update_schedule_v2_migrate_calendar_tasks",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "api\\scripts\\update_schedule_v2.py",
+      "source_location": "L380",
+      "weight": 1.0,
+      "_src": "update_schedule_v2",
+      "_tgt": "update_schedule_v2_migrate_fish",
+      "source": "update_schedule_v2",
+      "target": "update_schedule_v2_migrate_fish",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "api\\scripts\\update_schedule_v2.py",
+      "source_location": "L401",
+      "weight": 1.0,
+      "_src": "update_schedule_v2",
+      "_tgt": "update_schedule_v2_main",
+      "source": "update_schedule_v2",
+      "target": "update_schedule_v2_main",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "source_file": "api\\scripts\\update_schedule_v2.py",
+      "source_location": "L402",
+      "weight": 0.8,
+      "_src": "update_schedule_v2_main",
+      "_tgt": "update_schedule_v2_find_db",
+      "source": "update_schedule_v2_find_db",
+      "target": "update_schedule_v2_main",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "source_file": "api\\scripts\\update_schedule_v2.py",
+      "source_location": "L411",
+      "weight": 0.8,
+      "_src": "update_schedule_v2_main",
+      "_tgt": "update_schedule_v2_migrate_supplies",
+      "source": "update_schedule_v2_migrate_supplies",
+      "target": "update_schedule_v2_main",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "api\\scripts\\update_schedule_v2.py",
+      "source_location": "L246",
+      "weight": 1.0,
+      "_src": "update_schedule_v2_rationale_246",
+      "_tgt": "update_schedule_v2_migrate_supplies",
+      "source": "update_schedule_v2_migrate_supplies",
+      "target": "update_schedule_v2_rationale_246",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "source_file": "api\\scripts\\update_schedule_v2.py",
+      "source_location": "L414",
+      "weight": 0.8,
+      "_src": "update_schedule_v2_main",
+      "_tgt": "update_schedule_v2_migrate_dosing_tasks",
+      "source": "update_schedule_v2_migrate_dosing_tasks",
+      "target": "update_schedule_v2_main",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "api\\scripts\\update_schedule_v2.py",
+      "source_location": "L274",
+      "weight": 1.0,
+      "_src": "update_schedule_v2_rationale_274",
+      "_tgt": "update_schedule_v2_migrate_dosing_tasks",
+      "source": "update_schedule_v2_migrate_dosing_tasks",
+      "target": "update_schedule_v2_rationale_274",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "source_file": "api\\scripts\\update_schedule_v2.py",
+      "source_location": "L417",
+      "weight": 0.8,
+      "_src": "update_schedule_v2_main",
+      "_tgt": "update_schedule_v2_migrate_calendar_tasks",
+      "source": "update_schedule_v2_migrate_calendar_tasks",
+      "target": "update_schedule_v2_main",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "api\\scripts\\update_schedule_v2.py",
+      "source_location": "L307",
+      "weight": 1.0,
+      "_src": "update_schedule_v2_rationale_307",
+      "_tgt": "update_schedule_v2_migrate_calendar_tasks",
+      "source": "update_schedule_v2_migrate_calendar_tasks",
+      "target": "update_schedule_v2_rationale_307",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "source_file": "api\\scripts\\update_schedule_v2.py",
+      "source_location": "L420",
+      "weight": 0.8,
+      "_src": "update_schedule_v2_main",
+      "_tgt": "update_schedule_v2_migrate_fish",
+      "source": "update_schedule_v2_migrate_fish",
+      "target": "update_schedule_v2_main",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "api\\scripts\\update_schedule_v2.py",
+      "source_location": "L381",
+      "weight": 1.0,
+      "_src": "update_schedule_v2_rationale_381",
+      "_tgt": "update_schedule_v2_migrate_fish",
+      "source": "update_schedule_v2_migrate_fish",
+      "target": "update_schedule_v2_rationale_381",
       "confidence_score": 1.0
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "api\\seed_data.py",
-      "source_location": "L389",
+      "source_location": "L398",
       "weight": 1.0,
       "_src": "seed_data",
       "_tgt": "seed_data_seed",
@@ -7797,12 +8477,12 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "api\\seed_data.py",
-      "source_location": "L390",
+      "source_location": "L399",
       "weight": 1.0,
-      "_src": "seed_data_rationale_390",
+      "_src": "seed_data_rationale_399",
       "_tgt": "seed_data_seed",
       "source": "seed_data_seed",
-      "target": "seed_data_rationale_390",
+      "target": "seed_data_rationale_399",
       "confidence_score": 1.0
     },
     {
@@ -8384,6 +9064,42 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
+      "source_file": "api\\services\\ntfy_client.py",
+      "source_location": "L11",
+      "weight": 1.0,
+      "_src": "ntfy_client",
+      "_tgt": "ntfy_client_ntfyclient",
+      "source": "ntfy_client",
+      "target": "ntfy_client_ntfyclient",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "api\\services\\ntfy_client.py",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_src": "ntfy_client_rationale_1",
+      "_tgt": "ntfy_client",
+      "source": "ntfy_client",
+      "target": "ntfy_client_rationale_1",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "api\\services\\ntfy_client.py",
+      "source_location": "L12",
+      "weight": 1.0,
+      "_src": "ntfy_client_ntfyclient",
+      "_tgt": "ntfy_client_ntfyclient_send",
+      "source": "ntfy_client_ntfyclient",
+      "target": "ntfy_client_ntfyclient_send",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
       "source_file": "api\\services\\ollama_vision.py",
       "source_location": "L51",
       "weight": 1.0,
@@ -8505,7 +9221,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "api\\services\\scheduler.py",
-      "source_location": "L20",
+      "source_location": "L22",
       "weight": 1.0,
       "_src": "scheduler",
       "_tgt": "scheduler_daily_summary",
@@ -8517,7 +9233,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "api\\services\\scheduler.py",
-      "source_location": "L54",
+      "source_location": "L67",
       "weight": 1.0,
       "_src": "scheduler",
       "_tgt": "scheduler_check_overdue",
@@ -8529,7 +9245,31 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "api\\services\\scheduler.py",
-      "source_location": "L95",
+      "source_location": "L108",
+      "weight": 1.0,
+      "_src": "scheduler",
+      "_tgt": "scheduler_feeding_reminder",
+      "source": "scheduler",
+      "target": "scheduler_feeding_reminder",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "api\\services\\scheduler.py",
+      "source_location": "L123",
+      "weight": 1.0,
+      "_src": "scheduler",
+      "_tgt": "scheduler_saturday_maintenance_reminder",
+      "source": "scheduler",
+      "target": "scheduler_saturday_maintenance_reminder",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "api\\services\\scheduler.py",
+      "source_location": "L138",
       "weight": 1.0,
       "_src": "scheduler",
       "_tgt": "scheduler_resume_feeding_pauses",
@@ -8553,12 +9293,36 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "api\\services\\scheduler.py",
-      "source_location": "L96",
+      "source_location": "L109",
       "weight": 1.0,
-      "_src": "scheduler_rationale_96",
+      "_src": "scheduler_rationale_109",
+      "_tgt": "scheduler_feeding_reminder",
+      "source": "scheduler_feeding_reminder",
+      "target": "scheduler_rationale_109",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "api\\services\\scheduler.py",
+      "source_location": "L124",
+      "weight": 1.0,
+      "_src": "scheduler_rationale_124",
+      "_tgt": "scheduler_saturday_maintenance_reminder",
+      "source": "scheduler_saturday_maintenance_reminder",
+      "target": "scheduler_rationale_124",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "api\\services\\scheduler.py",
+      "source_location": "L139",
+      "weight": 1.0,
+      "_src": "scheduler_rationale_139",
       "_tgt": "scheduler_resume_feeding_pauses",
       "source": "scheduler_resume_feeding_pauses",
-      "target": "scheduler_rationale_96",
+      "target": "scheduler_rationale_139",
       "confidence_score": 1.0
     },
     {
@@ -9693,7 +10457,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "api\\services\\websocket_manager.py",
-      "source_location": "L25",
+      "source_location": "L26",
       "weight": 1.0,
       "_src": "websocket_manager",
       "_tgt": "websocket_manager_get_entity_names",
@@ -9705,7 +10469,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "api\\services\\websocket_manager.py",
-      "source_location": "L40",
+      "source_location": "L41",
       "weight": 1.0,
       "_src": "websocket_manager",
       "_tgt": "websocket_manager_get_device_meta",
@@ -9717,7 +10481,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "api\\services\\websocket_manager.py",
-      "source_location": "L52",
+      "source_location": "L53",
       "weight": 1.0,
       "_src": "websocket_manager",
       "_tgt": "websocket_manager_get_suppressed_entities",
@@ -9729,7 +10493,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "api\\services\\websocket_manager.py",
-      "source_location": "L85",
+      "source_location": "L86",
       "weight": 1.0,
       "_src": "websocket_manager",
       "_tgt": "websocket_manager_ws_endpoint",
@@ -9741,7 +10505,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "api\\services\\websocket_manager.py",
-      "source_location": "L99",
+      "source_location": "L100",
       "weight": 1.0,
       "_src": "websocket_manager",
       "_tgt": "websocket_manager_broadcast",
@@ -9753,7 +10517,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "api\\services\\websocket_manager.py",
-      "source_location": "L109",
+      "source_location": "L110",
       "weight": 1.0,
       "_src": "websocket_manager",
       "_tgt": "websocket_manager_broadcast_change",
@@ -9765,7 +10529,19 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "api\\services\\websocket_manager.py",
-      "source_location": "L114",
+      "source_location": "L115",
+      "weight": 1.0,
+      "_src": "websocket_manager",
+      "_tgt": "websocket_manager_power_entities",
+      "source": "websocket_manager",
+      "target": "websocket_manager_power_entities",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "api\\services\\websocket_manager.py",
+      "source_location": "L121",
       "weight": 1.0,
       "_src": "websocket_manager",
       "_tgt": "websocket_manager_live_push_loop",
@@ -9789,7 +10565,7 @@
       "relation": "calls",
       "confidence": "INFERRED",
       "source_file": "api\\services\\websocket_manager.py",
-      "source_location": "L123",
+      "source_location": "L134",
       "weight": 0.8,
       "_src": "websocket_manager_live_push_loop",
       "_tgt": "websocket_manager_get_entity_names",
@@ -9801,7 +10577,7 @@
       "relation": "calls",
       "confidence": "INFERRED",
       "source_file": "api\\services\\websocket_manager.py",
-      "source_location": "L124",
+      "source_location": "L135",
       "weight": 0.8,
       "_src": "websocket_manager_live_push_loop",
       "_tgt": "websocket_manager_get_device_meta",
@@ -9813,7 +10589,7 @@
       "relation": "calls",
       "confidence": "INFERRED",
       "source_file": "api\\services\\websocket_manager.py",
-      "source_location": "L122",
+      "source_location": "L133",
       "weight": 0.8,
       "_src": "websocket_manager_live_push_loop",
       "_tgt": "websocket_manager_get_suppressed_entities",
@@ -9825,19 +10601,19 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "api\\services\\websocket_manager.py",
-      "source_location": "L53",
+      "source_location": "L54",
       "weight": 1.0,
-      "_src": "websocket_manager_rationale_53",
+      "_src": "websocket_manager_rationale_54",
       "_tgt": "websocket_manager_get_suppressed_entities",
       "source": "websocket_manager_get_suppressed_entities",
-      "target": "websocket_manager_rationale_53",
+      "target": "websocket_manager_rationale_54",
       "confidence_score": 1.0
     },
     {
       "relation": "calls",
       "confidence": "INFERRED",
       "source_file": "api\\services\\websocket_manager.py",
-      "source_location": "L111",
+      "source_location": "L112",
       "weight": 0.8,
       "_src": "websocket_manager_broadcast_change",
       "_tgt": "websocket_manager_broadcast",
@@ -9849,7 +10625,7 @@
       "relation": "calls",
       "confidence": "INFERRED",
       "source_file": "api\\services\\websocket_manager.py",
-      "source_location": "L166",
+      "source_location": "L180",
       "weight": 0.8,
       "_src": "websocket_manager_live_push_loop",
       "_tgt": "websocket_manager_broadcast",
@@ -9861,24 +10637,48 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "api\\services\\websocket_manager.py",
-      "source_location": "L110",
+      "source_location": "L111",
       "weight": 1.0,
-      "_src": "websocket_manager_rationale_110",
+      "_src": "websocket_manager_rationale_111",
       "_tgt": "websocket_manager_broadcast_change",
       "source": "websocket_manager_broadcast_change",
-      "target": "websocket_manager_rationale_110",
+      "target": "websocket_manager_rationale_111",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "source_file": "api\\services\\websocket_manager.py",
+      "source_location": "L167",
+      "weight": 0.8,
+      "_src": "websocket_manager_live_push_loop",
+      "_tgt": "websocket_manager_power_entities",
+      "source": "websocket_manager_power_entities",
+      "target": "websocket_manager_live_push_loop",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "api\\services\\websocket_manager.py",
+      "source_location": "L116",
+      "weight": 1.0,
+      "_src": "websocket_manager_rationale_116",
+      "_tgt": "websocket_manager_power_entities",
+      "source": "websocket_manager_power_entities",
+      "target": "websocket_manager_rationale_116",
       "confidence_score": 1.0
     },
     {
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "api\\services\\websocket_manager.py",
-      "source_location": "L115",
+      "source_location": "L122",
       "weight": 1.0,
-      "_src": "websocket_manager_rationale_115",
+      "_src": "websocket_manager_rationale_122",
       "_tgt": "websocket_manager_live_push_loop",
       "source": "websocket_manager_live_push_loop",
-      "target": "websocket_manager_rationale_115",
+      "target": "websocket_manager_rationale_122",
       "confidence_score": 1.0
     },
     {
