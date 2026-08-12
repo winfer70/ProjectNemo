@@ -1,69 +1,903 @@
-- id: filter_restart_after_feeding
-  alias: "Restart filter after Feed Now"
-  description: "Safety net — if filter plug was turned off manually, restart after 10 min"
+- alias: Fluval BLE via tablet
   trigger:
-    - platform: state
-      entity_id: switch.tapo_filter
-      to: "off"
-      for:
-        minutes: 10
-  condition:
-    - condition: state
-      entity_id: switch.tapo_filter
-      state: "off"
+  - platform: state
+    entity_id:
+    - input_number.fluval_r
+    - input_number.fluval_g
+    - input_number.fluval_b
+    - input_number.fluval_w
+    - input_number.fluval_ch5
   action:
+  - service: rest_command.set_fluval_channels
+    data:
+      r: '{{ states(''input_number.fluval_r'') | int }}'
+      g: '{{ states(''input_number.fluval_g'') | int }}'
+      b: '{{ states(''input_number.fluval_b'') | int }}'
+      w: '{{ states(''input_number.fluval_w'') | int }}'
+      ch5: '{{ states(''input_number.fluval_ch5'') | int }}'
+  id: 52c69c170706402c98d803898da58b4b
+- alias: 'Alert: Filter stopped while ON'
+  trigger:
+  - platform: numeric_state
+    entity_id: sensor.filtr_current_consumption
+    below: 1
+    for: 00:10:00
+  condition:
+  - condition: state
+    entity_id: switch.filtr
+    state: 'on'
+  action:
+  - service: rest_command.nemo_alert
+    data:
+      message_en: 'ALERT: Filter appears stopped ({{ states(''sensor.filtr_current_consumption'')
+        }}W) but switch is ON. Check for blockage.'
+      message_pl: 'ALERT: Filtr wygląda na zatrzymany ({{ states(''sensor.filtr_current_consumption'')
+        }}W) a wyłącznik jest ON. Sprawdź blokadę.'
+      lang: both
+  id: b9d7dc7f75b64b438615eebe4c80f033
+- alias: 'Alert: Filter power spike'
+  trigger:
+  - platform: numeric_state
+    entity_id: sensor.filtr_current_consumption
+    above: 50
+  action:
+  - service: rest_command.nemo_alert
+    data:
+      message_en: 'ALERT: Filter power spike {{ trigger.to_state.state }}W (normal
+        <20W). Possible blockage or motor fault.'
+      message_pl: 'ALERT: Skok mocy filtra {{ trigger.to_state.state }}W (norma <20W).
+        Możliwa blokada lub awaria silnika.'
+      lang: both
+  id: a96710bf3d494446b096d794278b2f9d
+- alias: 'Alert: Heater running 2h+ continuously'
+  trigger:
+  - platform: numeric_state
+    entity_id: sensor.grzalka_current_consumption
+    above: 10
+    for: 02:00:00
+  action:
+  - service: rest_command.nemo_alert
+    data:
+      message_en: 'ALERT: Heater running continuously for 2h! Check water temperature
+        — possible thermostat failure.'
+      message_pl: 'ALERT: Grzałka działa nieprzerwanie od 2h! Sprawdź temperaturę
+        wody — możliwa awaria termostatu.'
+      lang: both
+  id: eed0aac549804208980c74016926b7b5
+- alias: 'Alert: Heater stopped while ON'
+  description: Warns only if the heater is drawing no power AND the water has actually
+    started cooling below 25.5°C, so brief 0W blips while the tank is still warm don't
+    trigger a false alarm.
+  trigger:
+  - platform: numeric_state
+    entity_id: sensor.grzalka_current_consumption
+    below: 1
+    for: 00:30:00
+  condition:
+  - condition: state
+    entity_id: switch.grzalka
+    state: 'on'
+  - condition: numeric_state
+    entity_id: sensor.grzalka_current_consumption
+    below: 1
+  - condition: numeric_state
+    entity_id: sensor.0xa4c138060885ffff_temperature
+    below: 25.5
+  action:
+  - service: rest_command.nemo_alert
+    data:
+      message_en: 'ALERT: Heater switch is ON but drawing 0W for 30min, and water
+        temperature has dropped to {{ states(''sensor.0xa4c138060885ffff_temperature'')
+        }}°C. Heater may be broken or disconnected.'
+      message_pl: 'ALERT: Grzałka jest włączona ale nie pobiera prądu od 30 min, a
+        temperatura wody spadła do {{ states(''sensor.0xa4c138060885ffff_temperature'')
+        }}°C. Może być uszkodzona lub odłączona.'
+      lang: both
+  id: ffdc6ffa394f415f8a4433c3e03e2d68
+- alias: 'Office: Aqara bottom button single press'
+  trigger:
+  - platform: mqtt
+    topic: zigbee2mqtt/0x54ef4410016759d1
+    value_template: '{{ value_json.action }}'
+    payload: single_down
+  condition:
+  - condition: template
+    value_template: "{{ this.attributes.last_triggered is none or\n   (as_timestamp(now())
+      - as_timestamp(this.attributes.last_triggered)) > 4 }}\n"
+  action:
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_1
+        state: 'off'
+      - condition: state
+        entity_id: switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_2
+        state: 'off'
+      - condition: state
+        entity_id: switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_3
+        state: 'off'
+      - condition: state
+        entity_id: switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_4
+        state: 'off'
+      - condition: state
+        entity_id: switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_5
+        state: 'off'
+      - condition: state
+        entity_id: switch.office_led
+        state: 'off'
+      sequence:
+      - service: switch.turn_on
+        target:
+          entity_id:
+          - switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_4
+          - switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_1
+          - switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_2
+      - if:
+        - condition: sun
+          after: sunset
+        then:
+        - service: switch.turn_on
+          target:
+            entity_id:
+            - switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_3
+            - switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_5
+            - switch.office_led
+    default:
+    - choose:
+      - conditions:
+        - condition: state
+          entity_id: switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_3
+          state: 'off'
+        sequence:
+        - service: switch.turn_on
+          target:
+            entity_id: switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_3
+      - conditions:
+        - condition: state
+          entity_id: switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_3
+          state: 'on'
+        - condition: state
+          entity_id: switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_5
+          state: 'off'
+        sequence:
+        - service: switch.turn_on
+          target:
+            entity_id:
+            - switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_5
+            - switch.office_led
+      default:
+      - service: switch.turn_off
+        target:
+          entity_id:
+          - switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_3
+          - switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_5
+          - switch.office_led
+  mode: single
+  id: c3c16e19caff4556b1d2541e7797a690
+- alias: 'Office: Aqara bottom button double press - toggle surge protector'
+  trigger:
+  - platform: mqtt
+    topic: zigbee2mqtt/0x54ef4410016759d1
+    value_template: '{{ value_json.action }}'
+    payload: double_down
+  condition:
+  - condition: template
+    value_template: "{{ this.attributes.last_triggered is none or\n   (as_timestamp(now())
+      - as_timestamp(this.attributes.last_triggered)) > 4 }}\n"
+  action:
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet
+        state: 'on'
+      sequence:
+      - service: switch.turn_off
+        target:
+          entity_id:
+          - switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet
+          - switch.office_led
+    default:
     - service: switch.turn_on
       target:
-        entity_id: switch.tapo_filter
-
-- id: temp_alert_low
-  alias: "Temperature too low alert"
+        entity_id:
+        - switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet
+        - switch.office_led
+  mode: single
+  id: ae080d72d7334a71a23002cb0c1f4432
+- alias: 'Gate: Aqara left button (down click) - pulse gate relay'
   trigger:
-    - platform: numeric_state
-      entity_id: sensor.nemo_sensor_temperature
-      below: 24.5
-      for:
-        minutes: 5
+  - platform: mqtt
+    topic: zigbee2mqtt/0x54ef44100156879e
+    value_template: '{{ value_json.action }}'
+    payload: single_left_down
+  condition:
+  - condition: template
+    value_template: "{{ this.attributes.last_triggered is none or\n   (as_timestamp(now())
+      - as_timestamp(this.attributes.last_triggered)) > 4 }}\n"
   action:
-    - service: rest_command.nemo_alert
-      data:
-        n8n_url: !secret n8n_url
-        webhook_id: !secret n8n_webhook_alert
-        message_en: "🌡️ Temperature {{ states('sensor.nemo_sensor_temperature') }}°C — too low!"
-        message_pl: "🌡️ Temperatura {{ states('sensor.nemo_sensor_temperature') }}°C — za niska!"
-        lang: "both"
-
-- id: temp_alert_high
-  alias: "Temperature too high alert"
+  - service: switch.turn_on
+    target:
+      entity_id: switch.brama_sonoff_100254194e_1
+  - delay:
+      seconds: 1
+  - service: switch.turn_off
+    target:
+      entity_id: switch.brama_sonoff_100254194e_1
+  mode: single
+  id: b82f16c04c024941bc02c06052b0c1cc
+- alias: 'Desk: WłącznikBiurko single press - toggle monitors + dock'
   trigger:
-    - platform: numeric_state
-      entity_id: sensor.nemo_sensor_temperature
-      above: 27.5
-      for:
-        minutes: 5
+  - platform: mqtt
+    topic: zigbee2mqtt/0xb48931fffe3d2221/action
+    payload: single
+  condition:
+  - condition: template
+    value_template: "{{ this.attributes.last_triggered is none or\n   (as_timestamp(now())
+      - as_timestamp(this.attributes.last_triggered)) > 4 }}\n"
   action:
-    - service: rest_command.nemo_alert
-      data:
-        n8n_url: !secret n8n_url
-        webhook_id: !secret n8n_webhook_alert
-        message_en: "🌡️ Temperature {{ states('sensor.nemo_sensor_temperature') }}°C — too high!"
-        message_pl: "🌡️ Temperatura {{ states('sensor.nemo_sensor_temperature') }}°C — za wysoka!"
-        lang: "both"
-
-- id: fluval_channel_sync
-  alias: "Sync Fluval RGBW channels from input_number to BLE"
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet
+        state: 'off'
+      sequence:
+      - service: switch.turn_on
+        target:
+          entity_id: switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet
+      - delay:
+          seconds: 1
+      - service: switch.turn_on
+        target:
+          entity_id:
+          - switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_1
+          - switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_2
+          - switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_4
+    - conditions:
+      - condition: or
+        conditions:
+        - condition: state
+          entity_id: switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_1
+          state: 'off'
+        - condition: state
+          entity_id: switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_2
+          state: 'off'
+        - condition: state
+          entity_id: switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_4
+          state: 'off'
+      sequence:
+      - service: switch.turn_on
+        target:
+          entity_id:
+          - switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_1
+          - switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_2
+          - switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_4
+    default:
+    - service: switch.turn_off
+      target:
+        entity_id:
+        - switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_1
+        - switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_2
+        - switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_4
+  mode: single
+  id: c3eeeffdc2ab4a029a86ff176eec7643
+- id: trv_unavailable_3h_mobile_alert
+  alias: TRV unavailable 3h mobile alert
+  description: Notify when any GISE TRV climate entity stays unavailable for 3 hours
   trigger:
-    - platform: state
+  - platform: state
+    entity_id:
+    - climate.0xa4c138b1ad7dfd57
+    - climate.0xa4c138c7970d8809
+    - climate.0xa4c1387c4f428097
+    - climate.0xa4c13881297bc097
+    to: unavailable
+    for:
+      hours: 3
+  action:
+  - action: notify.send_message
+    target:
+      entity_id: notify.sg_kamil
+    data:
+      title: "\U0001F321️ TRV unavailable"
+      message: '{{ trigger.to_state.attributes.friendly_name | default(trigger.entity_id,
+        true) }} ({{ trigger.entity_id }}) has been unavailable for more than 3 hours.'
+- id: kitchen_led_pir_motion
+  alias: Kitchen LED PIR motion
+  description: Turns on the kitchen LED (WlacznikKuchniaLed relay) on kitchen PIR
+    motion after sundown; turns off after 5 minutes of no motion at any time. Can
+    be disabled until next sundown via the bottom button on WlacznikKuchniaLed.
+  trigger:
+  - platform: state
+    entity_id: binary_sensor.kuchnia
+    to: 'on'
+    id: motion_on
+  - platform: state
+    entity_id: binary_sensor.kuchnia
+    to: 'off'
+    for:
+      minutes: 5
+    id: motion_off
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: motion_on
+      - condition: state
+        entity_id: sun.sun
+        state: below_horizon
+      sequence:
+      - service: switch.turn_on
+        target:
+          entity_id: switch.0x54ef441001525ff8_up
+    - conditions:
+      - condition: trigger
+        id: motion_off
+      sequence:
+      - service: switch.turn_off
+        target:
+          entity_id: switch.0x54ef441001525ff8_up
+- id: kitchen_led_disable_toggle_on_button
+  alias: Kitchen LED - disable-enable via switch button
+  description: Bottom button press (single_down) on WlacznikKuchniaLed toggles the
+    Kitchen LED PIR motion automation off (until next sundown) or back on.
+  trigger:
+  - platform: mqtt
+    topic: zigbee2mqtt/0x54ef441001525ff8
+    value_template: '{{ value_json.action }}'
+    payload: single_down
+  condition:
+  - condition: template
+    value_template: '{{ (as_timestamp(now()) - as_timestamp(state_attr(''automation.kitchen_led_disable_enable_via_switch_button'',
+      ''last_triggered'') | default(''1970-01-01 00:00:00'', true)) ) > 2 }}'
+  action:
+  - variables:
+      was_enabled: '{{ is_state(''automation.kitchen_led_pir_motion'', ''on'') }}'
+  - service: automation.toggle
+    target:
+      entity_id: automation.kitchen_led_pir_motion
+  - service: notify.send_message
+    target:
       entity_id:
-        - input_number.fluval_r
-        - input_number.fluval_g
-        - input_number.fluval_b
-        - input_number.fluval_w
+      - notify.sg_kamil
+    data:
+      title: Kitchen LED automation
+      message: '{% if was_enabled %}Disabled until next sundown.{% else %}Re-enabled.{%
+        endif %}'
+- id: kitchen_led_reenable_at_sunset
+  alias: Kitchen LED - re-enable automation at sunset
+  description: 'Safety net: re-enables the Kitchen LED PIR motion automation every
+    sunset in case it was disabled via the switch button.'
+  trigger:
+  - platform: sun
+    event: sunset
   action:
-    - service: fluvalble.set_channels
+  - service: automation.turn_on
+    target:
+      entity_id: automation.kitchen_led_pir_motion
+- id: boiler_hotwater_nightly_schedule
+  alias: Boiler hotwater nightly schedule
+  description: Turns on the Hive OTR1 heating call-relay for 1 hour overnight to ensure
+    hot water is heated.
+  triggers:
+  - at: 05:00:00
+    id: start
+    trigger: time
+  - at: 05:30:00
+    id: stop
+    trigger: time
+  actions:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: start
+      sequence:
+      - target:
+          entity_id: climate.0x001e5e0902ce8e9a
+        data:
+          hvac_mode: heat
+        action: climate.set_hvac_mode
+    - conditions:
+      - condition: trigger
+        id: stop
+      sequence:
+      - target:
+          entity_id: climate.0x001e5e0902ce8e9a
+        data:
+          hvac_mode: auto
+        action: climate.set_hvac_mode
+- id: alarm_auto_arm_away_presence
+  alias: Alarm auto arm away presence
+  description: Arms Alarm Główny after Kamil's phone and watch have both been away
+    for 5 minutes.
+  mode: restart
+  trigger:
+  - platform: state
+    entity_id:
+    - device_tracker.sg_kamil
+    - device_tracker.galaxy_watch6_classic_9s5w
+    to: not_home
+  condition:
+  - condition: state
+    entity_id: device_tracker.sg_kamil
+    state: not_home
+  - condition: state
+    entity_id: device_tracker.galaxy_watch6_classic_9s5w
+    state: not_home
+  - condition: state
+    entity_id: alarm_control_panel.glowne
+    state: disarmed
+  action:
+  - delay:
+      minutes: 5
+  - condition: state
+    entity_id: device_tracker.sg_kamil
+    state: not_home
+  - condition: state
+    entity_id: device_tracker.galaxy_watch6_classic_9s5w
+    state: not_home
+  - condition: state
+    entity_id: alarm_control_panel.glowne
+    state: disarmed
+  - service: alarm_control_panel.alarm_arm_away
+    target:
+      entity_id: alarm_control_panel.glowne
+    data:
+      code: !secret alarm_code
+  - action: notify.send_message
+    target:
+      entity_id:
+      - notify.sg_kamil
+      - notify.galaxy_watch6_classic_9s5w
+    data:
+      title: "\U0001F512 Alarm Armed"
+      message: Everyone has left - alarm armed away automatically.
       data:
-        mac: !secret fluval_ble_mac
-        r: "{{ states('input_number.fluval_r') | int }}"
-        g: "{{ states('input_number.fluval_g') | int }}"
-        b: "{{ states('input_number.fluval_b') | int }}"
-        w: "{{ states('input_number.fluval_w') | int }}"
+        tag: alarm-auto-arm-away
+        notification_icon: mdi:shield-lock
+- id: alarm_auto_disarm_presence
+  alias: Alarm auto disarm presence
+  description: Disarms Alarm Główny when Kamil's phone or watch arrives home.
+  trigger:
+  - platform: state
+    entity_id:
+    - device_tracker.sg_kamil
+    - device_tracker.galaxy_watch6_classic_9s5w
+    to: home
+  condition:
+  - condition: template
+    value_template: '{{ states(''alarm_control_panel.glowne'') in [''armed_away'',
+      ''armed_home''] }}'
+  action:
+  - service: alarm_control_panel.alarm_disarm
+    target:
+      entity_id: alarm_control_panel.glowne
+    data:
+      code: !secret alarm_code
+  - action: notify.send_message
+    target:
+      entity_id:
+      - notify.sg_kamil
+      - notify.galaxy_watch6_classic_9s5w
+    data:
+      title: "\U0001F513 Alarm Disarmed"
+      message: '{{ trigger.to_state.attributes.friendly_name | default(trigger.entity_id,
+        true) }} arrived home - alarm disarmed automatically.'
+      data:
+        tag: alarm-auto-disarm-home
+        notification_icon: mdi:shield-home
+- id: gate_ring_notify_with_open_action
+  alias: Gate ring notify with open action
+  description: Sends a phone actionable notification (with live snapshot + deep link
+    to the talk-enabled gate dashboard) and watch heads-up when the driveway visitor
+    sensor is triggered.
+  trigger:
+  - platform: state
+    entity_id: binary_sensor.driveway_visitor
+    to: 'on'
+  action:
+  - action: notify.mobile_app_sg_kamil
+    data:
+      title: "\U0001F514 Someone's at the gate"
+      message: Driveway visitor detected.
+      data:
+        tag: gate-ring
+        image: /api/camera_proxy/camera.driveway_fluent
+        clickAction: https://ha.kamilon8n.win/dashboard-biuro/0
+        actions:
+        - action: OPEN_GATE
+          title: Open Gate
+  - action: notify.send_message
+    target:
+      entity_id: notify.galaxy_watch6_classic_9s5w
+    data:
+      title: "\U0001F514 Gate"
+      message: Someone's at the gate
+- id: gate_ring_open_gate_action_handler
+  alias: Gate ring open gate action handler
+  description: Opens the gate relay when the mobile notification action button is
+    tapped and confirms to the family notify group.
+  trigger:
+  - platform: event
+    event_type: mobile_app_notification_action
+    event_data:
+      action: OPEN_GATE
+  action:
+  - service: switch.turn_on
+    target:
+      entity_id: switch.brama_sonoff_100254194e_1
+  - delay:
+      seconds: 1
+  - service: switch.turn_off
+    target:
+      entity_id: switch.brama_sonoff_100254194e_1
+  - action: notify.send_message
+    target:
+      entity_id:
+      - notify.sg_kamil
+      - notify.galaxy_watch6_classic_9s5w
+    data:
+      title: "\U0001F6AA Gate opened"
+      message: Gate was opened via notification action.
+- id: entrance_light_on_dark_door_open
+  alias: Entrance light on dark door open
+  description: Turns on the entrance light for 2 minutes when the front door opens
+    after dark; repeated opens restart the timer.
+  mode: restart
+  trigger:
+  - platform: state
+    entity_id: binary_sensor.0xf044d3fffe0876ee_contact
+    to: 'on'
+  condition:
+  - condition: state
+    entity_id: sun.sun
+    state: below_horizon
+  action:
+  - service: switch.turn_on
+    target:
+      entity_id: switch.0x54ef44100156879e_right
+  - delay:
+      minutes: 2
+  - service: switch.turn_off
+    target:
+      entity_id: switch.0x54ef44100156879e_right
+- id: entrance_light_disable_toggle_on_button
+  alias: Entrance light - disable-enable via switch button
+  description: Bottom-right button press on WlacznikDolDrzwi toggles the entrance
+    light automation off (until next sundown) or back on.
+  trigger:
+  - platform: mqtt
+    topic: zigbee2mqtt/0x54ef44100156879e
+    value_template: '{{ value_json.action }}'
+    payload: single_right_down
+  condition:
+  - condition: template
+    value_template: '{{ (as_timestamp(now()) - as_timestamp(state_attr(''automation.entrance_light_disable_enable_via_switch_button'',
+      ''last_triggered'') | default(''1970-01-01 00:00:00'', true)) ) > 2 }}'
+  action:
+  - variables:
+      was_enabled: '{{ is_state(''automation.entrance_light_on_when_dark_and_front_door_opens_restartable_2min'',
+        ''on'') }}'
+  - service: automation.toggle
+    target:
+      entity_id: automation.entrance_light_on_when_dark_and_front_door_opens_restartable_2min
+  - service: notify.send_message
+    target:
+      entity_id:
+      - notify.sg_kamil
+    data:
+      title: Entrance light automation
+      message: '{% if was_enabled %}Disabled until next sundown.{% else %}Re-enabled.{%
+        endif %}'
+- id: entrance_light_reenable_at_sunset
+  alias: Entrance light - re-enable automation at sunset
+  description: 'Safety net: re-enables the entrance light automation every sunset
+    in case it was disabled via the switch button.'
+  trigger:
+  - platform: sun
+    event: sunset
+  action:
+  - service: automation.turn_on
+    target:
+      entity_id: automation.entrance_light_on_when_dark_and_front_door_opens_restartable_2min
+- id: bedroom_upstairs_light_toggle_button
+  alias: SypialniaGora - main light toggle via wireless button
+  description: Single press on WlacznikSypialniaGora2 (Sonoff SNZB-01P) toggles the
+    SypialniaSwiatloGlowne main light relay.
+  trigger:
+  - platform: mqtt
+    topic: zigbee2mqtt/0x449fdafffe431c91
+    value_template: '{{ value_json.action }}'
+    payload: single
+  condition:
+  - condition: template
+    value_template: '{{ (as_timestamp(now()) - as_timestamp(state_attr(''automation.sypialniagora_main_light_toggle_via_wireless_button'',
+      ''last_triggered'') | default(''1970-01-01 00:00:00'', true)) ) > 2 }}'
+  action:
+  - service: switch.toggle
+    target:
+      entity_id: switch.0x54ef44100167601c_up
+- id: window_disables_trv_biuro
+  alias: Biuro - window open disables TRV
+  trigger:
+  - platform: state
+    entity_id:
+    - binary_sensor.0xf044d3fffe087b54_contact
+    - binary_sensor.0xf044d3fffe087b1f_contact
+    to: 'on'
+    id: window_open
+  - platform: state
+    entity_id:
+    - binary_sensor.0xf044d3fffe087b54_contact
+    - binary_sensor.0xf044d3fffe087b1f_contact
+    to: 'off'
+    id: window_closed
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: window_open
+      sequence:
+      - service: climate.set_hvac_mode
+        target:
+          entity_id: climate.0xa4c138c7970d8809
+        data:
+          hvac_mode: 'off'
+    - conditions:
+      - condition: trigger
+        id: window_closed
+      - condition: state
+        entity_id: binary_sensor.0xf044d3fffe087b54_contact
+        state: 'off'
+      - condition: state
+        entity_id: binary_sensor.0xf044d3fffe087b1f_contact
+        state: 'off'
+      sequence:
+      - service: climate.set_hvac_mode
+        target:
+          entity_id: climate.0xa4c138c7970d8809
+        data:
+          hvac_mode: heat
+- id: manual_heat_while_window_open_biuro
+  alias: Biuro - warn if heating turned on while window open
+  trigger:
+  - platform: state
+    entity_id: climate.0xa4c138c7970d8809
+    to: heat
+  condition:
+  - condition: or
+    conditions:
+    - condition: state
+      entity_id: binary_sensor.0xf044d3fffe087b54_contact
+      state: 'on'
+    - condition: state
+      entity_id: binary_sensor.0xf044d3fffe087b1f_contact
+      state: 'on'
+  action:
+  - action: notify.send_message
+    target:
+      entity_id: notify.sg_kamil
+    data:
+      title: "\U0001FA9F Window open, heating on"
+      message: Biuro heating was turned on but a window is still open.
+- id: window_disables_trv_sypialniagora
+  alias: SypialniaGóra - window open disables TRV
+  trigger:
+  - platform: state
+    entity_id:
+    - binary_sensor.0x18690afffe10219e_contact
+    - binary_sensor.0xf044d3fffe087b65_contact
+    to: 'on'
+    id: window_open
+  - platform: state
+    entity_id:
+    - binary_sensor.0x18690afffe10219e_contact
+    - binary_sensor.0xf044d3fffe087b65_contact
+    to: 'off'
+    id: window_closed
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: window_open
+      sequence:
+      - service: climate.set_hvac_mode
+        target:
+          entity_id: climate.0xa4c138b1ad7dfd57
+        data:
+          hvac_mode: 'off'
+    - conditions:
+      - condition: trigger
+        id: window_closed
+      - condition: state
+        entity_id: binary_sensor.0x18690afffe10219e_contact
+        state: 'off'
+      - condition: state
+        entity_id: binary_sensor.0xf044d3fffe087b65_contact
+        state: 'off'
+      sequence:
+      - service: climate.set_hvac_mode
+        target:
+          entity_id: climate.0xa4c138b1ad7dfd57
+        data:
+          hvac_mode: heat
+- id: manual_heat_while_window_open_sypialniagora
+  alias: SypialniaGóra - warn if heating turned on while window open
+  trigger:
+  - platform: state
+    entity_id: climate.0xa4c138b1ad7dfd57
+    to: heat
+  condition:
+  - condition: or
+    conditions:
+    - condition: state
+      entity_id: binary_sensor.0x18690afffe10219e_contact
+      state: 'on'
+    - condition: state
+      entity_id: binary_sensor.0xf044d3fffe087b65_contact
+      state: 'on'
+  action:
+  - action: notify.send_message
+    target:
+      entity_id: notify.sg_kamil
+    data:
+      title: "\U0001FA9F Window open, heating on"
+      message: SypialniaGóra heating was turned on but a window is still open.
+- id: filter_restart_after_feeding
+  alias: Restart filter after Feed Now
+  description: Safety net — if filter plug was turned off manually, restart after
+    10 min
+  trigger:
+  - platform: state
+    entity_id: switch.filtr
+    to: 'off'
+    for:
+      minutes: 10
+  condition:
+  - condition: state
+    entity_id: switch.filtr
+    state: 'off'
+  action:
+  - service: switch.turn_on
+    target:
+      entity_id: switch.filtr
+- id: temp_alert_low
+  alias: Temperature too low alert
+  trigger:
+  - platform: numeric_state
+    entity_id: sensor.0xa4c138060885ffff_temperature
+    below: 24.5
+    for:
+      minutes: 5
+  action:
+  - service: rest_command.nemo_alert
+    data:
+      message_en: "\U0001F321️ Temperature {{ states('sensor.0xa4c138060885ffff_temperature')
+        }}°C — too low!"
+      message_pl: "\U0001F321️ Temperatura {{ states('sensor.0xa4c138060885ffff_temperature')
+        }}°C — za niska!"
+      lang: both
+- id: temp_alert_high
+  alias: Temperature too high alert
+  trigger:
+  - platform: numeric_state
+    entity_id: sensor.0xa4c138060885ffff_temperature
+    above: 27.5
+    for:
+      minutes: 5
+  action:
+  - service: rest_command.nemo_alert
+    data:
+      message_en: "\U0001F321️ Temperature {{ states('sensor.0xa4c138060885ffff_temperature')
+        }}°C — too high!"
+      message_pl: "\U0001F321️ Temperatura {{ states('sensor.0xa4c138060885ffff_temperature')
+        }}°C — za wysoka!"
+      lang: both
+- id: fluval_channel_sync
+  alias: Sync Fluval RGBW channels from input_number to BLE
+  trigger:
+  - platform: state
+    entity_id:
+    - input_number.fluval_r
+    - input_number.fluval_g
+    - input_number.fluval_b
+    - input_number.fluval_w
+  action:
+  - service: script.fluval_ble_set_channels
+    data:
+      r: '{{ states(''input_number.fluval_r'') | int }}'
+      g: '{{ states(''input_number.fluval_g'') | int }}'
+      b: '{{ states(''input_number.fluval_b'') | int }}'
+      w: '{{ states(''input_number.fluval_w'') | int }}'
+- id: frigate_driveway_alert_notification
+  alias: 'Frigate: Driveway alert notification'
+  description: Push notification with snapshot when person/car enters the driveway
+    zone (ignores the public road passing through the frame)
+  trigger:
+  - platform: mqtt
+    topic: frigate/reviews
+  condition:
+  - condition: template
+    value_template: "{{ trigger.payload_json.type == 'new'\n   and trigger.payload_json.after.severity
+      == 'alert'\n   and trigger.payload_json.after.camera == 'driveway' }}\n"
+  action:
+  - variables:
+      review_id: '{{ trigger.payload_json.after.id }}'
+      objects_en: '{{ trigger.payload_json.after.data.objects | unique | join('',
+        '') }}'
+  - action: notify.send_message
+    target:
+      entity_id: notify.sg_kamil
+    data:
+      title: "\U0001F6A7 Driveway activity"
+      message: 'Detected: {{ objects_en }}'
+      data:
+        image: /api/frigate/notifications/{{ review_id }}/driveway/review_thumbnail.webp
+        tag: frigate-driveway-{{ review_id }}
+        notification_icon: mdi:cctv
+- id: frigate_gate_auto_open_known_car
+  alias: 'Frigate: Auto-open gate for known car/person'
+  description: 'Opens the gate automatically for 3 recognition methods: license plate
+    (LPR, always live/deterministic), vehicle shape/appearance, and face recognition
+    (person in driveway_zone). The shape and face methods are gated behind input_boolean.frigate_gate_learning_mode
+    - while ON they only send a notification (no gate action) so we can validate accuracy
+    before trusting them to open the gate. Turn the helper OFF once confident.
+
+    '
+  mode: single
+  trigger:
+  - platform: mqtt
+    topic: frigate/tracked_object_update
+    id: lpr
+  - platform: mqtt
+    topic: frigate/events
+    id: shape_or_face
+  condition:
+  - condition: template
+    value_template: "{% if trigger.id == 'lpr' %}\n  {{ trigger.payload_json.type
+      == 'lpr'\n     and trigger.payload_json.camera == 'driveway'\n     and trigger.payload_json.name
+      in ['KamilsCar', 'MumsCar'] }}\n{% elif trigger.id == 'shape_or_face' %}\n  {%
+      set after = trigger.payload_json.after %}\n  {{ after.camera == 'driveway'\n
+      \    and 'driveway_zone' in (after.current_zones | default([]))\n     and (\n
+      \      (after.label == 'car' and (after.attributes.known_cars | default('none'))
+      in ['KamilsCar', 'MumsCar'])\n       or\n       (after.label == 'person' and
+      (after.sub_label[0] if after.sub_label else 'none') in ['Kamil', 'Mum'])\n     )
+      }}\n{% else %}\n  false\n{% endif %}\n"
+  action:
+  - variables:
+      match_method: "{% if trigger.id == 'lpr' %}\n  license plate\n{% elif trigger.payload_json.after.label
+        == 'car' %}\n  vehicle shape/appearance\n{% else %}\n  face recognition\n{%
+        endif %}\n"
+      car_or_person_name: "{% if trigger.id == 'lpr' %}\n  {{ trigger.payload_json.name
+        }}\n{% elif trigger.payload_json.after.label == 'car' %}\n  {{ trigger.payload_json.after.attributes.known_cars
+        }}\n{% else %}\n  {{ trigger.payload_json.after.sub_label[0] }}\n{% endif
+        %}\n"
+      is_learning_gated: '{{ trigger.id == ''shape_or_face'' and is_state(''input_boolean.frigate_gate_learning_mode'',
+        ''on'') }}'
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ is_learning_gated }}'
+      sequence:
+      - action: notify.send_message
+        target:
+          entity_id: notify.sg_kamil
+        data:
+          title: "\U0001F9EA Frigate learning mode: would open gate"
+          message: Recognized {{ car_or_person_name }} by {{ match_method }} — gate
+            NOT opened (learning mode ON).
+          data:
+            tag: frigate-gate-learning-{{ trigger.id }}
+    default:
+    - service: switch.turn_on
+      target:
+        entity_id: switch.brama_sonoff_100254194e_1
+    - action: notify.send_message
+      target:
+        entity_id: notify.sg_kamil
+      data:
+        title: "\U0001F6A7 Gate opened automatically"
+        message: Recognized {{ car_or_person_name }} by {{ match_method }} — opening
+          gate.
+        data:
+          tag: frigate-gate-auto-open
+  - delay: 00:05:00
