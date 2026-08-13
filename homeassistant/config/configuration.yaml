@@ -15,13 +15,13 @@ frontend:
 http:
   server_host: 0.0.0.0
   server_port: 8123
-  # Cloudflare Tunnel (via REDACTED-HOST's ai_agent_cloudflared) proxies requests
-  # to HA over the LAN. Docker's bridge-network SNAT makes these arrive from
-  # REDACTED-HOST's LAN IP, so it must be an explicitly trusted proxy or HA
+  # Cloudflare Tunnel (via the deployment host's cloudflared container) proxies
+  # requests to HA over the LAN. Docker's bridge-network SNAT makes these arrive
+  # from that host's LAN IP, so it must be an explicitly trusted proxy or HA
   # returns "400 Bad Request" for the X-Forwarded-For header cloudflared adds.
   use_x_forwarded_for: true
   trusted_proxies:
-    - 10.0.0.105
+    - !secret trusted_proxy_ip
 
 # ── InfluxDB v2 — write all sensor + energy data ──────────────────────────────
 influxdb:
