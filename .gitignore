@@ -3,6 +3,11 @@
 homeassistant/config/secrets.yaml
 firmware/secrets.yaml
 
+# Live Zigbee network key + MQTT credentials (not env-var driven — real values
+# live only on the deployment host; only the .example template is tracked)
+zigbee2mqtt/config/configuration.yaml
+mosquitto/config/passwd
+
 # HA runtime state
 homeassistant/config/.storage/
 homeassistant/config/.ha_run.lock

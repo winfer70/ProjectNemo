@@ -115,7 +115,7 @@ sensor:
 ### 5. SONOFF ZBDongle-E — ✅ ALREADY ORDERED
 
 Arriving Tuesday. Notes:
-- Connect to **REDACTED-HOST** server (10.0.0.104) via USB
+- Connect to the host running Zigbee2MQTT/Home Assistant via USB
 - Use a **1m USB extension cable** to physically separate from USB 3.0 ports — USB 3.0 radiates 2.4GHz noise that degrades Zigbee range significantly
 - Pairs with Zigbee2MQTT already configured in ProjectNemo
 

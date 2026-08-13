@@ -1,4 +1,4 @@
-base-url: http://10.0.0.103:8081
+base-url: http://<NTFY_BASE_HOST>:8081
 listen-http: :80
 cache-file: /var/lib/ntfy/cache.db
 auth-file: /var/lib/ntfy/auth.db

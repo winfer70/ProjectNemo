@@ -13,7 +13,7 @@ Aquarium monitoring and automation system. Built, not yet deployed.
 
 ## Current State
 
-Deployed and running on **REDACTED-HOST** (`10.0.0.103` wired / `10.0.0.102` WiFi, SSH alias `REDACTED-HOST`).
+Deployed and running on the **deployment host** (`<DEPLOYMENT_HOST_LAN_IP>` wired / `<DEPLOYMENT_HOST_WIFI_IP>` WiFi, SSH alias `<DEPLOYMENT_HOST_ALIAS>`).
 Code lives at `/home/kamilo/nemo/ProjectNemo/`. Services: nemo-ui :3000, nemo-api :8000, nemo-homeassistant :8123, nemo-influxdb :8086, nemo-mosquitto :1883.
 Next action: Tapo P110 HA integration (add in HA UI → get entity IDs → update `.env` TAPO_*).
 
@@ -31,8 +31,8 @@ Next action: Tapo P110 HA integration (add in HA UI → get entity IDs → updat
 - Integration branch: `dev`
 - All work on `feature/<name>` branches — never commit directly to `dev` or `main`
 - Deploy only via `./release.sh` — merges dev→main, SQLite backup, docker compose up --build
-- Prod target: REDACTED-HOST `10.0.0.103` (wired) / `.107` (WiFi), SSH user `kamilo`
-- `.env` and `homeassistant/config/secrets.yaml` NOT in git — already on REDACTED-HOST
+- Prod target: deployment host `<DEPLOYMENT_HOST_LAN_IP>` (wired) / `<DEPLOYMENT_HOST_WIFI_IP>` (WiFi), SSH user `kamilo`
+- `.env` and `homeassistant/config/secrets.yaml` NOT in git — already on the deployment host
 
 ## graphify
 

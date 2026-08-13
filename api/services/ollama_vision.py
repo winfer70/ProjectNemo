@@ -1,4 +1,4 @@
-"""Test strip analysis via llava-phi3 on REDACTED-HOST Ollama."""
+"""Test strip analysis via a configured Ollama endpoint."""
 import base64
 import io
 import json
@@ -58,6 +58,9 @@ def _resize(image_bytes: bytes) -> bytes:
 
 
 async def analyze_strip(image_bytes: bytes) -> dict[str, float | None]:
+    if not settings.ollama_url:
+        raise ValueError("OLLAMA_URL is not configured")
+
     resized = _resize(image_bytes)
     b64 = base64.b64encode(resized).decode()
 

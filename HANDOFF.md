@@ -7,11 +7,11 @@
 - Water change: every 28 days from Jun 21, ~15% (~38L)
 - STOCKING_PLAN.md fully rewritten with timeline, acclimation protocol, compatibility table
 - ScheduleView TODAY tile: split layout — temp widget left (50% width, 42px, color-coded 24.5–27.5°C), tasks right
-- Deployed to REDACTED-HOST (10.0.0.102:3000). Committed + pushed to dev.
+- Deployed to the deployment host dashboard (`http://<DEPLOYMENT_HOST_WIFI_IP>:3000`). Committed + pushed to dev.
 
 ## Current state
-- UI: http://10.0.0.102:3000 ✓ live with split today tile
-- API: http://10.0.0.102:8000 ✓
+- UI: http://<DEPLOYMENT_HOST_WIFI_IP>:3000 ✓ live with split today tile
+- API: http://<DEPLOYMENT_HOST_WIFI_IP>:8000 ✓
 - Git: `dev` branch, all changes merged and pushed to origin
 - Temp widget shows `—` until ZBDongle-E paired with SNZB-02LD
 
@@ -23,7 +23,7 @@
 
 ## DB reset (if needed before Etap A)
 ```bash
-ssh REDACTED-HOST "cd /home/kamilo/nemo/ProjectNemo && docker compose down && docker volume rm projectnemo_nemo-db && docker compose up -d --no-deps nemo-api nemo-ui"
+ssh <DEPLOYMENT_HOST_ALIAS> "cd /home/kamilo/nemo/ProjectNemo && docker compose down && docker volume rm projectnemo_nemo-db && docker compose up -d --no-deps nemo-api nemo-ui"
 ```
 
 ## OneDrive .git corruption fix

@@ -10,7 +10,7 @@ Home Assistant's `emulated_hue` integration makes HA impersonate a Philips Hue b
 Alexa discovers HA entities on the LAN. No cloud subscription, no Nabu Casa, no monthly cost.
 
 ## Requirements
-- Alexa device on the same LAN as REDACTED-HOST
+- Alexa device on the same LAN as the Home Assistant host
 - HA container must bind port 80 (docker-compose.yml already sets this)
 - emulated_hue configured in configuration.yaml (already done)
 
@@ -40,9 +40,9 @@ Entities exposed:
 - "Alexa, feed the fish" → filter pauses 10 min, then auto-restarts
 
 ## Troubleshooting
-- Alexa can't find devices: ensure Alexa device is on the same VLAN as REDACTED-HOST
+- Alexa can't find devices: ensure Alexa device is on the same VLAN as the Home Assistant host
 - Check HA logs: `docker logs nemo-homeassistant | grep emulated_hue`
-- Port 80 conflict: if another service uses port 80 on REDACTED-HOST, change the HA port
+- Port 80 conflict: if another service uses port 80 on the Home Assistant host, change the HA port
   mapping in docker-compose.yml and update `listen_port` in emulated_hue config
 
 ## Google Home (future)

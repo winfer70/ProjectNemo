@@ -1,9 +1,9 @@
 # Project Nemo — Quick Start
 
-## First-time deploy on REDACTED-HOST
+## First-time deploy on the deployment host
 
 ```bash
-# 1. Clone / copy project to REDACTED-HOST
+# 1. Clone / copy project to the deployment host
 cd /opt/nemo
 
 # 2. Configure

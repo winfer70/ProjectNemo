@@ -84,7 +84,7 @@
       ],
       "parameters": {
         "method": "GET",
-        "url": "http://10.0.0.103:8000/api/devices",
+        "url": "http://<NEMO_API_HOST>:8000/api/devices",
         "options": {}
       }
     },
@@ -136,7 +136,7 @@
       ],
       "parameters": {
         "method": "POST",
-        "url": "http://10.0.0.103:8000/api/devices/switch.tapo_filter/toggle",
+        "url": "http://<NEMO_API_HOST>:8000/api/devices/switch.tapo_filter/toggle",
         "options": {}
       }
     },
@@ -174,7 +174,7 @@
       ],
       "parameters": {
         "method": "POST",
-        "url": "http://10.0.0.103:8000/api/devices/switch.tapo_filter/toggle",
+        "url": "http://<NEMO_API_HOST>:8000/api/devices/switch.tapo_filter/toggle",
         "options": {}
       }
     },
@@ -212,7 +212,7 @@
       ],
       "parameters": {
         "method": "POST",
-        "url": "http://10.0.0.103:8000/api/devices/switch.tapo_heater/toggle",
+        "url": "http://<NEMO_API_HOST>:8000/api/devices/switch.tapo_heater/toggle",
         "options": {}
       }
     },
@@ -250,7 +250,7 @@
       ],
       "parameters": {
         "method": "POST",
-        "url": "http://10.0.0.103:8000/api/devices/switch.tapo_heater/toggle",
+        "url": "http://<NEMO_API_HOST>:8000/api/devices/switch.tapo_heater/toggle",
         "options": {}
       }
     },
@@ -288,7 +288,7 @@
       ],
       "parameters": {
         "method": "POST",
-        "url": "http://10.0.0.103:8000/api/devices/switch.tapo_air_pump/toggle",
+        "url": "http://<NEMO_API_HOST>:8000/api/devices/switch.tapo_air_pump/toggle",
         "options": {}
       }
     },
@@ -326,7 +326,7 @@
       ],
       "parameters": {
         "method": "POST",
-        "url": "http://10.0.0.103:8000/api/devices/switch.tapo_air_pump/toggle",
+        "url": "http://<NEMO_API_HOST>:8000/api/devices/switch.tapo_air_pump/toggle",
         "options": {}
       }
     },
@@ -364,7 +364,7 @@
       ],
       "parameters": {
         "method": "POST",
-        "url": "http://10.0.0.103:8000/api/schedule/actions/feed-now",
+        "url": "http://<NEMO_API_HOST>:8000/api/schedule/actions/feed-now",
         "options": {}
       }
     },

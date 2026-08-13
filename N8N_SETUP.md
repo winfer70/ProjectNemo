@@ -1,7 +1,7 @@
 # n8n Workflow Setup — Project Nemo Telegram Notifications
 
 ## Prerequisites
-- n8n already running on REDACTED-HOST server
+- n8n already running on the automation host
 - Telegram bot created via @BotFather — copy the bot token
 - Your personal Telegram chat ID (send any message to @userinfobot)
 

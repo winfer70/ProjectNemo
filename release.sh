@@ -1,14 +1,14 @@
 #!/bin/bash
 # release.sh - ProjectNemo production release
-# Run from local dev machine. Merges dev -> main, tags, deploys to REDACTED-HOST.
+# Run from local dev machine. Merges dev -> main, tags, deploys to the deployment host.
 # NOTE: Agent may be running on this project - check before releasing.
 set -e
 
-NODE_IP="10.0.0.103"  # REDACTED-HOST ethernet; use .107 if on WiFi
+NODE_IP="<DEPLOYMENT_HOST_LAN_IP>"  # replace with the deployment host LAN IP or SSH target
 NODE_USER="kamilo"
 TARGET_DIR="/home/kamilo/nemo/ProjectNemo"
 INTEGRATION_BRANCH="dev"
-KUMA_PUSH_URL=""  # TODO: create Push monitor in REDACTED-HOST:3001 (Kuma migrated from REDACTED-HOST), paste URL here
+KUMA_PUSH_URL=""  # TODO: create a Push monitor in your uptime checker and paste the URL here
 
 echo "[1/5] Merging $INTEGRATION_BRANCH -> main..."
 git checkout main && git pull origin main

@@ -38,10 +38,10 @@ class Settings(BaseSettings):
     esphome_ph_entity: str = "sensor.nemo_sensor_ph"
     zigbee_temp_entity: str = "sensor.0xa4c138060885ffff_temperature"
 
-    ollama_url: str = "http://10.0.0.101:11434"
-    searxng_url: str = "http://10.0.0.101:8888"
+    ollama_url: str = ""
+    searxng_url: str = ""
 
-    api_secret_key: str = "dev_secret"
+    api_secret_key: str = ""
     log_level: str = "info"
 
     db_path: str = "/app/data/nemo.db"

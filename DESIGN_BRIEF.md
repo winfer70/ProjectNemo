@@ -6,7 +6,7 @@
 
 ## What It Is
 
-**ProjectNemo** is a mobile-first PWA for managing a home aquarium. Runs on a Raspberry Pi (REDACTED-HOST) at home, accessed from phone/tablet. Dark theme, Polish/English bilingual, real-time data from sensors and smart plugs via Home Assistant.
+**ProjectNemo** is a mobile-first PWA for managing a home aquarium. Runs on a Raspberry Pi deployment host at home, accessed from phone/tablet. Dark theme, Polish/English bilingual, real-time data from sensors and smart plugs via Home Assistant.
 
 Primary user: one person, daily use, mostly on mobile while standing at the tank.
 
@@ -15,7 +15,7 @@ Primary user: one person, daily use, mostly on mobile while standing at the tank
 ## Tech Stack (for context, not design)
 
 - Vue 3 + Pinia, no router (tab-based)
-- FastAPI + SQLite backend on REDACTED-HOST
+- FastAPI + SQLite backend on the deployment host
 - Home Assistant REST API → Tapo P110 smart plugs (filter, heater, air pump, light)
 - WebSocket push every 30s (temp, pH, plug states + watts)
 - n8n → Telegram for notifications

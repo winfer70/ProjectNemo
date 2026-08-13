@@ -30,7 +30,7 @@ Open Fully Kiosk → Settings (gear icon, long-press bottom bar):
 
 ### Start URL
 ```
-http://[LAN_IP_OF_SWISS_KNIFE]:3000
+http://[DEPLOYMENT_HOST_LAN_IP]:3000
 ```
 (e.g. http://192.168.1.100:3000)
 
@@ -79,7 +79,7 @@ The Tab A11+ will be plugged in permanently. To extend battery lifespan:
 
 ## Step 7: Test crash recovery
 1. Open Fully Kiosk with the Nemo URL loaded
-2. Force-close the nemo-ui container on REDACTED-HOST
+2. Force-close the nemo-ui container on the deployment host
 3. Tab should show an error/retry page
 4. Restart the container → Tab should auto-reload within ~30 seconds
 
