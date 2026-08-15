@@ -1,34 +1,30 @@
-# ProjectNemo Handoff — 2026-06-11
+# ProjectNemo Handoff — 2026-08-15
 
-## Accomplished this session
-- Seeded DB with real fish stock: 5 in_tank (Pearl Gourami, Penta Barb x14, False Julii Cory x7, Kuhli Loach x6, Amano Shrimp x5) + 5 arriving (Etap A/B/C)
-- Day-specific feeding schedule Mon–Sun at 19:00 (Fri = fasting, Sun = test day)
-- Stress-Protect added to supplies; Stability dosing tasks for each etap
-- Water change: every 28 days from Jun 21, ~15% (~38L)
-- STOCKING_PLAN.md fully rewritten with timeline, acclimation protocol, compatibility table
-- ScheduleView TODAY tile: split layout — temp widget left (50% width, 42px, color-coded 24.5–27.5°C), tasks right
-- Deployed to the deployment host dashboard (`http://<DEPLOYMENT_HOST_WIFI_IP>:3000`). Committed + pushed to dev.
+## Date
+2026-08-15
 
-## Current state
-- UI: http://<DEPLOYMENT_HOST_WIFI_IP>:3000 ✓ live with split today tile
-- API: http://<DEPLOYMENT_HOST_WIFI_IP>:8000 ✓
-- Git: `dev` branch, all changes merged and pushed to origin
-- Temp widget shows `—` until ZBDongle-E paired with SNZB-02LD
+## What Was Accomplished
+- Completed the public-repo safety audit and closed the critical gap where `main` had missed the earlier sanitization commits already present on `dev`.
+- Ran a second, broader `git-filter-repo` sanitization pass across all refs/history covering LAN + Tailscale IPs, MAC addresses (including the real BLE device MAC), hostnames (including a missed capitalized variant), and the live WiFi password.
+- Reset `main` to sanitized `dev` commit `06da5f9` (`chore(security): redact trusted_proxies LAN IP missed by initial sanitization pass`) and force-pushed it.
+- Deleted 10 stale merged remote feature branches that still preserved pre-sanitization history.
+- Verified the remaining history with a full `git log --all -p` sweep: no real secrets remain, only safe placeholders.
+- Confirmed the local working tree stayed intact; untracked secret-bearing local files under `zigbee2mqtt\config\configuration.yaml` and `mosquitto\config\passwd` remain local-only and gitignored.
+- **Verdict:** `winfer70/ProjectNemo` is now safe to make public.
 
-## Next actions
-1. **Tuesday** — pair SNZB-02LD + ZBDongle-E (Zigbee sensor) → temp live
-2. **Saturday Jun 13 (Etap A)** — buy: 12× Raccoon Tetra, 4× Panda Garra, +2 Pearl Gouramis. Acclimate 45–60 min drip. Dose Stability 15ml.
-3. **Sunday Jun 21** — first water change 15% (~38L)
-4. **Thursday Jun 25 (Etap B)** — buy: 12× Purple Pencilfish, 6× Otocinclus
+## Current State
+- Remote branches remaining: `dev` and `main` only.
+- Before this handoff update, both `dev` and `main` pointed at sanitized commit `06da5f9`.
+- No root `memory.md` / `MEMORY.md` file exists.
+- Local Python has `graphify` installed, but not the `graphify.cli` module; the available rebuild path in this environment is the `graphify.watch._rebuild_code(...)` helper.
+- No separate root plan/TODO file was found; the only visible pending items in repo docs are older operational notes (for example temperature sensor pairing and dated aquarium/stocking tasks in `STOCKING_PLAN.md` / `notes_on_Aquarium_structured.md`), which may need a freshness check next session.
 
-## DB reset (if needed before Etap A)
-```bash
-ssh <DEPLOYMENT_HOST_ALIAS> "cd /home/kamilo/nemo/ProjectNemo && docker compose down && docker volume rm projectnemo_nemo-db && docker compose up -d --no-deps nemo-api nemo-ui"
-```
+## Exact Next Actions
+1. Make the GitHub repository public when ready; security remediation is complete.
+2. Keep `main` aligned with `dev` after this documentation-only commit.
+3. Optionally review stale operational docs if they are still meant to drive real-world aquarium tasks.
+4. If graphify needs another local refresh, use the available `graphify.watch._rebuild_code(...)` command unless/until the `graphify.cli` entrypoint is restored.
 
-## OneDrive .git corruption fix
-If git fails with "not a git repository":
-```bash
-mv "/c/.../ProjectNemo/.git/HEAD (# Name clash*)" "/c/.../ProjectNemo/.git/HEAD"
-mv "/c/.../ProjectNemo/.git/index (# Name clash*)" "/c/.../ProjectNemo/.git/index"
-```
+## Blockers
+- None for making the repository public.
+- No known blockers beyond normal doc freshness / housekeeping.
