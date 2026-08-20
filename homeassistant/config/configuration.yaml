@@ -8,6 +8,13 @@ homeassistant:
   elevation: !secret home_elevation
   unit_system: metric
   time_zone: Europe/Dublin
+  # Heimdall's rest_command/script/rest additions live in heimdall.yaml (a
+  # package, merged into this config's same top-level keys) so they can be
+  # reviewed/rolled back as one unit, separate from Project Nemo's own
+  # entries under rest_command/script. See heimdall.yaml and heimdall/*.md
+  # in the HomeAI repo for the full task-by-task history.
+  packages:
+    heimdall: !include heimdall.yaml
 
 # ── Core ──────────────────────────────────────────────────────────────────────
 default_config:
@@ -15,9 +22,9 @@ frontend:
 http:
   server_host: 0.0.0.0
   server_port: 8123
-  # Cloudflare Tunnel (via the deployment host's cloudflared container) proxies
-  # requests to HA over the LAN. Docker's bridge-network SNAT makes these arrive
-  # from that host's LAN IP, so it must be an explicitly trusted proxy or HA
+  # Cloudflare Tunnel (via labserver's ai_agent_cloudflared) proxies requests
+  # to HA over the LAN. Docker's bridge-network SNAT makes these arrive from
+  # labserver's LAN IP, so it must be an explicitly trusted proxy or HA
   # returns "400 Bad Request" for the X-Forwarded-For header cloudflared adds.
   use_x_forwarded_for: true
   trusted_proxies:
@@ -42,6 +49,19 @@ influxdb:
       - sensor.grzalka_today_s_consumption
       - sensor.office_led_current_consumption
       - sensor.pompka_current_consumption
+  # Task 4 (M3) - nemo-api's /api/sensors/history queries InfluxDB by
+  # measurement == "temperature"/"ph"/"tds"/"orp", but this integration's
+  # default measurement_attr is unit_of_measurement, so without this
+  # override every history query returned empty (measurement was "°C", not
+  # "temperature"). Scoped to just this one entity - does not touch the
+  # power/kWh sensors above, which keep their existing (working) behavior.
+  # Fixed 2026-08-20: component_config is a sibling of include (top-level
+  # influxdb option), not nested inside it - the original nesting was
+  # silently rejected by HA's schema (confirmed via check_config) and the
+  # override was never actually applying.
+  component_config:
+    sensor.0xa4c138060885ffff_temperature:
+      override_measurement: temperature
 
 # ── ESPHome (auto-discovered via mDNS) ───────────────────────────────────────
 # No manual config needed — add ESPHome integration in UI after flashing the ESP32
