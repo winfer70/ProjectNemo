@@ -40,3 +40,9 @@ ui/dist/
 # graphify
 graphify-out/cache/
 graphify-out/*.html
+
+# Ad hoc HA config backups (git history is the real backup now - see heimdall/PHASE1_5_HARDENING_AND_PHASE2_PLAN.md backlog #1)
+homeassistant/config/*.bak-*
+homeassistant/config/*.bak
+mosquitto/config/*.bak-*
+zigbee2mqtt/config/*.bak-*

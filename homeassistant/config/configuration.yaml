@@ -8,15 +8,17 @@ homeassistant:
   elevation: !secret home_elevation
   unit_system: metric
   time_zone: Europe/Dublin
+  # Heimdall's rest_command/script/rest additions live in heimdall.yaml (a
+  # package, merged into this config's same top-level keys) so they can be
+  # reviewed/rolled back as one unit, separate from Project Nemo's own
+  # entries under rest_command/script. See heimdall.yaml and heimdall/*.md
+  # in the HomeAI repo for the full task-by-task history.
+  packages:
+    heimdall: !include heimdall.yaml
 
 # ── Core ──────────────────────────────────────────────────────────────────────
 default_config:
 frontend:
-
-# Heimdall: registers the "heimdall_restricted" LLM API (see
-# custom_components/heimdall_llm_api) - same tools as "assist" minus a
-# small blocklist of write-tools the local model handles unreliably.
-heimdall_llm_api:
 http:
   server_host: 0.0.0.0
   server_port: 8123
@@ -47,15 +49,15 @@ influxdb:
       - sensor.grzalka_today_s_consumption
       - sensor.office_led_current_consumption
       - sensor.pompka_current_consumption
-  # Task 4 (M3) - nemo-api's /api/sensors/history queries InfluxDB by
-  # measurement == "temperature"/"ph"/"tds"/"orp", but this integration's
-  # default measurement_attr is unit_of_measurement, so without this
-  # override every history query returned empty (measurement was "°C", not
-  # "temperature"). Scoped to just this one entity - does not touch the
-  # power/kWh sensors above, which keep their existing (working) behavior.
-  component_config:
-    sensor.0xa4c138060885ffff_temperature:
-      override_measurement: temperature
+    # Task 4 (M3) - nemo-api's /api/sensors/history queries InfluxDB by
+    # measurement == "temperature"/"ph"/"tds"/"orp", but this integration's
+    # default measurement_attr is unit_of_measurement, so without this
+    # override every history query returned empty (measurement was "°C", not
+    # "temperature"). Scoped to just this one entity - does not touch the
+    # power/kWh sensors above, which keep their existing (working) behavior.
+    component_config:
+      sensor.0xa4c138060885ffff_temperature:
+        override_measurement: temperature
 
 # ── ESPHome (auto-discovered via mDNS) ───────────────────────────────────────
 # No manual config needed — add ESPHome integration in UI after flashing the ESP32
@@ -95,33 +97,6 @@ rest_command:
     method: PUT
     content_type: "application/json"
     payload: '{"r": {{ r }}, "g": {{ g }}, "b": {{ b }}, "w": {{ w }}, "ch5": {{ ch5 }}}'
-  # Heimdall persistent memory (Task 8 / M7) — calls the memory service
-  # deployed on jaskier (heimdall/docker-compose.memory.yml). Called by the
-  # heimdall_remember_fact / heimdall_recall_facts scripts below, which are
-  # exposed to Assist as LLM tools for both conversation agents.
-  heimdall_remember_fact:
-    url: "http://192.168.0.125:10400/facts"
-    method: POST
-    content_type: "application/json"
-    headers:
-      X-Heimdall-Memory-Token: !secret heimdall_memory_token
-    payload: >-
-      {{ {"subject": subject, "predicate": predicate, "object": object,
-      "language": language | default('en'), "source": "tool"} | to_json }}
-  heimdall_recall_facts:
-    url: "http://192.168.0.125:10400/facts/search?q={{ query | urlencode }}"
-    method: GET
-    headers:
-      X-Heimdall-Memory-Token: !secret heimdall_memory_token
-  # Heimdall aquarium temperature history (Task 4 / M3) - calls nemo-api's
-  # /api/sensors/history, now working for measurement=temperature after the
-  # component_config/override_measurement fix (see this doc, section 6).
-  # Scoped to temperature only - ph/tds/orp measurement names were not fixed
-  # (out of scope, no sensors for those were requested), so exposing them
-  # here would let the agent silently get misleading empty results.
-  heimdall_aquarium_temp_history:
-    url: "http://nemo-api:8000/api/sensors/history?measurement=temperature&hours={{ hours | default(24) }}"
-    method: GET
 
 # ── Input number helpers for Fluval RGBW channels ────────────────────────────
 # These are set by the Nemo API and read by the fluvalble custom component
@@ -192,175 +167,6 @@ script:
           g: "{{ g }}"
           b: "{{ b }}"
           w: "{{ w }}"
-  heimdall_remember_fact:
-    alias: "Heimdall: Remember a fact"
-    description: >-
-      Save a fact to Heimdall's persistent memory so it can be recalled in
-      future conversations. Use for durable info (preferences, schedules,
-      names, ongoing situations) - not for one-off device commands.
-    fields:
-      subject:
-        description: "What or who the fact is about"
-        example: "Kamil's dentist appointment"
-        required: true
-        selector:
-          text:
-      predicate:
-        description: "The relationship or attribute being recorded"
-        example: "is scheduled for"
-        required: true
-        selector:
-          text:
-      object:
-        description: "The value of the fact"
-        example: "next Tuesday at 3pm"
-        required: true
-        selector:
-          text:
-      language:
-        description: "Language the fact was stated in (en or pl)"
-        example: "en"
-        required: false
-        selector:
-          text:
-    sequence:
-      - action: rest_command.heimdall_remember_fact
-        data:
-          subject: "{{ subject }}"
-          predicate: "{{ predicate }}"
-          object: "{{ object }}"
-          language: "{{ language | default('en') }}"
-        response_variable: remember_result
-      - stop: "Fact recorded"
-        response_variable: remember_result
-  heimdall_recall_facts:
-    alias: "Heimdall: Recall facts"
-    description: >-
-      Search Heimdall's persistent memory for facts matching a query, e.g.
-      query="dentist" to recall any saved dentist-related facts.
-    fields:
-      query:
-        description: "Search text to look up in memory"
-        example: "dentist appointment"
-        required: true
-        selector:
-          text:
-    sequence:
-      - action: rest_command.heimdall_recall_facts
-        data:
-          query: "{{ query }}"
-        response_variable: recall_result
-      - stop: "Facts recalled"
-        response_variable: recall_result
-  heimdall_create_calendar_event:
-    alias: "Heimdall: Create calendar event"
-    description: >-
-      Create a new event on the main calendar. You MUST call the
-      GetDateTime tool first to get today's real current date before
-      computing any date for this tool - never guess or assume the year
-      from your training data. Requires exact start/end date-times in
-      "YYYY-MM-DD HH:MM:SS" format, computed from GetDateTime's result plus
-      the user's relative term (e.g. "tomorrow", "next Tuesday").
-    fields:
-      summary:
-        description: "Event title"
-        example: "Dentist appointment"
-        required: true
-        selector:
-          text:
-      start_date_time:
-        description: "Event start, e.g. 2026-08-25 10:00:00"
-        example: "2026-08-25 10:00:00"
-        required: true
-        selector:
-          text:
-      end_date_time:
-        description: "Event end, e.g. 2026-08-25 11:00:00"
-        example: "2026-08-25 11:00:00"
-        required: true
-        selector:
-          text:
-      description:
-        description: "Optional event description"
-        required: false
-        selector:
-          text:
-    sequence:
-      - if:
-          - condition: template
-            value_template: "{{ (summary | default('')) | trim == '' }}"
-        then:
-          - stop: "summary is required and was empty/missing - refusing to create a blank event"
-            error: true
-      - action: calendar.create_event
-        target:
-          entity_id: calendar.kamil_koterba95_gmail_com
-        data:
-          summary: "{{ summary }}"
-          start_date_time: "{{ start_date_time }}"
-          end_date_time: "{{ end_date_time }}"
-          description: "{{ description | default('') }}"
-      - variables:
-          create_result:
-            status: "created"
-            summary: "{{ summary }}"
-            start: "{{ start_date_time }}"
-            end: "{{ end_date_time }}"
-      - stop: "Event created"
-        response_variable: create_result
-  heimdall_aquarium_temp_history:
-    alias: "Heimdall: Aquarium temperature history"
-    description: >-
-      Get a summary of the aquarium water temperature over a recent time
-      window (min/max/latest reading), not just the current value. Use this
-      when asked about temperature trends or "has it changed recently" -
-      the current-state read alone cannot answer that.
-    fields:
-      hours:
-        description: "How many hours back to look (1-168, default 24)"
-        example: "24"
-        required: false
-        selector:
-          number:
-            min: 1
-            max: 168
-    sequence:
-      - action: rest_command.heimdall_aquarium_temp_history
-        data:
-          hours: "{{ hours | default(24) | int }}"
-        response_variable: history_result
-      - variables:
-          points: "{{ history_result.content if history_result.content is iterable and history_result.content is not string else [] }}"
-          history_summary:
-            summary: >-
-              {% if points | count == 0 %}
-              No aquarium temperature history available for that time range.
-              {% else %}
-              Over the last {{ hours | default(24) | int }} hour(s): {{ points | count }} readings,
-              min {{ points | map(attribute='value') | min }}°C,
-              max {{ points | map(attribute='value') | max }}°C,
-              latest {{ points[-1].value }}°C at {{ points[-1].time }}.
-              {% endif %}
-      - stop: "Temperature history retrieved"
-        response_variable: history_summary
-
-# ── Heimdall persistent memory context sensor (Task 8 / M7) ─────────────
-# Polls the memory service on jaskier for the current facts + rolling
-# summary, exposed via json_attributes (state has a 255-char limit).
-# Referenced in both conversation agents' system prompts via:
-#   {{ state_attr('sensor.heimdall_memory_context', 'text') }}
-rest:
-  - resource: "http://192.168.0.125:10400/memory/context"
-    method: GET
-    headers:
-      X-Heimdall-Memory-Token: !secret heimdall_memory_token
-    scan_interval: 60
-    sensor:
-      - name: "Heimdall Memory Context"
-        unique_id: heimdall_memory_context
-        value_template: "{{ 'ok' }}"
-        json_attributes:
-          - text
 
 # ── Logger ────────────────────────────────────────────────────────────────────
 logger:
