@@ -49,15 +49,19 @@ influxdb:
       - sensor.grzalka_today_s_consumption
       - sensor.office_led_current_consumption
       - sensor.pompka_current_consumption
-    # Task 4 (M3) - nemo-api's /api/sensors/history queries InfluxDB by
-    # measurement == "temperature"/"ph"/"tds"/"orp", but this integration's
-    # default measurement_attr is unit_of_measurement, so without this
-    # override every history query returned empty (measurement was "°C", not
-    # "temperature"). Scoped to just this one entity - does not touch the
-    # power/kWh sensors above, which keep their existing (working) behavior.
-    component_config:
-      sensor.0xa4c138060885ffff_temperature:
-        override_measurement: temperature
+  # Task 4 (M3) - nemo-api's /api/sensors/history queries InfluxDB by
+  # measurement == "temperature"/"ph"/"tds"/"orp", but this integration's
+  # default measurement_attr is unit_of_measurement, so without this
+  # override every history query returned empty (measurement was "°C", not
+  # "temperature"). Scoped to just this one entity - does not touch the
+  # power/kWh sensors above, which keep their existing (working) behavior.
+  # Fixed 2026-08-20: component_config is a sibling of include (top-level
+  # influxdb option), not nested inside it - the original nesting was
+  # silently rejected by HA's schema (confirmed via check_config) and the
+  # override was never actually applying.
+  component_config:
+    sensor.0xa4c138060885ffff_temperature:
+      override_measurement: temperature
 
 # ── ESPHome (auto-discovered via mDNS) ───────────────────────────────────────
 # No manual config needed — add ESPHome integration in UI after flashing the ESP32
