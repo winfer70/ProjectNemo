@@ -19,16 +19,6 @@ homeassistant:
 # ── Core ──────────────────────────────────────────────────────────────────────
 default_config:
 frontend:
-http:
-  server_host: 0.0.0.0
-  server_port: 8123
-  # Cloudflare Tunnel (via labserver's ai_agent_cloudflared) proxies requests
-  # to HA over the LAN. Docker's bridge-network SNAT makes these arrive from
-  # labserver's LAN IP, so it must be an explicitly trusted proxy or HA
-  # returns "400 Bad Request" for the X-Forwarded-For header cloudflared adds.
-  use_x_forwarded_for: true
-  trusted_proxies:
-    - !secret trusted_proxy_ip
 
 # ── InfluxDB v2 — write all sensor + energy data ──────────────────────────────
 influxdb:
