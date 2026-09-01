@@ -1,30 +1,37 @@
-# ProjectNemo Handoff — 2026-08-15
+# HANDOFF — ProjectNemo
+Date: 2026-09-01 (session wrap)
 
-## Date
-2026-08-15
+## Current state
+- Git `dev` vs live vesemir HA: **live `automations.yaml` was edited 2026-08-31** (office strip move) and is **not committed**. Backup on vesemir: `automations.yaml.bak_` (same day).
+- Secrets rotation 2026-09-01 updated live `homeassistant/config/secrets.yaml` and ProjectNemo `.env` `INFLUXDB_INIT_ADMIN_TOKEN`. Git copies stay placeholders. Do not commit live secrets.
+- InfluxDB (`nemo-influxdb`) and HA (`nemo-homeassistant`) were restarted during rotation; both came back.
 
-## What Was Accomplished
-- Completed the public-repo safety audit and closed the critical gap where `main` had missed the earlier sanitization commits already present on `dev`.
-- Ran a second, broader `git-filter-repo` sanitization pass across all refs/history covering LAN + Tailscale IPs, MAC addresses (including the real BLE device MAC), hostnames (including a missed capitalized variant), and the live WiFi password.
-- Reset `main` to sanitized `dev` commit `06da5f9` (`chore(security): redact trusted_proxies LAN IP missed by initial sanitization pass`) and force-pushed it.
-- Deleted 10 stale merged remote feature branches that still preserved pre-sanitization history.
-- Verified the remaining history with a full `git log --all -p` sweep: no real secrets remain, only safe placeholders.
-- Confirmed the local working tree stayed intact; untracked secret-bearing local files under `zigbee2mqtt\config\configuration.yaml` and `mosquitto\config\passwd` remain local-only and gitignored.
-- **Verdict:** `winfer70/ProjectNemo` is now safe to make public.
+## This session (HA)
 
-## Current State
-- Remote branches remaining: `dev` and `main` only.
-- Before this handoff update, both `dev` and `main` pointed at sanitized commit `06da5f9`.
-- No root `memory.md` / `MEMORY.md` file exists.
-- Local Python has `graphify` installed, but not the `graphify.cli` module; the available rebuild path in this environment is the `graphify.watch._rebuild_code(...)` helper.
-- No separate root plan/TODO file was found; the only visible pending items in repo docs are older operational notes (for example temperature sensor pairing and dated aquarium/stocking tasks in `STOCKING_PLAN.md` / `notes_on_Aquarium_structured.md`), which may need a freshness check next session.
+Moved **office automations** from device **AkwariumSalon** (Meross `smart_switch_201117…`) to **ListwaBiuro** (`switch.0xa4c1387daaa98e50_l1`–`_l5`):
 
-## Exact Next Actions
-1. Make the GitHub repository public when ready; security remediation is complete.
-2. Keep `main` aligned with `dev` after this documentation-only commit.
-3. Optionally review stale operational docs if they are still meant to drive real-world aquarium tasks.
-4. If graphify needs another local refresh, use the available `graphify.watch._rebuild_code(...)` command unless/until the `graphify.cli` entrypoint is restored.
+| Automation | Notes |
+|---|---|
+| Office Aqara single press | `c3c16e19` — mapped by function (monitors/dock/LED/USB) |
+| Office Aqara double press | `ae080d72` — no master switch; toggles all l1–l5 + `switch.office_led` |
+| Desk WłącznikBiurko | `c3eeeffd` — master pre-power branch removed |
+
+User tested buttons: **working**. Those three automations were **disabled** (`off`) at reload time — user enabled them for the test.
+
+Mapping used:
+- `_outlet_1` → `_l1` Monitor_1
+- `_outlet_2` → `_l2` Monitor_2
+- `_outlet_3` → `_l4` Biurko_LED
+- `_outlet_4` → `_l3` StacjaDokująca
+- `_outlet_5` → `_l5` Usb desk led
+- master `_outlet` → all l1–l5 (Zigbee strip has no master)
+
+## Do next
+
+1. **Satel keypad:** set PIN to match HA `alarm_code` (see HomeAI HANDOFF / `rotated-alarm-pin.txt`). Until then `alarm_auto_arm_away_presence` / `alarm_auto_disarm_presence` will fail.
+2. Commit live `automations.yaml` from vesemir onto a `feature/` branch from `dev` (diff vs git; do not commit `secrets.yaml`).
+3. ntfy app + tablet UI (still pending).
+4. Pre-existing `influxdb.include.component_config` schema bug — not this session.
 
 ## Blockers
-- None for making the repository public.
-- No known blockers beyond normal doc freshness / housekeeping.
+Satel PIN mismatch until keypad is updated. Do not call alarm services to “test” the new code from an agent.
