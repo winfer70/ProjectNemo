@@ -27,15 +27,17 @@
       </div>
       <hr class="divider">
       <div class="tile-body today-split">
-        <!-- Temperature widget -->
-        <div class="today-temp">
-          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/>
-          </svg>
-          <span class="temp-value" :class="tempClass">
-            {{ sensorsStore.current.temperature != null ? sensorsStore.current.temperature + '°C' : '—' }}
-          </span>
-          <span class="temp-label">{{ locale === 'pl' ? 'temp.' : 'temp.' }}</span>
+        <!-- Temperature widget(s) — one per tank -->
+        <div class="today-temp today-temp-multi">
+          <div v-for="tank in tanksDisplay" :key="tank.id" class="today-temp-tank">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/>
+            </svg>
+            <span class="temp-value" :class="tank.tempClass">
+              {{ tank.temperature != null ? tank.temperature + '°C' : '—' }}
+            </span>
+            <span class="temp-label">{{ tank.name }}</span>
+          </div>
         </div>
         <!-- Task list -->
         <div class="today-tasks">
@@ -686,6 +688,26 @@ const tempClass = computed(() => {
   return t >= 24.5 && t <= 27.5 ? 'temp-ok' : 'temp-warn'
 })
 
+function classifyTemp(t) {
+  if (t == null) return 'temp-null'
+  return t >= 24.5 && t <= 27.5 ? 'temp-ok' : 'temp-warn'
+}
+
+// Falls back to the single legacy `temperature` field as one tank if the
+// API hasn't been redeployed with the multi-tank `tanks` array yet.
+const tanksDisplay = computed(() => {
+  const tanks = sensorsStore.current.tanks
+  if (tanks && tanks.length) {
+    return tanks.map(t => ({ ...t, tempClass: classifyTemp(t.temperature) }))
+  }
+  return [{
+    id: '1',
+    name: locale.value === 'pl' ? 'temp.' : 'temp.',
+    temperature: sensorsStore.current.temperature,
+    tempClass: tempClass.value,
+  }]
+})
+
 function toggleExpanded(key) {
   expandedTask.value = expandedTask.value === key ? null : key
 }
@@ -932,6 +954,27 @@ input[type='range'] {
   color: var(--text-muted);
   padding: 10px 8px 6px;
   border-right: 1px solid var(--border);
+}
+.today-temp-multi {
+  flex-direction: row;
+  justify-content: space-evenly;
+  gap: 4px;
+}
+.today-temp-tank {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+.today-temp-multi .temp-value {
+  font-size: 28px;
+}
+.today-temp-multi .temp-label {
+  max-width: 90px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .temp-value {
   font-size: 42px;

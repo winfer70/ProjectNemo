@@ -4,7 +4,7 @@ from datetime import datetime, timedelta, timezone
 from fastapi import APIRouter, Depends, Query
 
 from config import settings
-from models.schemas import SensorCurrentOut, SensorHistoryPoint
+from models.schemas import SensorCurrentOut, SensorHistoryPoint, TankTemperatureOut
 from services.ha_client import ha_client
 from services.influx_client import influx_client
 
@@ -18,6 +18,9 @@ async def current_sensors():
         temp = await ha_client.get_state_float(settings.zigbee_temp_entity)
     if temp is None:
         temp = await ha_client.get_state_float(settings.esphome_temp_entity)
+    temp_2 = None
+    if settings.zigbee_temp_entity_2:
+        temp_2 = await ha_client.get_state_float(settings.zigbee_temp_entity_2)
     ph = await ha_client.get_state_float(settings.esphome_ph_entity)
     return SensorCurrentOut(
         temperature=temp,
@@ -25,6 +28,10 @@ async def current_sensors():
         tds=None,
         orp=None,
         updated_at=datetime.now(timezone.utc),
+        tanks=[
+            TankTemperatureOut(id="1", name=settings.tank_1_name, temperature=temp),
+            TankTemperatureOut(id="2", name=settings.tank_2_name, temperature=temp_2),
+        ],
     )
 
 
