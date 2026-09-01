@@ -59,6 +59,33 @@
         </span>
       </div>
 
+      <!-- Tank 2 temperature card -->
+      <div v-if="tank2Name" class="sensor">
+        <span class="lab">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10 13.5V5a2 2 0 0 1 4 0v8.5a4 4 0 1 1-4 0z" />
+            <circle cx="12" cy="16" r="1.4" fill="currentColor" stroke="none" />
+          </svg>
+          {{ tank2Name }}
+        </span>
+        <span class="val tnum">{{ tank2TempDisplay }}<small>°C</small></span>
+        <svg class="spark" viewBox="0 0 100 30" preserveAspectRatio="none">
+          <polyline
+            v-if="tank2SparkPts"
+            :points="tank2SparkPts"
+            fill="none"
+            stroke="var(--accent-warm)"
+            stroke-width="1.6"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+        <span class="range">
+          <span>min {{ tank2TempMin }}</span>
+          <span>max {{ tank2TempMax }}</span>
+        </span>
+      </div>
+
       <!-- pH card -->
       <div class="sensor">
         <span class="lab">
@@ -132,6 +159,7 @@ const sensorsStore = useSensorsStore()
 
 const HIST_MAX = 12
 const tempHistory = ref([])
+const tank2TempHistory = ref([])
 const phHistory = ref([])
 const lastSyncAt = ref(Date.now())
 const nowMs = ref(Date.now())
@@ -149,6 +177,13 @@ const tempDisplay = computed(() => {
   return t !== null && t !== undefined ? t.toFixed(1) : '—'
 })
 
+const tank2 = computed(() => sensorsStore.current.tanks?.[1])
+const tank2Name = computed(() => tank2.value?.name || '')
+const tank2TempDisplay = computed(() => {
+  const t = tank2.value?.temperature
+  return t !== null && t !== undefined ? t.toFixed(1) : '—'
+})
+
 const phDisplay = computed(() => {
   const p = sensorsStore.current.ph
   return p !== null && p !== undefined ? p.toFixed(1) : '—'
@@ -159,6 +194,12 @@ const tempMin = computed(() =>
 )
 const tempMax = computed(() =>
   tempHistory.value.length ? Math.max(...tempHistory.value).toFixed(1) : '—'
+)
+const tank2TempMin = computed(() =>
+  tank2TempHistory.value.length ? Math.min(...tank2TempHistory.value).toFixed(1) : '—'
+)
+const tank2TempMax = computed(() =>
+  tank2TempHistory.value.length ? Math.max(...tank2TempHistory.value).toFixed(1) : '—'
 )
 const phMin = computed(() =>
   phHistory.value.length ? Math.min(...phHistory.value).toFixed(1) : '—'
@@ -183,6 +224,7 @@ function computeSparkPts(history) {
 }
 
 const tempSparkPts = computed(() => computeSparkPts(tempHistory.value))
+const tank2SparkPts = computed(() => computeSparkPts(tank2TempHistory.value))
 const phSparkPts = computed(() => computeSparkPts(phHistory.value))
 
 watch(
@@ -192,6 +234,15 @@ watch(
     lastSyncAt.value = Date.now()
     tempHistory.value.push(val)
     if (tempHistory.value.length > HIST_MAX) tempHistory.value.shift()
+  }
+)
+
+watch(
+  () => tank2.value?.temperature,
+  (val) => {
+    if (val === null || val === undefined) return
+    tank2TempHistory.value.push(val)
+    if (tank2TempHistory.value.length > HIST_MAX) tank2TempHistory.value.shift()
   }
 )
 

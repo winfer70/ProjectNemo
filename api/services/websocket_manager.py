@@ -127,6 +127,9 @@ async def live_push_loop():
                 temp = await ha_client.get_state_float(settings.zigbee_temp_entity)
             if temp is None:
                 temp = await ha_client.get_state_float(settings.esphome_temp_entity)
+            temp_2 = None
+            if settings.zigbee_temp_entity_2:
+                temp_2 = await ha_client.get_state_float(settings.zigbee_temp_entity_2)
             ph = await ha_client.get_state_float(settings.esphome_ph_entity)
 
             now_dt = datetime.now(timezone.utc)
@@ -180,7 +183,13 @@ async def live_push_loop():
             await _broadcast({
                 "type": "live",
                 "timestamp": now_dt.isoformat(),
-                "sensors": {"temperature": temp, "ph": ph, "tds": None, "orp": None},
+                "sensors": {
+                    "temperature": temp, "ph": ph, "tds": None, "orp": None,
+                    "tanks": [
+                        {"id": "1", "name": settings.tank_1_name, "temperature": temp},
+                        {"id": "2", "name": settings.tank_2_name, "temperature": temp_2},
+                    ],
+                },
                 "devices": devices,
             })
         except Exception as exc:

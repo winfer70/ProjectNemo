@@ -37,6 +37,9 @@ class Settings(BaseSettings):
     esphome_temp_entity: str = "sensor.nemo_sensor_temperature"
     esphome_ph_entity: str = "sensor.nemo_sensor_ph"
     zigbee_temp_entity: str = "sensor.0xa4c138060885ffff_temperature"
+    tank_1_name: str = "Akwarium"
+    zigbee_temp_entity_2: str = "sensor.0xa4c138061c90ffff_temperature"
+    tank_2_name: str = "Akwarium Salon"
 
     ollama_url: str = ""
     searxng_url: str = ""

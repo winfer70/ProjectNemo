@@ -188,12 +188,19 @@ class WaterTestSessionOut(BaseModel):
 
 # ── Sensors ───────────────────────────────────────────────────────────────────
 
+class TankTemperatureOut(BaseModel):
+    id: str
+    name: str
+    temperature: float | None
+
+
 class SensorCurrentOut(BaseModel):
     temperature: float | None
     ph: float | None
     tds: float | None
     orp: float | None
     updated_at: datetime
+    tanks: list[TankTemperatureOut] = []
 
 
 class SensorHistoryPoint(BaseModel):
