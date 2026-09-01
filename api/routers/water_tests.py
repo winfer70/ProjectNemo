@@ -169,6 +169,7 @@ async def list_sessions(
     return [
         WaterTestSessionOut(
             id=s.id,
+            tank_id=s.tank_id,
             tested_at=s.tested_at,
             notes=s.notes,
             readings=[_reading_out(r) for r in s.readings],
@@ -190,6 +191,7 @@ async def latest_session(db: AsyncSession = Depends(get_db)):
         return None
     return WaterTestSessionOut(
         id=session.id,
+        tank_id=session.tank_id,
         tested_at=session.tested_at,
         notes=session.notes,
         readings=[_reading_out(r) for r in session.readings],
@@ -205,6 +207,7 @@ async def create_session(
     params = {p.id: p for p in params_result.scalars().all()}
 
     session = WaterTestSession(
+        tank_id=data.tank_id,
         tested_at=data.tested_at or datetime.utcnow(),
         notes=data.notes,
     )
@@ -265,6 +268,7 @@ async def create_session(
     session = result.scalar_one()
     return WaterTestSessionOut(
         id=session.id,
+        tank_id=session.tank_id,
         tested_at=session.tested_at,
         notes=session.notes,
         readings=[_reading_out(r) for r in session.readings],

@@ -42,6 +42,7 @@ class DosingTaskOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     id: int
     supply_id: int
+    tank_id: int | None = None
     supply_name: str
     supply_name_pl: str
     dose_amount: float
@@ -65,6 +66,7 @@ class RestockRequest(BaseModel):
 
 class DosingTaskCreate(BaseModel):
     supply_id: int
+    tank_id: int | None = None
     dose_amount: float
     dose_unit: str = "ml"
     time_of_day: str | None = None
@@ -86,6 +88,7 @@ class DosingTaskUpdate(BaseModel):
 class MaintenanceTaskOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     id: int
+    tank_id: int | None = None
     name: str
     name_pl: str
     interval_days: int
@@ -159,6 +162,7 @@ class WaterTestReadingIn(BaseModel):
 
 
 class WaterTestSessionCreate(BaseModel):
+    tank_id: int | None = None
     tested_at: datetime | None = None
     notes: str | None = None
     readings: list[WaterTestReadingIn]
@@ -181,9 +185,57 @@ class WaterTestReadingOut(BaseModel):
 class WaterTestSessionOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     id: int
+    tank_id: int | None
     tested_at: datetime
     notes: str | None
     readings: list[WaterTestReadingOut]
+
+
+# ── Plant Health ──────────────────────────────────────────────────────────────
+
+class DeficiencyOut(BaseModel):
+    key: str
+    growth_stage: str  # new_growth | old_growth
+    name_en: str
+    name_pl: str
+    symptom_en: str
+    symptom_pl: str
+    treatment_en: str
+    treatment_pl: str
+
+
+class PlantHealthEventCreate(BaseModel):
+    """Manual log - user tapped a leaf on the reference diagram for a plant."""
+    plant_id: int
+    tank_id: int | None = None
+    deficiency_key: str
+    notes: str | None = None
+
+
+class PlantHealthEventTreat(BaseModel):
+    treatment_notes: str | None = None
+
+
+class PlantHealthEventCorrect(BaseModel):
+    corrected_deficiency_key: str
+    correction_notes: str | None = None
+
+
+class PlantHealthEventOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: int
+    plant_id: int
+    tank_id: int | None
+    deficiency_key: str
+    source: str
+    confidence: float | None
+    status: str
+    notes: str | None
+    corrected_deficiency_key: str | None
+    correction_notes: str | None
+    treatment_notes: str | None
+    detected_at: datetime
+    treated_at: datetime | None
 
 
 # ── Sensors ───────────────────────────────────────────────────────────────────
@@ -230,6 +282,7 @@ class FluvalChannels(BaseModel):
 
 class FishCreate(BaseModel):
     name_en: str
+    tank_id: int | None = None
     name_pl: str | None = None
     latin: str | None = None
     qty: int = 1
@@ -255,6 +308,7 @@ class FishUpdate(BaseModel):
 class FishOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     id: int
+    tank_id: int | None
     name_en: str
     name_pl: str | None
     latin: str | None
@@ -269,6 +323,7 @@ class FishOut(BaseModel):
 
 class PlantCreate(BaseModel):
     name_en: str
+    tank_id: int | None = None
     name_pl: str | None = None
     latin: str | None = None
     location: str | None = None
@@ -288,6 +343,7 @@ class PlantUpdate(BaseModel):
 class PlantOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     id: int
+    tank_id: int | None
     name_en: str
     name_pl: str | None
     latin: str | None

@@ -25,6 +25,7 @@ def _days_until(next_due: datetime | None) -> int | None:
 def _to_out(task: MaintenanceTask) -> MaintenanceTaskOut:
     return MaintenanceTaskOut(
         id=task.id,
+        tank_id=task.tank_id,
         name=task.name,
         name_pl=task.name_pl,
         interval_days=task.interval_days,

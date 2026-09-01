@@ -19,6 +19,7 @@ async def _build_task_out(task: DosingTask) -> DosingTaskOut:
     return DosingTaskOut(
         id=task.id,
         supply_id=s.id,
+        tank_id=task.tank_id,
         supply_name=s.name,
         supply_name_pl=s.name_pl,
         dose_amount=task.dose_amount,

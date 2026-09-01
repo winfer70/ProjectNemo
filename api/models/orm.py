@@ -31,6 +31,7 @@ class DosingTask(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     supply_id: Mapped[int] = mapped_column(ForeignKey("supplies.id"))
+    tank_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
     dose_amount: Mapped[float] = mapped_column(Float)
     dose_unit: Mapped[str] = mapped_column(String(10))
     time_of_day: Mapped[str | None] = mapped_column(String(5), nullable=True)
@@ -57,6 +58,7 @@ class MaintenanceTask(Base):
     __tablename__ = "maintenance_tasks"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    tank_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
     name: Mapped[str] = mapped_column(String(100))
     name_pl: Mapped[str] = mapped_column(String(100))
     interval_days: Mapped[int] = mapped_column(Integer)
@@ -168,6 +170,7 @@ class WaterTestSession(Base):
     __tablename__ = "water_test_sessions"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    tank_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
     tested_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
 
@@ -235,6 +238,7 @@ class Fish(Base):
     __tablename__ = "fish"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    tank_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
     name_en: Mapped[str] = mapped_column(String(100))
     name_pl: Mapped[str | None] = mapped_column(String(100), nullable=True)
     latin: Mapped[str | None] = mapped_column(String(150), nullable=True)
@@ -251,6 +255,7 @@ class Plant(Base):
     __tablename__ = "plants"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    tank_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
     name_en: Mapped[str] = mapped_column(String(100))
     name_pl: Mapped[str | None] = mapped_column(String(100), nullable=True)
     latin: Mapped[str | None] = mapped_column(String(150), nullable=True)
@@ -258,6 +263,33 @@ class Plant(Base):
     notes_pl: Mapped[str | None] = mapped_column(Text, nullable=True)
     img: Mapped[str | None] = mapped_column(Text, nullable=True)
     added_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+
+    health_events: Mapped[list["PlantHealthEvent"]] = relationship(back_populates="plant")
+
+
+class PlantHealthEvent(Base):
+    """A detected/logged deficiency issue on a plant - manual (tap on the
+    reference diagram) or ai_scan (camera recognition) sourced. Only marked
+    'treated' when the user explicitly ticks it off on the website - Kamilo
+    can read status and log corrections, but never auto-resolves one."""
+    __tablename__ = "plant_health_events"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    plant_id: Mapped[int] = mapped_column(ForeignKey("plants.id"))
+    tank_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    deficiency_key: Mapped[str] = mapped_column(String(30))
+    source: Mapped[str] = mapped_column(String(20), default="manual")  # manual | ai_scan
+    confidence: Mapped[float | None] = mapped_column(Float, nullable=True)
+    photo_hash: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    status: Mapped[str] = mapped_column(String(20), default="pending")  # pending | treated
+    notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+    corrected_deficiency_key: Mapped[str | None] = mapped_column(String(30), nullable=True)
+    correction_notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+    treatment_notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+    detected_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+    treated_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+
+    plant: Mapped["Plant"] = relationship(back_populates="health_events")
 
 
 class StripScanCache(Base):

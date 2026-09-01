@@ -39,6 +39,16 @@ rest_command:
   heimdall_aquarium_temp_history:
     url: "http://nemo-api:8000/api/sensors/history?measurement=temperature&hours={{ hours | default(24) }}"
     method: GET
+  # Plant health (Kamilo read/write) - name-based resolution happens
+  # server-side in nemo-api since voice input only gives a spoken plant
+  # name, never a plant_id/event_id. See api/routers/plant_health.py's
+  # kamilo/status + kamilo/treat endpoints.
+  heimdall_plant_health_status:
+    url: "http://nemo-api:8000/api/plant-health/kamilo/status"
+    method: GET
+  heimdall_plant_health_treat:
+    url: "http://nemo-api:8000/api/plant-health/kamilo/treat?plant_name={{ plant_name | urlencode }}{% if treatment_notes is defined %}&treatment_notes={{ treatment_notes | urlencode }}{% endif %}"
+    method: POST
 
 script:
   heimdall_remember_fact:
@@ -192,6 +202,46 @@ script:
               {% endif %}
       - stop: "Temperature history retrieved"
         response_variable: history_summary
+  heimdall_plant_health_status:
+    alias: "Heimdall: Plant health status"
+    description: >-
+      Get a summary of any pending (untreated) plant health issues
+      (nutrient deficiencies) logged for the aquarium plants - which plant,
+      which deficiency, and how many days ago it was detected. Use this
+      when asked whether any plants have problems or need attention.
+    sequence:
+      - action: rest_command.heimdall_plant_health_status
+        response_variable: status_result
+      - stop: "Plant health status retrieved"
+        response_variable: "{{ status_result.content }}"
+  heimdall_plant_health_treat:
+    alias: "Heimdall: Mark plant issue as treated"
+    description: >-
+      Record that a plant health issue has been treated/resolved, e.g. the
+      user says "I dosed iron for the rotala" or "the anubias deficiency is
+      fixed". Resolves the plant by spoken name and marks its most recent
+      pending issue as treated - does not create or diagnose new issues.
+    fields:
+      plant_name:
+        description: "The plant's name as spoken by the user"
+        example: "rotala"
+        required: true
+        selector:
+          text:
+      treatment_notes:
+        description: "Optional note on what treatment was applied"
+        example: "Dosed extra iron"
+        required: false
+        selector:
+          text:
+    sequence:
+      - action: rest_command.heimdall_plant_health_treat
+        data:
+          plant_name: "{{ plant_name }}"
+          treatment_notes: "{{ treatment_notes | default('', true) }}"
+        response_variable: treat_result
+      - stop: "Plant health issue updated"
+        response_variable: "{{ treat_result.content }}"
 
 # Heimdall persistent memory context sensor (Task 8 / M7). Polls the memory
 # service on jaskier for the current facts + rolling summary, exposed via

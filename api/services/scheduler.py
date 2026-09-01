@@ -1,13 +1,15 @@
 """APScheduler jobs — daily summary, overdue checks, feeding pause auto-resume."""
 import logging
 from datetime import datetime, timedelta, timezone
+from zoneinfo import ZoneInfo
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from sqlalchemy import select, and_
+from sqlalchemy.orm import selectinload
 
 from config import settings
 from database import AsyncSessionLocal
-from models.orm import FeedingPause, MaintenanceTask, Supply, WaterTestSession
+from models.orm import DosingTask, FeedingPause, MaintenanceTask, Supply, WaterTestSession
 from services.ha_client import ha_client
 from services.n8n_client import n8n_client
 from services.ntfy_client import ntfy_client
@@ -16,6 +18,7 @@ from services.influx_client import influx_client
 logger = logging.getLogger("nemo.scheduler")
 
 scheduler = AsyncIOScheduler(timezone="Europe/Dublin")
+DUBLIN_TZ = ZoneInfo("Europe/Dublin")
 
 
 @scheduler.scheduled_job("cron", hour=8, minute=5)
@@ -132,6 +135,26 @@ async def saturday_maintenance_reminder():
         priority=4,
         tags=["droplet"],
     )
+
+
+@scheduler.scheduled_job("cron", minute="*")
+async def dosing_reminder():
+    """Fire a Telegram reminder for any active dosing task scheduled for this exact minute."""
+    now_hm = datetime.now(DUBLIN_TZ).strftime("%H:%M")
+    async with AsyncSessionLocal() as db:
+        result = await db.execute(
+            select(DosingTask)
+            .options(selectinload(DosingTask.supply))
+            .where(DosingTask.active == True, DosingTask.time_of_day == now_hm)  # noqa: E712
+        )
+        for task in result.scalars().all():
+            supply = task.supply
+            note = f" ({task.notes})" if task.notes else ""
+            note_pl = f" ({task.notes_pl})" if task.notes_pl else ""
+            await n8n_client.reminder(
+                f"💧 Dose {task.dose_amount}{task.dose_unit} {supply.name}{note}",
+                f"💧 Dawka {task.dose_amount}{task.dose_unit} {supply.name_pl or supply.name}{note_pl}",
+            )
 
 
 @scheduler.scheduled_job("interval", seconds=30)
