@@ -37,8 +37,8 @@ class Settings(BaseSettings):
     # controlled outlets. No separate air pump outlet: filter+pump share one
     # switch, so feeding-pause only needs to toggle tapo_filter_entity_2.
     tapo_filter_entity_2: str = "switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_2"
-    tapo_heater_entity_2: str = "switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_1"
-    tapo_light_entity_2: str = "switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_3"
+    tapo_heater_entity_2: str = "switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_3"
+    tapo_light_entity_2: str = "switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_1"
 
     fluval_ble_mac: str = ""
     esphome_temp_entity: str = "sensor.nemo_sensor_temperature"
