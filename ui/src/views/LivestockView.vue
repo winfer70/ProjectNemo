@@ -119,13 +119,24 @@
             {{ locale === 'pl' ? 'Dodano' : 'Added' }}: {{ formatDate(x.added_at) }}
           </span>
         </div>
-        <button class="btn icon-btn btn-ghost" style="align-self:center" @click.stop="openHealthModal(x)">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M20 4S8 4 6 12c-1 4 1 7 1 7s9-1 11-9c1-4 2-6 2-6z"/>
-            <path d="M14 9l-2 2"/>
-          </svg>
-        </button>
       </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════ PLANT HEALTH ENTRY POINT ═══════════════════════════ -->
+  <div class="tile" style="cursor:pointer" @click="showPlantHealth = true">
+    <div class="tile-hd">
+      <h2>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 4S8 4 6 12c-1 4 1 7 1 7s9-1 11-9c1-4 2-6 2-6z"/>
+          <path d="M5 19c2-6 6-9 10-10"/>
+        </svg>
+        {{ locale === 'pl' ? 'ZDROWIE ROŚLIN' : 'PLANT HEALTH' }}
+      </h2>
+      <span v-if="pendingPlantHealthCount > 0" class="task-badge b-overdue">{{ pendingPlantHealthCount }}</span>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 6l6 6-6 6"/>
+      </svg>
     </div>
   </div>
 
@@ -345,97 +356,6 @@
     </div>
   </Teleport>
 
-  <!-- ── Plant health modal (full-screen) ───────────────────────── -->
-  <Teleport to="body">
-    <div
-      v-if="healthModal"
-      class="backdrop"
-      style="position:fixed;align-items:stretch;justify-content:center"
-      @click.self="closeHealthModal"
-    >
-      <div class="modal full" @click.stop>
-        <div class="spread" style="padding:16px 16px 14px;border-bottom:1px solid var(--border);flex-shrink:0">
-          <button class="btn icon-btn btn-ghost" @click="closeHealthModal">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M6 6l12 12"/><path d="M18 6L6 18"/>
-            </svg>
-          </button>
-          <span style="font-weight:700;font-size:16px">
-            {{ locale === 'pl' ? 'Zdrowie' : 'Health' }} · {{ healthModal ? (locale === 'pl' && healthModal.plant.name_pl ? healthModal.plant.name_pl : healthModal.plant.name_en) : '' }}
-          </span>
-          <label class="btn btn-sm btn-accent" style="cursor:pointer">
-            {{ phStore.scanning ? (locale === 'pl' ? 'Skanuję…' : 'Scanning…') : (locale === 'pl' ? 'Skanuj' : 'Scan') }}
-            <input type="file" accept="image/*" capture="environment" style="display:none" :disabled="phStore.scanning" @change="onScanFile">
-          </label>
-        </div>
-
-        <div style="padding:16px;overflow-y:scroll;-webkit-overflow-scrolling:touch;overscroll-behavior:contain">
-          <!-- Diagram: two clickable growth zones -->
-          <div class="sec-lab">{{ locale === 'pl' ? 'Zaznacz objaw' : 'Log a symptom' }}</div>
-          <div class="ph-diagram">
-            <div class="ph-zone" :class="{ on: pickerStage === 'new_growth' }" @click="togglePickerStage('new_growth')">
-              {{ locale === 'pl' ? 'Nowe przyrosty' : 'New growth' }}
-            </div>
-            <div class="ph-stem"/>
-            <div class="ph-zone" :class="{ on: pickerStage === 'old_growth' }" @click="togglePickerStage('old_growth')">
-              {{ locale === 'pl' ? 'Stare liście' : 'Old leaves' }}
-            </div>
-          </div>
-
-          <div v-if="pickerStage" style="margin-top:12px;display:flex;flex-direction:column;gap:8px">
-            <button
-              v-for="d in deficienciesForStage(pickerStage)"
-              :key="d.key"
-              class="ls-card"
-              style="flex-direction:column;align-items:flex-start;gap:2px;padding:10px 12px;width:100%"
-              @click="pickDeficiency(d)"
-            >
-              <span style="font-weight:600;font-size:13px">{{ locale === 'pl' ? d.name_pl : d.name_en }}</span>
-              <span class="muted" style="font-size:11px">{{ locale === 'pl' ? d.symptom_pl : d.symptom_en }}</span>
-            </button>
-          </div>
-
-          <!-- Active issues -->
-          <div class="sec-lab" style="padding-top:16px">{{ locale === 'pl' ? 'Aktywne problemy' : 'Active issues' }}</div>
-          <div v-if="!pendingEvents.length" class="muted" style="font-size:12px;padding:8px 0">
-            {{ locale === 'pl' ? 'Brak' : 'None' }}
-          </div>
-          <div v-for="e in pendingEvents" :key="e.id" class="ls-card" style="flex-direction:column;align-items:stretch;gap:6px;padding:10px 12px">
-            <div class="spread">
-              <span style="font-weight:600;font-size:13px">{{ deficiencyName(e.deficiency_key) }}</span>
-              <span class="pill" style="cursor:default">
-                {{ e.source === 'ai_scan' ? (locale === 'pl' ? 'Skan AI' : 'AI scan') : (locale === 'pl' ? 'Ręcznie' : 'Manual') }}
-              </span>
-            </div>
-            <span v-if="e.confidence != null" class="muted" style="font-size:11px">
-              {{ locale === 'pl' ? 'Pewność' : 'Confidence' }}: {{ Math.round(e.confidence * 100) }}%
-            </span>
-            <span class="muted" style="font-size:11px">{{ formatDate(e.detected_at) }}</span>
-            <div class="row" style="gap:8px;margin-top:4px">
-              <button class="btn btn-sm btn-accent" @click="phStore.treatEvent(e.id)">
-                {{ locale === 'pl' ? 'Oznacz jako leczone' : 'Mark treated' }}
-              </button>
-              <button class="btn btn-sm btn-ghost" @click="openCorrect(e)">
-                {{ locale === 'pl' ? 'Popraw' : 'Correct' }}
-              </button>
-            </div>
-            <div v-if="correctingEventId === e.id" style="display:flex;flex-direction:column;gap:4px;margin-top:4px">
-              <button
-                v-for="d in phStore.deficiencies"
-                :key="d.key"
-                class="btn btn-ghost"
-                style="justify-content:flex-start;font-size:12px"
-                @click="correctWith(e, d)"
-              >
-                {{ locale === 'pl' ? d.name_pl : d.name_en }}
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </Teleport>
-
   <!-- ═══════════════════════════ RESTOCK MODAL ═══════════════════════════ -->
   <div v-if="restockDose" class="backdrop" @click.self="restockDose = null">
     <div class="modal">
@@ -507,6 +427,8 @@
       </div>
     </div>
   </div>
+
+  <PlantHealthView v-if="showPlantHealth" @close="showPlantHealth = false" />
 </template>
 
 <script setup>
@@ -515,6 +437,7 @@ import { usePlantHealthStore } from '../stores/plantHealth'
 import { useTankSelectorStore } from '../stores/tankSelector'
 import { useScheduleStore } from '../stores/schedule'
 import TankSwitcher from '../components/TankSwitcher.vue'
+import PlantHealthView from './PlantHealthView.vue'
 import { useI18n } from 'vue-i18n'
 import { ref, reactive, computed, onMounted, watch, inject } from 'vue'
 
@@ -528,6 +451,8 @@ const showToast = inject('showToast', () => {})
 // ── UI state ──────────────────────────────────────────────────
 const statusPicker = ref(null)   // id of item showing status picker
 const editModal = ref(null)      // null | { item: fish|plant|null, kind: 'fish'|'plant' }
+const showPlantHealth = ref(false)
+const pendingPlantHealthCount = computed(() => phStore.events.filter(e => e.status === 'pending').length)
 
 // ── Status helpers ────────────────────────────────────────────
 const statuses = ['planned', 'in_tank', 'sold', 'deceased']
@@ -574,6 +499,7 @@ onMounted(() => {
   obsadaStore.fetchFish()
   obsadaStore.fetchPlants()
   scheduleStore.fetchDosing()
+  phStore.fetchEvents()
 })
 
 // ── Dosing ──────────────────────────────────────────────────────
@@ -727,91 +653,4 @@ async function deleteLs() {
   else await obsadaStore.deletePlant(item.id)
   editModal.value = null
 }
-
-// ── Plant health modal ────────────────────────────────────────
-const healthModal = ref(null)        // null | { plant }
-const pickerStage = ref(null)        // null | 'new_growth' | 'old_growth'
-const correctingEventId = ref(null)
-
-function openHealthModal(plant) {
-  healthModal.value = { plant }
-  pickerStage.value = null
-  correctingEventId.value = null
-  phStore.fetchDeficiencies()
-  phStore.fetchEvents(plant.id)
-}
-
-function closeHealthModal() {
-  healthModal.value = null
-}
-
-function togglePickerStage(stage) {
-  pickerStage.value = pickerStage.value === stage ? null : stage
-  correctingEventId.value = null
-}
-
-function deficienciesForStage(stage) {
-  return phStore.deficiencies.filter(d => d.growth_stage === stage)
-}
-
-function deficiencyName(key) {
-  const d = phStore.deficiencies.find(d => d.key === key)
-  if (!d) return key
-  return locale.value === 'pl' ? d.name_pl : d.name_en
-}
-
-async function pickDeficiency(d) {
-  if (!healthModal.value) return
-  await phStore.logEvent(healthModal.value.plant.id, d.key)
-  pickerStage.value = null
-}
-
-function openCorrect(e) {
-  correctingEventId.value = correctingEventId.value === e.id ? null : e.id
-  pickerStage.value = null
-}
-
-async function correctWith(e, d) {
-  await phStore.correctEvent(e.id, d.key)
-  correctingEventId.value = null
-}
-
-const pendingEvents = computed(() => phStore.events.filter(e => e.status === 'pending'))
-
-async function onScanFile(ev) {
-  const file = ev.target.files?.[0]
-  if (!file || !healthModal.value) return
-  await phStore.scanLeaf(healthModal.value.plant.id, file)
-  ev.target.value = ''
-}
 </script>
-
-<style scoped>
-.ph-diagram {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  padding: 12px 0;
-}
-.ph-zone {
-  width: 100%;
-  text-align: center;
-  padding: 14px 12px;
-  border-radius: 10px;
-  border: 1.5px solid var(--border);
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: border-color 0.15s, background 0.15s;
-}
-.ph-zone.on {
-  border-color: var(--accent);
-  background: color-mix(in srgb, var(--accent) 12%, transparent);
-}
-.ph-stem {
-  width: 3px;
-  height: 20px;
-  background: var(--border);
-}
-</style>
