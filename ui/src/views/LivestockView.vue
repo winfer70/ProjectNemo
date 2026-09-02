@@ -123,23 +123,6 @@
     </div>
   </div>
 
-  <!-- ═══════════════════════════ PLANT HEALTH ENTRY POINT ═══════════════════════════ -->
-  <div class="tile" style="cursor:pointer" @click="showPlantHealth = true">
-    <div class="tile-hd">
-      <h2>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M20 4S8 4 6 12c-1 4 1 7 1 7s9-1 11-9c1-4 2-6 2-6z"/>
-          <path d="M5 19c2-6 6-9 10-10"/>
-        </svg>
-        {{ locale === 'pl' ? 'ZDROWIE ROŚLIN' : 'PLANT HEALTH' }}
-      </h2>
-      <span v-if="pendingPlantHealthCount > 0" class="task-badge b-overdue">{{ pendingPlantHealthCount }}</span>
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M9 6l6 6-6 6"/>
-      </svg>
-    </div>
-  </div>
-
   <!-- ═══════════════════════════ DOSING TILE ═══════════════════════════ -->
   <div class="tile">
     <div class="tile-hd">
@@ -427,23 +410,18 @@
       </div>
     </div>
   </div>
-
-  <PlantHealthView v-if="showPlantHealth" @close="showPlantHealth = false" />
 </template>
 
 <script setup>
 import { useObsadaStore } from '../stores/obsada'
-import { usePlantHealthStore } from '../stores/plantHealth'
 import { useTankSelectorStore } from '../stores/tankSelector'
 import { useScheduleStore } from '../stores/schedule'
 import TankSwitcher from '../components/TankSwitcher.vue'
-import PlantHealthView from './PlantHealthView.vue'
 import { useI18n } from 'vue-i18n'
 import { ref, reactive, computed, onMounted, watch, inject } from 'vue'
 
 const { locale } = useI18n()
 const obsadaStore = useObsadaStore()
-const phStore = usePlantHealthStore()
 const tankStore = useTankSelectorStore()
 const scheduleStore = useScheduleStore()
 const showToast = inject('showToast', () => {})
@@ -451,8 +429,7 @@ const showToast = inject('showToast', () => {})
 // ── UI state ──────────────────────────────────────────────────
 const statusPicker = ref(null)   // id of item showing status picker
 const editModal = ref(null)      // null | { item: fish|plant|null, kind: 'fish'|'plant' }
-const showPlantHealth = ref(false)
-const pendingPlantHealthCount = computed(() => phStore.events.filter(e => e.status === 'pending').length)
+
 
 // ── Status helpers ────────────────────────────────────────────
 const statuses = ['planned', 'in_tank', 'sold', 'deceased']
@@ -499,7 +476,6 @@ onMounted(() => {
   obsadaStore.fetchFish()
   obsadaStore.fetchPlants()
   scheduleStore.fetchDosing()
-  phStore.fetchEvents()
 })
 
 // ── Dosing ──────────────────────────────────────────────────────

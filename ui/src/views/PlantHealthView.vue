@@ -1,57 +1,53 @@
 <template>
-  <Teleport to="body">
-    <div class="backdrop" style="position:fixed;align-items:stretch;justify-content:center">
-      <div class="modal full" @click.stop>
-        <div class="spread" style="padding:16px 16px 14px;border-bottom:1px solid var(--border);flex-shrink:0">
-          <button class="btn icon-btn btn-ghost" @click="$emit('close')">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M6 6l12 12"/><path d="M18 6L6 18"/>
-            </svg>
-          </button>
-          <span style="font-weight:700;font-size:16px">{{ locale === 'pl' ? 'Zdrowie Roślin' : 'Plant Health' }}</span>
-          <span style="width:34px"></span>
-        </div>
-
-        <div style="padding:16px;overflow-y:scroll;-webkit-overflow-scrolling:touch;overscroll-behavior:contain">
-          <!-- Tank 1 left / Tank 2 right, consistent with the Oba combined view -->
-          <div class="row2">
-            <div v-for="tid in sortedTankIds" :key="tid">
-              <div class="sec-lab">{{ tankName(tid) }}</div>
-              <div v-if="plantsFor(tid).length === 0" class="empty" style="padding:20px 8px">
-                <span class="muted" style="font-size:12px">{{ locale === 'pl' ? 'Brak roślin' : 'No plants' }}</span>
+  <div class="tile">
+    <div class="tile-hd">
+      <h2>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 4S8 4 6 12c-1 4 1 7 1 7s9-1 11-9c1-4 2-6 2-6z"/>
+          <path d="M5 19c2-6 6-9 10-10"/>
+        </svg>
+        {{ locale === 'pl' ? 'ZDROWIE ROŚLIN' : 'PLANT HEALTH' }}
+      </h2>
+    </div>
+    <hr class="divider">
+    <div class="tile-body" style="padding-top:8px">
+      <!-- Tank 1 left / Tank 2 right, consistent with the Oba combined view -->
+      <div class="row2">
+        <div v-for="tid in sortedTankIds" :key="tid">
+          <div class="sec-lab">{{ tankName(tid) }}</div>
+          <div v-if="plantsFor(tid).length === 0" class="empty" style="padding:20px 8px">
+            <span class="muted" style="font-size:12px">{{ locale === 'pl' ? 'Brak roślin' : 'No plants' }}</span>
+          </div>
+          <div
+            v-for="p in plantsFor(tid)"
+            :key="p.id"
+            class="ls-card"
+            @click="openHealthModal(p)"
+          >
+            <div class="ls-thumb">
+              <img v-if="p.img" :src="p.img" style="width:100%;height:100%;object-fit:cover">
+              <div v-else class="ph">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20 4S8 4 6 12c-1 4 1 7 1 7s9-1 11-9c1-4 2-6 2-6z"/>
+                  <path d="M5 19c2-6 6-9 10-10"/>
+                </svg>
               </div>
-              <div
-                v-for="p in plantsFor(tid)"
-                :key="p.id"
-                class="ls-card"
-                @click="openHealthModal(p)"
-              >
-                <div class="ls-thumb">
-                  <img v-if="p.img" :src="p.img" style="width:100%;height:100%;object-fit:cover">
-                  <div v-else class="ph">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M20 4S8 4 6 12c-1 4 1 7 1 7s9-1 11-9c1-4 2-6 2-6z"/>
-                      <path d="M5 19c2-6 6-9 10-10"/>
-                    </svg>
-                  </div>
-                </div>
-                <div class="ls-meta">
-                  <div class="name">
-                    <span style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
-                      {{ locale === 'pl' && p.name_pl ? p.name_pl : p.name_en }}
-                    </span>
-                    <span v-if="pendingCountFor(p.id) > 0" class="task-badge b-overdue">{{ pendingCountFor(p.id) }}</span>
-                    <span v-else class="pill in_tank" style="cursor:default">{{ locale === 'pl' ? 'OK' : 'OK' }}</span>
-                  </div>
-                  <span class="sp">{{ p.latin }}</span>
-                </div>
+            </div>
+            <div class="ls-meta">
+              <div class="name">
+                <span style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+                  {{ locale === 'pl' && p.name_pl ? p.name_pl : p.name_en }}
+                </span>
+                <span v-if="pendingCountFor(p.id) > 0" class="task-badge b-overdue">{{ pendingCountFor(p.id) }}</span>
+                <span v-else class="pill in_tank" style="cursor:default">{{ locale === 'pl' ? 'OK' : 'OK' }}</span>
               </div>
+              <span class="sp">{{ p.latin }}</span>
             </div>
           </div>
         </div>
       </div>
     </div>
-  </Teleport>
+  </div>
 
   <!-- ── Plant health modal (full-screen) ───────────────────────── -->
   <Teleport to="body">
@@ -151,8 +147,6 @@ import { useI18n } from 'vue-i18n'
 import { useObsadaStore } from '../stores/obsada'
 import { usePlantHealthStore } from '../stores/plantHealth'
 import { useTankSelectorStore } from '../stores/tankSelector'
-
-defineEmits(['close'])
 
 const { locale } = useI18n()
 const obsadaStore = useObsadaStore()

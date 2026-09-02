@@ -5,6 +5,7 @@
     "tests": "Tests",
     "calendar": "Calendar",
     "livestock": "Livestock",
+    "planthealth": "Plants",
     "settings": "Settings"
   },
   "schedule": {

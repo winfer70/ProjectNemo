@@ -17,6 +17,7 @@
         <WaterTestsView v-if="activeTab === 'tests'" />
         <CalendarView v-if="activeTab === 'calendar'" />
         <LivestockView v-if="activeTab === 'livestock'" />
+        <PlantHealthView v-if="activeTab === 'planthealth'" />
         <SettingsView v-if="activeTab === 'settings'" />
       </main>
       <div v-if="toast" class="toast-msg">{{ toast }}</div>
@@ -59,6 +60,13 @@
             <circle cx="7" cy="11" r="0.6" fill="currentColor" stroke="none"/>
           </svg>
           <span class="nlab">{{ $t('nav.livestock') }}</span>
+        </button>
+        <button :class="{ on: activeTab === 'planthealth' }" @click="goTab('planthealth')">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 4S8 4 6 12c-1 4 1 7 1 7s9-1 11-9c1-4 2-6 2-6z"/>
+            <path d="M5 19c2-6 6-9 10-10"/>
+          </svg>
+          <span class="nlab">{{ $t('nav.planthealth') }}</span>
         </button>
         <button :class="{ on: activeTab === 'settings' }" @click="goTab('settings')">
           <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -143,6 +151,13 @@
               </svg>
               <span>{{ $t('nav.livestock') }}</span>
             </button>
+            <button class="s-item" :class="{ on: activeTab === 'planthealth' }" @click="goTab('planthealth')">
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 4S8 4 6 12c-1 4 1 7 1 7s9-1 11-9c1-4 2-6 2-6z"/>
+                <path d="M5 19c2-6 6-9 10-10"/>
+              </svg>
+              <span>{{ $t('nav.planthealth') }}</span>
+            </button>
             <button class="s-item s-settings-btn" :class="{ on: activeTab === 'settings' }" @click="goTab('settings')">
               <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="12" r="3"/>
@@ -159,6 +174,7 @@
             <WaterTestsView v-if="activeTab === 'tests'" />
             <CalendarView v-if="activeTab === 'calendar'" />
             <LivestockView v-if="activeTab === 'livestock'" />
+            <PlantHealthView v-if="activeTab === 'planthealth'" />
             <SettingsView v-if="activeTab === 'settings'" />
           </main>
           <div v-if="toast" class="toast-msg">{{ toast }}</div>
@@ -176,6 +192,7 @@ import LiveView from './views/LiveView.vue'
 import WaterTestsView from './views/WaterTestsView.vue'
 import CalendarView from './views/CalendarView.vue'
 import LivestockView from './views/LivestockView.vue'
+import PlantHealthView from './views/PlantHealthView.vue'
 import SettingsView from './views/SettingsView.vue'
 import { useSensorsStore } from './stores/sensors'
 import { useWaterTestsStore } from './stores/waterTests'
