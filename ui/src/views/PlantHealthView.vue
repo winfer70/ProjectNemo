@@ -15,29 +15,48 @@
     </div>
     <hr class="divider">
     <div class="tile-body" style="padding-top:8px">
-      <!-- Diagram: shared reference chart, not tied to one plant - tapping a
-           zone picks a deficiency, then asks which plant it applies to. -->
-      <div class="sec-lab">{{ locale === 'pl' ? 'Zaznacz objaw' : 'Log a symptom' }}</div>
-      <div class="ph-diagram">
-        <div class="ph-zone" :class="{ on: pickerStage === 'new_growth' }" @click="togglePickerStage('new_growth')">
-          {{ locale === 'pl' ? 'Nowe przyrosty' : 'New growth' }}
-        </div>
-        <div class="ph-stem"/>
-        <div class="ph-zone" :class="{ on: pickerStage === 'old_growth' }" @click="togglePickerStage('old_growth')">
-          {{ locale === 'pl' ? 'Stare liście' : 'Old leaves' }}
-        </div>
-      </div>
+      <!-- Diagram: matches the Aquathusiast nutrient-deficiency chart -
+           click a leaf to see its details, then log it against a plant. -->
+      <div class="sec-lab">{{ locale === 'pl' ? 'Diagram niedoborów' : 'Deficiency diagram' }}</div>
+      <svg viewBox="0 0 320 460" class="ph-svg" @click.self="selectedKey = null">
+        <path d="M140,438 L180,438 L172,458 L148,458 Z" fill="#2a2a2a"/>
+        <line x1="160" y1="438" x2="160" y2="70" stroke="#3a6b2f" stroke-width="4" stroke-linecap="round"/>
+        <line x1="20" y1="240" x2="300" y2="240" stroke="var(--border)" stroke-width="1.5" stroke-dasharray="5,4"/>
+        <text x="300" y="230" text-anchor="end" font-size="10" fill="var(--text-muted)" font-style="italic">{{ locale === 'pl' ? 'Nowe przyrosty' : 'New Growth' }}</text>
+        <text x="300" y="253" text-anchor="end" font-size="10" fill="var(--text-muted)" font-style="italic">{{ locale === 'pl' ? 'Stare liście' : 'Old Growth' }}</text>
 
-      <div v-if="pickerStage" style="margin-top:12px;display:flex;flex-direction:column;gap:8px">
-        <button
-          v-for="d in deficienciesForStage(pickerStage)"
-          :key="d.key"
-          class="ls-card"
-          style="flex-direction:column;align-items:flex-start;gap:2px;padding:10px 12px;width:100%"
-          @click="pickDeficiency(d)"
+        <g
+          v-for="leaf in DIAGRAM_LEAVES"
+          :key="leaf.key"
+          :transform="`translate(160,${leaf.y}) scale(${leaf.side === 'left' ? -1 : 1},1)`"
+          class="ph-leaf"
+          :class="{ on: selectedKey === leaf.key }"
+          @click="selectedKey = leaf.key"
         >
-          <span style="font-weight:600;font-size:13px">{{ locale === 'pl' ? d.name_pl : d.name_en }}</span>
-          <span class="muted" style="font-size:11px">{{ locale === 'pl' ? d.symptom_pl : d.symptom_en }}</span>
+          <path d="M0,0 Q18,-22 42,-19 Q68,-16 78,0 Q68,16 42,19 Q18,22 0,0 Z" :fill="leaf.color"/>
+          <line x1="8" y1="0" x2="70" y2="0" stroke="rgba(0,0,0,0.25)" stroke-width="1"/>
+        </g>
+
+        <text
+          v-for="leaf in DIAGRAM_LEAVES"
+          :key="'lbl-' + leaf.key"
+          :x="leaf.side === 'left' ? 62 : 258"
+          :y="leaf.y"
+          text-anchor="middle"
+          font-size="12"
+          font-weight="600"
+          :fill="selectedKey === leaf.key ? 'var(--accent)' : 'var(--text)'"
+          style="cursor:pointer"
+          @click="selectedKey = leaf.key"
+        >{{ deficiencyName(leaf.key) }}</text>
+      </svg>
+
+      <div v-if="selectedKey" class="ls-card" style="flex-direction:column;align-items:flex-start;gap:4px;padding:12px;margin-top:10px;width:100%">
+        <span style="font-weight:700;font-size:14px">{{ deficiencyName(selectedKey) }}</span>
+        <span class="muted" style="font-size:12px">{{ deficiencySymptom(selectedKey) }}</span>
+        <span class="muted" style="font-size:11px">{{ deficiencyTreatment(selectedKey) }}</span>
+        <button class="btn btn-sm btn-accent" style="margin-top:6px" @click="logSelected">
+          {{ locale === 'pl' ? 'Zapisz dla rośliny' : 'Log for a plant' }}
         </button>
       </div>
 
@@ -181,17 +200,21 @@ onMounted(() => {
 })
 
 // ── Diagram ────────────────────────────────────────────────────
-const pickerStage = ref(null)        // null | 'new_growth' | 'old_growth'
+// Matches the Aquathusiast "5 Min Guide: Freshwater Nutrient Deficiencies"
+// chart - 4 new-growth leaves above the dashed line, 4 old-growth below.
+const DIAGRAM_LEAVES = [
+  { key: 'iron', side: 'left', y: 110, color: '#d9e07a' },
+  { key: 'calcium', side: 'right', y: 110, color: '#a9d18e' },
+  { key: 'manganese', side: 'left', y: 195, color: '#4f9153' },
+  { key: 'nitrogen', side: 'right', y: 195, color: '#bcd35f' },
+  { key: 'potassium', side: 'left', y: 285, color: '#5a9c4a' },
+  { key: 'magnesium', side: 'right', y: 285, color: '#3f6b3a' },
+  { key: 'phosphate', side: 'left', y: 365, color: '#2f5233' },
+  { key: 'co2', side: 'right', y: 365, color: '#e9e4cf' },
+]
+
+const selectedKey = ref(null)
 const correctingEventId = ref(null)
-
-function togglePickerStage(stage) {
-  pickerStage.value = pickerStage.value === stage ? null : stage
-  correctingEventId.value = null
-}
-
-function deficienciesForStage(stage) {
-  return phStore.deficiencies.filter(d => d.growth_stage === stage)
-}
 
 function deficiencyName(key) {
   const d = phStore.deficiencies.find(d => d.key === key)
@@ -199,13 +222,26 @@ function deficiencyName(key) {
   return locale.value === 'pl' ? d.name_pl : d.name_en
 }
 
+function deficiencySymptom(key) {
+  const d = phStore.deficiencies.find(d => d.key === key)
+  if (!d) return ''
+  return locale.value === 'pl' ? d.symptom_pl : d.symptom_en
+}
+
+function deficiencyTreatment(key) {
+  const d = phStore.deficiencies.find(d => d.key === key)
+  if (!d) return ''
+  return locale.value === 'pl' ? d.treatment_pl : d.treatment_en
+}
+
 // ── Pending action -> plant picker ────────────────────────────
 // null | { type: 'manual', deficiencyKey } | { type: 'scan', file }
 const pendingAction = ref(null)
 
-function pickDeficiency(d) {
-  pendingAction.value = { type: 'manual', deficiencyKey: d.key }
-  pickerStage.value = null
+function logSelected() {
+  if (!selectedKey.value) return
+  pendingAction.value = { type: 'manual', deficiencyKey: selectedKey.value }
+  selectedKey.value = null
 }
 
 function startScan(ev) {
@@ -239,31 +275,23 @@ const pendingEvents = computed(() => phStore.events.filter(e => e.status === 'pe
 </script>
 
 <style scoped>
-.ph-diagram {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  padding: 12px 0;
-}
-.ph-zone {
+.ph-svg {
   width: 100%;
-  text-align: center;
-  padding: 14px 12px;
-  border-radius: 10px;
-  border: 1.5px solid var(--border);
-  font-size: 13px;
-  font-weight: 600;
+  max-width: 360px;
+  height: auto;
+  display: block;
+  margin: 8px auto 0;
+}
+.ph-leaf {
   cursor: pointer;
-  transition: border-color 0.15s, background 0.15s;
 }
-.ph-zone.on {
-  border-color: var(--accent);
-  background: color-mix(in srgb, var(--accent) 12%, transparent);
+.ph-leaf path {
+  stroke: var(--border);
+  stroke-width: 1;
+  transition: stroke 0.15s, stroke-width 0.15s;
 }
-.ph-stem {
-  width: 3px;
-  height: 20px;
-  background: var(--border);
+.ph-leaf.on path {
+  stroke: var(--accent);
+  stroke-width: 2.5;
 }
 </style>
