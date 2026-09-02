@@ -4,13 +4,21 @@
     <div class="tile">
       <div class="tile-hd">
         <h2>TESTY WODY</h2>
-        <button class="btn btn-sm btn-accent" @click="openScanModal">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M3 8.5a2 2 0 0 1 2-2h2l1.5-2h7L17 6.5h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-9z" />
-            <circle cx="12" cy="12.5" r="3.5" />
-          </svg>
-          Skanuj
-        </button>
+        <div class="row" style="gap:8px">
+          <button class="btn btn-sm btn-ghost icon-btn" @click="openNormsModal" :title="locale === 'pl' ? 'Normy' : 'Norms'">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="3"/>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+            </svg>
+          </button>
+          <button class="btn btn-sm btn-accent" @click="openScanModal">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 8.5a2 2 0 0 1 2-2h2l1.5-2h7L17 6.5h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-9z" />
+              <circle cx="12" cy="12.5" r="3.5" />
+            </svg>
+            Skanuj
+          </button>
+        </div>
       </div>
       <hr class="divider" />
       <TankSwitcher />
@@ -261,11 +269,45 @@
         </div>
       </div>
     </Teleport>
+
+    <!-- Norms (safe range) settings - per-tank, since two differently
+         stocked tanks want different min/max for the same test. -->
+    <Teleport to="body">
+      <div v-if="normsModal" class="backdrop" style="align-items:stretch;justify-content:center" @click.self="normsModal = false">
+        <div class="modal full" @click.stop>
+          <div class="spread" style="padding:16px 16px 14px;border-bottom:1px solid var(--border);flex-shrink:0">
+            <button class="btn icon-btn btn-ghost" @click="normsModal = false">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M6 6l12 12"/><path d="M18 6L6 18"/>
+              </svg>
+            </button>
+            <span style="font-weight:700;font-size:16px">{{ locale === 'pl' ? 'Normy' : 'Norms' }} · {{ tankStore.tanks.find(t => t.id === tankStore.activeTankId)?.name }}</span>
+            <span style="width:34px"></span>
+          </div>
+          <div style="padding:16px;overflow-y:scroll;-webkit-overflow-scrolling:touch;overscroll-behavior:contain">
+            <p class="muted" style="font-size:12.5px;margin:0 0 14px">
+              {{ locale === 'pl' ? 'Zakres bezpieczny dla tego zbiornika. Puste pole = brak limitu.' : 'Safe range for this tank. Empty = no limit.' }}
+            </p>
+            <div v-for="p in parameters" :key="p.id" class="field" style="margin-bottom:14px">
+              <label style="font-size:13px;font-weight:600;display:block;margin-bottom:6px">{{ p.name_pl }} <span class="muted" style="font-weight:400">({{ p.unit }})</span></label>
+              <div class="row" style="gap:8px">
+                <input class="input" type="number" step="0.01" v-model="normDrafts[p.id].min_safe" :placeholder="locale === 'pl' ? 'Min' : 'Min'" style="flex:1;text-align:right">
+                <span class="muted">–</span>
+                <input class="input" type="number" step="0.01" v-model="normDrafts[p.id].max_safe" :placeholder="locale === 'pl' ? 'Maks' : 'Max'" style="flex:1;text-align:right">
+                <button class="btn btn-sm btn-accent" :disabled="savingNorm === p.id" @click="saveNorm(p)">
+                  {{ savingNorm === p.id ? '…' : (locale === 'pl' ? 'Zapisz' : 'Save') }}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Teleport>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import axios from 'axios'
 import { useI18n } from 'vue-i18n'
 import { useTankSelectorStore } from '../stores/tankSelector'
@@ -276,14 +318,22 @@ const tankStore = useTankSelectorStore()
 const allSessions = ref([])
 const parameters = ref([])
 
+async function fetchParameters() {
+  const paramR = await axios.get('/api/water-tests/parameters', { params: { tank_id: tankStore.activeTankId } })
+  parameters.value = paramR.data
+}
+
 onMounted(async () => {
-  const [sessR, paramR] = await Promise.all([
+  const [sessR] = await Promise.all([
     axios.get('/api/water-tests/sessions'),
-    axios.get('/api/water-tests/parameters'),
+    fetchParameters(),
   ])
   allSessions.value = sessR.data
-  parameters.value = paramR.data
 })
+
+// Norms are per-tank, so re-fetch parameters (and their effective min/max)
+// whenever the active tank changes.
+watch(() => tankStore.activeTankId, fetchParameters)
 
 const sessions = computed(() => allSessions.value.filter(tankStore.matchesActiveTank))
 
@@ -437,14 +487,14 @@ async function saveScan() {
   }
 }
 
-// ─── Edit/add single parameter popup ──────────────────────────────────────────
+// ─── Log a single parameter reading ───────────────────────────────────────────
+// Always creates a new dated entry (never overwrites history) so trend /
+// water-change-frequency analysis stays accurate.
 const editParam = ref(null)
 const savingParam = ref(false)
 
 function openEditParam(reading) {
   editParam.value = {
-    mode: 'edit',
-    readingId: reading.id,
     parameterId: reading.parameter_id,
     name_pl: reading.name_pl,
     unit: reading.unit,
@@ -454,8 +504,6 @@ function openEditParam(reading) {
 
 function openAddParam(param) {
   editParam.value = {
-    mode: 'add',
-    readingId: null,
     parameterId: param.id,
     name_pl: param.name_pl,
     unit: param.unit,
@@ -469,19 +517,44 @@ async function saveEditParam() {
 
   savingParam.value = true
   try {
-    if (editParam.value.mode === 'edit') {
-      await axios.patch(`/api/water-tests/readings/${editParam.value.readingId}`, { value })
-    } else {
-      await axios.post('/api/water-tests/sessions', {
-        tank_id: tankStore.activeTankId,
-        readings: [{ parameter_id: editParam.value.parameterId, value }],
-      })
-    }
+    await axios.post('/api/water-tests/sessions', {
+      tank_id: tankStore.activeTankId,
+      readings: [{ parameter_id: editParam.value.parameterId, value }],
+    })
     const sessR = await axios.get('/api/water-tests/sessions')
     allSessions.value = sessR.data
     editParam.value = null
   } finally {
     savingParam.value = false
+  }
+}
+
+// ─── Norms (per-tank safe range) settings ─────────────────────────────────────
+const normsModal = ref(false)
+const normDrafts = ref({})
+const savingNorm = ref(null)
+
+function openNormsModal() {
+  const drafts = {}
+  parameters.value.forEach((p) => {
+    drafts[p.id] = { min_safe: p.min_safe ?? '', max_safe: p.max_safe ?? '' }
+  })
+  normDrafts.value = drafts
+  normsModal.value = true
+}
+
+async function saveNorm(param) {
+  const draft = normDrafts.value[param.id]
+  savingNorm.value = param.id
+  try {
+    await axios.put(`/api/water-tests/parameters/${param.id}/norms`, {
+      tank_id: tankStore.activeTankId,
+      min_safe: draft.min_safe === '' ? null : parseFloat(draft.min_safe),
+      max_safe: draft.max_safe === '' ? null : parseFloat(draft.max_safe),
+    })
+    await fetchParameters()
+  } finally {
+    savingNorm.value = null
   }
 }
 </script>

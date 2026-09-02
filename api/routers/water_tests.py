@@ -9,13 +9,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from database import get_db
-from models.orm import WaterTestParameter, WaterTestReading, WaterTestSession
+from models.orm import WaterTestParameter, WaterTestParameterNorm, WaterTestReading, WaterTestSession
 from models.schemas import (
     WaterTestParameterOut,
+    WaterTestParameterNormIn,
     WaterTestSessionCreate,
     WaterTestSessionOut,
     WaterTestReadingOut,
-    WaterTestReadingUpdate,
     SensorHistoryPoint,
 )
 from services.n8n_client import n8n_client
@@ -47,6 +47,20 @@ def _reading_out(r: WaterTestReading) -> WaterTestReadingOut:
         out_of_range=r.out_of_range,
         notes=r.notes,
     )
+
+
+async def _effective_norms_map(db: AsyncSession, tank_id: int) -> dict[int, tuple[float | None, float | None]]:
+    """parameter_id -> (min_safe, max_safe), using this tank's override row
+    when one exists, else the parameter's global default."""
+    params_result = await db.execute(select(WaterTestParameter))
+    norms = {p.id: (p.min_safe, p.max_safe) for p in params_result.scalars().all()}
+
+    norms_result = await db.execute(
+        select(WaterTestParameterNorm).where(WaterTestParameterNorm.tank_id == tank_id)
+    )
+    for n in norms_result.scalars().all():
+        norms[n.parameter_id] = (n.min_safe, n.max_safe)
+    return norms
 
 
 def _build_scan_response(
@@ -148,9 +162,58 @@ async def debug_strip(file: UploadFile = File(...)):
 
 
 @router.get("/parameters", response_model=list[WaterTestParameterOut])
-async def list_parameters(db: AsyncSession = Depends(get_db)):
+async def list_parameters(tank_id: int | None = None, db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(WaterTestParameter).order_by(WaterTestParameter.id))
-    return result.scalars().all()
+    params = result.scalars().all()
+    if tank_id is None:
+        return params
+
+    norms = await _effective_norms_map(db, tank_id)
+    return [
+        WaterTestParameterOut(
+            id=p.id, key=p.key, name_en=p.name_en, name_pl=p.name_pl, unit=p.unit,
+            category=p.category,
+            min_safe=norms[p.id][0], max_safe=norms[p.id][1],
+        )
+        for p in params
+    ]
+
+
+@router.put("/parameters/{param_id}/norms", response_model=WaterTestParameterOut)
+async def set_parameter_norm(
+    param_id: int,
+    data: WaterTestParameterNormIn,
+    db: AsyncSession = Depends(get_db),
+):
+    """Upsert this tank's safe-range override for one parameter."""
+    param = await db.get(WaterTestParameter, param_id)
+    if not param:
+        raise HTTPException(404, "Parameter not found")
+
+    result = await db.execute(
+        select(WaterTestParameterNorm).where(
+            WaterTestParameterNorm.tank_id == data.tank_id,
+            WaterTestParameterNorm.parameter_id == param_id,
+        )
+    )
+    norm = result.scalar_one_or_none()
+    if norm:
+        norm.min_safe = data.min_safe
+        norm.max_safe = data.max_safe
+    else:
+        norm = WaterTestParameterNorm(
+            tank_id=data.tank_id, parameter_id=param_id,
+            min_safe=data.min_safe, max_safe=data.max_safe,
+        )
+        db.add(norm)
+    await db.commit()
+    await broadcast_change("water_tests")
+
+    return WaterTestParameterOut(
+        id=param.id, key=param.key, name_en=param.name_en, name_pl=param.name_pl,
+        unit=param.unit, category=param.category,
+        min_safe=data.min_safe, max_safe=data.max_safe,
+    )
 
 
 @router.get("/sessions", response_model=list[WaterTestSessionOut])
@@ -206,6 +269,7 @@ async def create_session(
 ):
     params_result = await db.execute(select(WaterTestParameter))
     params = {p.id: p for p in params_result.scalars().all()}
+    norms = await _effective_norms_map(db, data.tank_id or 1)
 
     session = WaterTestSession(
         tank_id=data.tank_id,
@@ -221,10 +285,11 @@ async def create_session(
         if not param:
             raise HTTPException(422, f"Unknown parameter_id {reading_in.parameter_id}")
 
+        min_safe, max_safe = norms.get(param.id, (param.min_safe, param.max_safe))
         oor = False
-        if param.min_safe is not None and reading_in.value < param.min_safe:
+        if min_safe is not None and reading_in.value < min_safe:
             oor = True
-        if param.max_safe is not None and reading_in.value > param.max_safe:
+        if max_safe is not None and reading_in.value > max_safe:
             oor = True
 
         reading = WaterTestReading(
@@ -274,39 +339,6 @@ async def create_session(
         notes=session.notes,
         readings=[_reading_out(r) for r in session.readings],
     )
-
-
-@router.patch("/readings/{reading_id}", response_model=WaterTestReadingOut)
-async def update_reading(
-    reading_id: int,
-    data: WaterTestReadingUpdate,
-    db: AsyncSession = Depends(get_db),
-):
-    """Correct a single already-recorded reading's value in place - used by
-    the "edit this parameter" popup so a mistyped value doesn't require
-    re-doing a whole test session."""
-    result = await db.execute(
-        select(WaterTestReading)
-        .options(selectinload(WaterTestReading.parameter))
-        .where(WaterTestReading.id == reading_id)
-    )
-    reading = result.scalar_one_or_none()
-    if not reading:
-        raise HTTPException(404, "Reading not found")
-
-    param = reading.parameter
-    oor = False
-    if param.min_safe is not None and data.value < param.min_safe:
-        oor = True
-    if param.max_safe is not None and data.value > param.max_safe:
-        oor = True
-
-    reading.value = data.value
-    reading.out_of_range = oor
-    await db.commit()
-    await db.refresh(reading, attribute_names=["parameter"])
-    await broadcast_change("water_tests")
-    return _reading_out(reading)
 
 
 @router.get("/trends/{param_key}", response_model=list[SensorHistoryPoint])

@@ -169,6 +169,21 @@ class WaterTestParameter(Base):
     readings: Mapped[list["WaterTestReading"]] = relationship(back_populates="parameter")
 
 
+class WaterTestParameterNorm(Base):
+    """Per-tank override of a parameter's safe range - two differently
+    stocked/planted tanks can want different min/max for the same test."""
+    __tablename__ = "water_test_parameter_norms"
+    __table_args__ = (UniqueConstraint("tank_id", "parameter_id", name="uq_watertest_norm_tank_param"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    tank_id: Mapped[int] = mapped_column(Integer)
+    parameter_id: Mapped[int] = mapped_column(ForeignKey("water_test_parameters.id"))
+    min_safe: Mapped[float | None] = mapped_column(Float, nullable=True)
+    max_safe: Mapped[float | None] = mapped_column(Float, nullable=True)
+
+    parameter: Mapped["WaterTestParameter"] = relationship()
+
+
 class WaterTestSession(Base):
     __tablename__ = "water_test_sessions"
 

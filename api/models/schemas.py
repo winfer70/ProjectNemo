@@ -164,8 +164,10 @@ class WaterTestReadingIn(BaseModel):
     notes: str | None = None
 
 
-class WaterTestReadingUpdate(BaseModel):
-    value: float
+class WaterTestParameterNormIn(BaseModel):
+    tank_id: int
+    min_safe: float | None = None
+    max_safe: float | None = None
 
 
 class WaterTestSessionCreate(BaseModel):
