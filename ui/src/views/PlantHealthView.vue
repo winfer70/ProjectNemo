@@ -100,17 +100,17 @@
       class="backdrop"
       @click.self="selectedKey = null"
     >
-      <div class="modal" style="max-width:360px;padding:18px;display:flex;flex-direction:column;gap:8px" @click.stop>
+      <div class="modal" style="max-width:440px;width:92vw;padding:24px;display:flex;flex-direction:column;gap:12px" @click.stop>
         <div class="spread">
-          <span style="font-weight:700;font-size:16px">{{ deficiencyName(selectedKey) }}</span>
+          <span style="font-weight:700;font-size:20px;color:#fff">{{ deficiencyName(selectedKey) }}</span>
           <button class="btn icon-btn btn-ghost" @click="selectedKey = null">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
               <path d="M6 6l12 12"/><path d="M18 6L6 18"/>
             </svg>
           </button>
         </div>
-        <span class="muted" style="font-size:13px">{{ deficiencySymptom(selectedKey) }}</span>
-        <span class="muted" style="font-size:13px">{{ deficiencyTreatment(selectedKey) }}</span>
+        <span class="muted" style="font-size:15px">{{ deficiencySymptom(selectedKey) }}</span>
+        <span class="muted" style="font-size:15px">{{ deficiencyTreatment(selectedKey) }}</span>
         <button class="btn btn-accent" style="margin-top:8px" @click="logSelected">
           {{ locale === 'pl' ? 'Zapisz dla rośliny' : 'Log for a plant' }}
         </button>
