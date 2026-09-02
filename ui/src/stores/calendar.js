@@ -5,7 +5,7 @@ import axios from 'axios'
 export const useCalendarStore = defineStore('calendar', () => {
   const monthData = ref({})
   const currentMonth = ref({ year: new Date().getFullYear(), month: new Date().getMonth() + 1 })
-  const todayTasks = ref([])
+  const todayTasksByTank = ref({}) // { [tankId]: task[] }
 
   async function fetchMonth(year, month) {
     const key = `${year}-${month}`
@@ -16,7 +16,7 @@ export const useCalendarStore = defineStore('calendar', () => {
 
   async function fetchToday(tankId = 1) {
     const r = await axios.get('/api/calendar/today', { params: { tank_id: tankId } })
-    todayTasks.value = r.data.tasks
+    todayTasksByTank.value = { ...todayTasksByTank.value, [tankId]: r.data.tasks }
   }
 
   async function toggleComplete(taskId, date) {
@@ -34,9 +34,11 @@ export const useCalendarStore = defineStore('calendar', () => {
         }
       }
     }
-    // also update todayTasks
-    const todayTask = todayTasks.value.find(t => t.id === taskId && t.date === date)
-    if (todayTask) todayTask.completed = r.data.completed
+    // also update whichever tank's today list has this task
+    for (const tasks of Object.values(todayTasksByTank.value)) {
+      const todayTask = tasks.find(t => t.id === taskId && t.date === date)
+      if (todayTask) todayTask.completed = r.data.completed
+    }
     return r.data.completed
   }
 
@@ -63,7 +65,7 @@ export const useCalendarStore = defineStore('calendar', () => {
   }
 
   return {
-    monthData, currentMonth, todayTasks,
+    monthData, currentMonth, todayTasksByTank,
     fetchMonth, fetchToday, refetchCurrent,
     toggleComplete, createTask, updateTask, deleteTask,
   }

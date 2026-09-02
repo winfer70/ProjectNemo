@@ -6,8 +6,14 @@ export const useScheduleStore = defineStore('schedule', () => {
   const feedings = ref([])
   const feedingHistory = ref([])
   const dosingTasks = ref([])
-  const feedStatus = ref({ paused: false, resume_in_secs: null, paused_entities: [] })
-  let statusPollInterval = null
+  const feedStatusByTank = ref({}) // { [tankId]: { paused, resume_in_secs, paused_entities } }
+  const statusPollIntervals = {} // tankId -> interval handle, not reactive
+
+  const EMPTY_STATUS = { paused: false, resume_in_secs: null, paused_entities: [] }
+
+  function feedStatusFor(tankId) {
+    return feedStatusByTank.value[tankId] ?? EMPTY_STATUS
+  }
 
   async function fetchFeedings(tankId = 1) {
     const r = await axios.get('/api/schedule/feedings', { params: { tank_id: tankId } })
@@ -26,31 +32,31 @@ export const useScheduleStore = defineStore('schedule', () => {
 
   async function pollFeedStatus(tankId = 1) {
     const r = await axios.get('/api/actions/feed-status', { params: { tank_id: tankId } })
-    feedStatus.value = r.data
-    if (!r.data.paused && statusPollInterval) {
-      clearInterval(statusPollInterval)
-      statusPollInterval = null
+    feedStatusByTank.value = { ...feedStatusByTank.value, [tankId]: r.data }
+    if (!r.data.paused && statusPollIntervals[tankId]) {
+      clearInterval(statusPollIntervals[tankId])
+      delete statusPollIntervals[tankId]
     }
   }
 
   function startStatusPolling(tankId = 1) {
-    if (statusPollInterval) clearInterval(statusPollInterval)
-    statusPollInterval = setInterval(() => pollFeedStatus(tankId), 5000)
+    if (statusPollIntervals[tankId]) clearInterval(statusPollIntervals[tankId])
+    statusPollIntervals[tankId] = setInterval(() => pollFeedStatus(tankId), 5000)
   }
 
   async function feedNow(tankId = 1) {
     await axios.post('/api/actions/feed-now', null, { params: { tank_id: tankId } })
-    feedStatus.value = { paused: true, resume_in_secs: 180, paused_entities: [] }
+    feedStatusByTank.value = { ...feedStatusByTank.value, [tankId]: { paused: true, resume_in_secs: 180, paused_entities: [] } }
     startStatusPolling(tankId)
     await fetchHistory(tankId)
   }
 
   async function cancelFeed(tankId = 1) {
     await axios.post('/api/actions/cancel-feed', null, { params: { tank_id: tankId } })
-    feedStatus.value = { paused: false, resume_in_secs: null, paused_entities: [] }
-    if (statusPollInterval) {
-      clearInterval(statusPollInterval)
-      statusPollInterval = null
+    feedStatusByTank.value = { ...feedStatusByTank.value, [tankId]: { ...EMPTY_STATUS } }
+    if (statusPollIntervals[tankId]) {
+      clearInterval(statusPollIntervals[tankId])
+      delete statusPollIntervals[tankId]
     }
   }
 
@@ -75,7 +81,7 @@ export const useScheduleStore = defineStore('schedule', () => {
   }
 
   return {
-    feedings, feedingHistory, dosingTasks, feedStatus,
+    feedings, feedingHistory, dosingTasks, feedStatusByTank, feedStatusFor,
     fetchFeedings, fetchHistory, fetchDosing, pollFeedStatus,
     feedNow, cancelFeed, completeDose, restockSupply,
     updateDosingTask, createDosingTask, startStatusPolling,

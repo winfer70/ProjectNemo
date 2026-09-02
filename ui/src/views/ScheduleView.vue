@@ -1,6 +1,6 @@
 <template>
   <div>
-    <TankSwitcher />
+    <TankSwitcher allow-combined />
 
     <!-- In-progress maintenance banner -->
     <div v-if="inProgressTask" class="banner warm">
@@ -16,14 +16,18 @@
       </button>
     </div>
 
-    <!-- ═══════════════════════════ TODAY TILE ═══════════════════════════ -->
-    <div class="tile" :class="{ feeding: scheduleStore.feedStatus.paused }">
+    <!-- ═══════════════════════════ TODAY TILE(S) ═══════════════════════════ -->
+    <!-- One tile per displayedTankIds entry - single mode = just the active
+         tank, combined mode = both tanks stacked, each independently
+         interactive (its own Feed Now / task list). -->
+    <div v-for="tid in displayedTankIds" :key="'today-' + tid" class="tile" :class="{ feeding: scheduleStore.feedStatusFor(tid).paused }">
       <div class="tile-hd">
         <h2>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
             <rect x="3" y="4.5" width="18" height="16" rx="2.5"/><path d="M3 9h18"/><path d="M8 2.5v4"/><path d="M16 2.5v4"/><path d="M8.5 14.5l2.2 2.2 4-4.4"/>
           </svg>
           {{ locale === 'pl' ? 'DZISIAJ' : 'TODAY' }}
+          <span v-if="tankStore.viewMode === 'combined'" class="muted" style="font-size:11px;font-weight:600;text-transform:none;margin-left:4px">· {{ tankDisplay(tid).name }}</span>
         </h2>
         <span class="meta">{{ todayLabel }}</span>
       </div>
@@ -34,19 +38,19 @@
           <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
             <path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/>
           </svg>
-          <span class="temp-value" :class="activeTankDisplay.tempClass">
-            {{ activeTankDisplay.temperature != null ? activeTankDisplay.temperature + '°C' : '—' }}
+          <span class="temp-value" :class="tankDisplay(tid).tempClass">
+            {{ tankDisplay(tid).temperature != null ? tankDisplay(tid).temperature + '°C' : '—' }}
           </span>
-          <span class="temp-label">{{ activeTankDisplay.name }}</span>
+          <span class="temp-label">{{ tankDisplay(tid).name }}</span>
         </div>
         <!-- Task list -->
         <div class="today-tasks">
-          <div v-if="calendarStore.todayTasks.length === 0" class="empty">
+          <div v-if="tasksFor(tid).length === 0" class="empty">
             <span class="em">🎉</span>
             <span>{{ locale === 'pl' ? 'Brak zadań na dziś' : 'No tasks for today' }}</span>
           </div>
           <template v-else>
-            <div v-for="task in calendarStore.todayTasks" :key="task.id + '_' + task.date">
+            <div v-for="task in tasksFor(tid)" :key="task.id + '_' + task.date">
               <div
                 class="task"
                 :class="{ done: task.completed, overdue: task.overdue_days > 0 && !task.completed }"
@@ -111,7 +115,7 @@
       <hr class="divider">
       <div class="tile-body" style="padding-top:14px">
         <!-- Feeding active state -->
-        <div v-if="scheduleStore.feedStatus.paused" class="fade-in">
+        <div v-if="scheduleStore.feedStatusFor(tid).paused" class="fade-in">
           <div class="row" style="justify-content:center;color:var(--accent-warm);font-weight:700;font-size:13px;margin-bottom:10px;gap:6px">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
               <path d="M12 4l9 15H3l9-15z"/><path d="M12 10v4"/><circle cx="12" cy="16.5" r="0.6" fill="currentColor" stroke="none"/>
@@ -119,11 +123,11 @@
             {{ locale === 'pl' ? 'Karmienie aktywne · 3 min' : 'Feeding active · 3 min' }}
           </div>
           <div class="row" style="gap:10px">
-            <div class="bar warm" style="flex:1"><i :style="{ width: feedProgressPct + '%' }"></i></div>
-            <span class="tnum" style="font-weight:700;font-size:14px;min-width:42px;text-align:right">{{ feedCountdownStr }}</span>
+            <div class="bar warm" style="flex:1"><i :style="{ width: feedProgressPctFor(tid) + '%' }"></i></div>
+            <span class="tnum" style="font-weight:700;font-size:14px;min-width:42px;text-align:right">{{ feedCountdownStrFor(tid) }}</span>
           </div>
           <div class="muted" style="font-size:12px;text-align:center;margin:7px 0 12px">{{ locale === 'pl' ? 'pozostało' : 'remaining' }}</div>
-          <button class="btn btn-danger-o btn-block" @click="handleCancelFeed">
+          <button class="btn btn-danger-o btn-block" @click="handleCancelFeed(tid)">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
               <path d="M6 6l12 12"/><path d="M18 6L6 18"/>
             </svg>
@@ -131,7 +135,7 @@
           </button>
         </div>
         <!-- Feed Now button -->
-        <button v-else class="btn btn-warm btn-block btn-lg" @click="handleFeedNow">
+        <button v-else class="btn btn-warm btn-block btn-lg" @click="handleFeedNow(tid)">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
             <path d="M16 12c0 0 3-4 6-4-1 2-1 6 0 8-3 0-6-4-6-4z"/><path d="M16 12c-3-4-9-4-12 0 3 4 9 4 12 0z"/><circle cx="7" cy="11" r="0.6" fill="currentColor" stroke="none"/>
           </svg>
@@ -139,7 +143,7 @@
         </button>
       </div>
       <div class="tile-body" style="padding-top:0;padding-bottom:14px">
-        <button class="btn btn-sm btn-ghost btn-block" style="margin-top:8px" @click="openCalEdit(null)">
+        <button class="btn btn-sm btn-ghost btn-block" style="margin-top:8px" @click="openCalEdit(null, tid)">
           + {{ locale === 'pl' ? 'Dodaj' : 'Add' }}
         </button>
       </div>
@@ -355,7 +359,7 @@
                 <span v-if="device.kwh_today != null" style="margin-left:5px;opacity:0.65">{{ device.kwh_today.toFixed(2) }} kWh</span>
               </div>
             </div>
-            <span v-if="device.state !== 'on' && !scheduleStore.feedStatus.paused && !hasAnyInProgressMaintenance" class="warn-ico">
+            <span v-if="device.state !== 'on' && !scheduleStore.feedStatusFor(tankStore.activeTankId).paused && !hasAnyInProgressMaintenance" class="warn-ico">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M12 4l9 15H3l9-15z"/><path d="M12 10v4"/><circle cx="12" cy="16.5" r="0.6" fill="currentColor" stroke="none"/>
               </svg>
@@ -554,46 +558,58 @@ async function handleBleConnect() {
   }
 }
 
-// ─── Feed countdown ───────────────────────────────────────────────────────────
+// ─── Feed countdown (per tank, so both tanks can count down independently
+// when the combined view is active) ────────────────────────────────────────
 const FEED_TOTAL_SECS = 180
-const feedSecsLeft = ref(0)
-let countdownTimer = null
+const feedSecsLeftByTank = reactive({})
+const countdownTimers = {}
 
-function startCountdown() {
-  stopCountdown()
-  feedSecsLeft.value = scheduleStore.feedStatus.resume_in_secs ?? FEED_TOTAL_SECS
-  countdownTimer = setInterval(() => {
-    if (feedSecsLeft.value > 0) feedSecsLeft.value--
-    else stopCountdown()
+function startCountdown(tankId) {
+  stopCountdown(tankId)
+  feedSecsLeftByTank[tankId] = scheduleStore.feedStatusFor(tankId).resume_in_secs ?? FEED_TOTAL_SECS
+  countdownTimers[tankId] = setInterval(() => {
+    if (feedSecsLeftByTank[tankId] > 0) feedSecsLeftByTank[tankId]--
+    else stopCountdown(tankId)
   }, 1000)
 }
 
-function stopCountdown() {
-  if (countdownTimer) { clearInterval(countdownTimer); countdownTimer = null }
+function stopCountdown(tankId) {
+  if (countdownTimers[tankId]) {
+    clearInterval(countdownTimers[tankId])
+    delete countdownTimers[tankId]
+  }
 }
 
-watch(() => scheduleStore.feedStatus.paused, (paused) => {
-  if (paused) startCountdown()
-  else stopCountdown()
-}, { immediate: true })
+function stopAllCountdowns() {
+  for (const tankId of Object.keys(countdownTimers)) stopCountdown(tankId)
+}
 
-// Re-sync local counter when store poll updates the remaining time
-watch(() => scheduleStore.feedStatus.resume_in_secs, (secs) => {
-  if (secs != null && scheduleStore.feedStatus.paused && Math.abs(secs - feedSecsLeft.value) > 3) {
-    feedSecsLeft.value = secs
-  }
-})
+// Known tank ids - watched unconditionally, harmless if a tank doesn't exist
+// (feedStatusFor() falls back to a stable "not paused" default).
+for (const tid of [1, 2]) {
+  watch(() => scheduleStore.feedStatusFor(tid).paused, (paused) => {
+    if (paused) startCountdown(tid)
+    else stopCountdown(tid)
+  }, { immediate: true })
 
-const feedProgressPct = computed(() => {
-  return Math.max(0, Math.min(100, (1 - feedSecsLeft.value / FEED_TOTAL_SECS) * 100))
-})
+  watch(() => scheduleStore.feedStatusFor(tid).resume_in_secs, (secs) => {
+    if (secs != null && scheduleStore.feedStatusFor(tid).paused && Math.abs(secs - (feedSecsLeftByTank[tid] ?? 0)) > 3) {
+      feedSecsLeftByTank[tid] = secs
+    }
+  })
+}
 
-const feedCountdownStr = computed(() => {
-  const s = feedSecsLeft.value
+function feedProgressPctFor(tankId) {
+  const s = feedSecsLeftByTank[tankId] ?? 0
+  return Math.max(0, Math.min(100, (1 - s / FEED_TOTAL_SECS) * 100))
+}
+
+function feedCountdownStrFor(tankId) {
+  const s = feedSecsLeftByTank[tankId] ?? 0
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`
-})
+}
 
-// ─── Today tile ───────────────────────────────────────────────────────────────
+// ─── Today tile(s) ────────────────────────────────────────────────────────────
 const expandedTask = ref(null)
 
 const todayLabel = computed(() => {
@@ -602,6 +618,12 @@ const todayLabel = computed(() => {
     weekday: 'long', day: 'numeric', month: 'long',
   })
 })
+
+// Single-tank mode shows just the active tank; combined mode shows one tile
+// per known tank, independently interactive.
+const displayedTankIds = computed(() =>
+  tankStore.viewMode === 'combined' ? tankStore.tanks.map(t => t.id) : [tankStore.activeTankId]
+)
 
 const tempClass = computed(() => {
   const t = sensorsStore.current.temperature
@@ -616,17 +638,21 @@ function classifyTemp(t) {
 
 // Falls back to the single legacy `temperature` field if the API hasn't
 // been redeployed with the multi-tank `tanks` array yet.
-const activeTankDisplay = computed(() => {
+function tankDisplay(tankId) {
   const tanks = sensorsStore.current.tanks
-  const match = tanks?.find(t => Number(t.id) === tankStore.activeTankId)
+  const match = tanks?.find(t => Number(t.id) === tankId)
   if (match) return { ...match, tempClass: classifyTemp(match.temperature) }
   return {
-    id: tankStore.activeTankId,
-    name: tankStore.tanks.find(t => t.id === tankStore.activeTankId)?.name ?? '',
-    temperature: sensorsStore.current.temperature,
-    tempClass: tempClass.value,
+    id: tankId,
+    name: tankStore.tanks.find(t => t.id === tankId)?.name ?? '',
+    temperature: tankId === 1 ? sensorsStore.current.temperature : null,
+    tempClass: tankId === 1 ? tempClass.value : 'temp-null',
   }
-})
+}
+
+function tasksFor(tankId) {
+  return calendarStore.todayTasksByTank[tankId] ?? []
+}
 
 function toggleExpanded(key) {
   expandedTask.value = expandedTask.value === key ? null : key
@@ -637,17 +663,17 @@ async function completeTask(task) {
   expandedTask.value = null
 }
 
-async function handleFeedNow() {
+async function handleFeedNow(tankId) {
   try {
-    await scheduleStore.feedNow(tankStore.activeTankId)
+    await scheduleStore.feedNow(tankId)
   } catch (err) {
     showToast(locale.value === 'pl' ? 'Błąd karmienia' : 'Feed error')
   }
 }
 
-async function handleCancelFeed() {
+async function handleCancelFeed(tankId) {
   try {
-    await scheduleStore.cancelFeed(tankStore.activeTankId)
+    await scheduleStore.cancelFeed(tankId)
   } catch (err) {
     showToast(locale.value === 'pl' ? 'Błąd anulowania' : 'Cancel error')
   }
@@ -656,9 +682,9 @@ async function handleCancelFeed() {
 // ─── Calendar edit modal ──────────────────────────────────────────────────────
 const calEditOpen = ref(false)
 const calEditTask = ref(null)
-const calForm = reactive({ name_pl: '', name: '', date: '', repeat: 'once', notes: '' })
+const calForm = reactive({ name_pl: '', name: '', date: '', repeat: 'once', notes: '', tankId: 1 })
 
-function openCalEdit(task) {
+function openCalEdit(task, tankId = tankStore.activeTankId) {
   calEditTask.value = task
   if (task) {
     calForm.name_pl = task.name_pl ?? ''
@@ -666,19 +692,21 @@ function openCalEdit(task) {
     calForm.date = task.date ?? new Date().toISOString().slice(0, 10)
     calForm.repeat = task.recurrence_type ?? 'once'
     calForm.notes = task.notes ?? ''
+    calForm.tankId = task.tank_id ?? tankId
   } else {
     calForm.name_pl = ''
     calForm.name = ''
     calForm.date = new Date().toISOString().slice(0, 10)
     calForm.repeat = 'once'
     calForm.notes = ''
+    calForm.tankId = tankId
   }
   calEditOpen.value = true
 }
 
 async function saveCalTask() {
   const data = {
-    tank_id: tankStore.activeTankId,
+    tank_id: calForm.tankId,
     name_pl: calForm.name_pl,
     name: calForm.name,
     start_date: calForm.date,
@@ -746,23 +774,28 @@ async function loadTankScopedData(tankId) {
     scheduleStore.fetchFeedings(tankId),
     scheduleStore.pollFeedStatus(tankId),
   ])
-  if (scheduleStore.feedStatus.paused) scheduleStore.startStatusPolling(tankId)
+  if (scheduleStore.feedStatusFor(tankId).paused) scheduleStore.startStatusPolling(tankId)
+}
+
+async function loadDisplayedTanksData() {
+  await Promise.all(displayedTankIds.value.map(loadTankScopedData))
 }
 
 onMounted(async () => {
   await Promise.all([
     maintenanceStore.fetchTasks(),
     sensorsStore.fetchDevices(),
-    loadTankScopedData(tankStore.activeTankId),
+    loadDisplayedTanksData(),
   ])
 })
 
-watch(() => tankStore.activeTankId, (tankId) => {
-  loadTankScopedData(tankId)
+// Combined mode needs both tanks' data; single mode only needs the active one.
+watch(() => [tankStore.activeTankId, tankStore.viewMode], () => {
+  loadDisplayedTanksData()
 })
 
 onUnmounted(() => {
-  stopCountdown()
+  stopAllCountdowns()
 })
 </script>
 
