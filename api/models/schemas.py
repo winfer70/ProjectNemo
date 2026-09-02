@@ -115,12 +115,14 @@ class MaintenanceStartRequest(BaseModel):
 class FeedingScheduleOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     id: int
+    tank_id: int | None
     time_of_day: str
     active: bool
     notes: str | None
 
 
 class FeedingScheduleCreate(BaseModel):
+    tank_id: int | None = None
     time_of_day: str
     active: bool = True
     notes: str | None = None
@@ -129,6 +131,7 @@ class FeedingScheduleCreate(BaseModel):
 class FeedingLogOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     id: int
+    tank_id: int | None
     scheduled_id: int | None
     timestamp: datetime
     manual: bool
@@ -268,6 +271,7 @@ class DeviceOut(BaseModel):
     watts: float | None
     kwh_today: float | None
     role: str
+    tank_id: int | None = None
 
 
 class FluvalChannels(BaseModel):
@@ -372,6 +376,7 @@ class ImageSearchResult(BaseModel):
 # ── Calendar ──────────────────────────────────────────────────────────────────
 
 class CalendarTaskCreate(BaseModel):
+    tank_id: int | None = None
     name: str
     name_pl: str
     color: str = "#00b4d8"

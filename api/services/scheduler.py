@@ -9,7 +9,7 @@ from sqlalchemy.orm import selectinload
 
 from config import settings
 from database import AsyncSessionLocal
-from models.orm import DosingTask, FeedingPause, MaintenanceTask, Supply, WaterTestSession
+from models.orm import DosingTask, FeedingPause, FeedingSchedule, MaintenanceTask, Supply, WaterTestSession
 from services.ha_client import ha_client
 from services.n8n_client import n8n_client
 from services.ntfy_client import ntfy_client
@@ -107,19 +107,32 @@ async def check_overdue():
                 await n8n_client.supply_low(supply)
 
 
-@scheduler.scheduled_job("cron", hour=18, minute=55)
+TANK_NAMES = {1: settings.tank_1_name, 2: settings.tank_2_name}
+
+
+@scheduler.scheduled_job("cron", minute="*")
 async def feeding_reminder():
-    """5-min warning before 19:00 feeding — trigger filter pause."""
-    await n8n_client.reminder(
-        "Feeding in 5 min — trigger 3-min filter pause at 19:00",
-        "Karmienie za 5 min — wcisnij pauze filtra o 19:00",
-    )
-    await ntfy_client.send(
-        "Feeding time",
-        "Trigger 3-min filter pause now. Feed: see today's rotation.",
-        priority=4,
-        tags=["fish"],
-    )
+    """Fire a 5-min-early Telegram warning for any tank whose FeedingSchedule
+    entry is coming up - press Feed Now for that tank when it fires."""
+    target_hm = (datetime.now(DUBLIN_TZ) + timedelta(minutes=5)).strftime("%H:%M")
+    async with AsyncSessionLocal() as db:
+        result = await db.execute(
+            select(FeedingSchedule).where(
+                FeedingSchedule.active == True, FeedingSchedule.time_of_day == target_hm  # noqa: E712
+            )
+        )
+        for feeding in result.scalars().all():
+            tank_name = TANK_NAMES.get(feeding.tank_id, f"Tank {feeding.tank_id}")
+            await n8n_client.reminder(
+                f"Feeding in 5 min ({tank_name}) — press Feed Now at {feeding.time_of_day}",
+                f"Karmienie za 5 min ({tank_name}) — wciśnij Karm Teraz o {feeding.time_of_day}",
+            )
+            await ntfy_client.send(
+                "Feeding time",
+                f"{tank_name}: press Feed Now. See today's rotation.",
+                priority=4,
+                tags=["fish"],
+            )
 
 
 @scheduler.scheduled_job("cron", day_of_week="sat", hour=9, minute=0)

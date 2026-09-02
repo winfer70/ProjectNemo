@@ -16,10 +16,21 @@ router = APIRouter(prefix="/api", tags=["schedule"])
 
 FEEDING_PAUSE_SECS = 180  # 3 minutes
 
+# Tank 1 (Akwarium Kuchnia): separate filter + air pump Tapo switches.
+# Tank 2 (Akwarium Salon): one Meross outlet powers filter+pump together.
+FEED_ENTITIES_BY_TANK = {
+    1: [settings.tapo_filter_entity, settings.tapo_air_entity],
+    2: [settings.tapo_filter_entity_2],
+}
+
 
 @router.get("/schedule/feedings", response_model=list[FeedingScheduleOut])
-async def list_feedings(db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(FeedingSchedule).order_by(FeedingSchedule.time_of_day))
+async def list_feedings(tank_id: int = 1, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(
+        select(FeedingSchedule)
+        .where(FeedingSchedule.tank_id == tank_id)
+        .order_by(FeedingSchedule.time_of_day)
+    )
     return result.scalars().all()
 
 
@@ -45,20 +56,24 @@ async def delete_feeding(feeding_id: int, db: AsyncSession = Depends(get_db)):
 
 
 @router.get("/schedule/feedings/history", response_model=list[FeedingLogOut])
-async def feeding_history(limit: int = 20, db: AsyncSession = Depends(get_db)):
+async def feeding_history(tank_id: int = 1, limit: int = 20, db: AsyncSession = Depends(get_db)):
     result = await db.execute(
-        select(FeedingLog).order_by(desc(FeedingLog.timestamp)).limit(limit)
+        select(FeedingLog)
+        .where(FeedingLog.tank_id == tank_id)
+        .order_by(desc(FeedingLog.timestamp))
+        .limit(limit)
     )
     return result.scalars().all()
 
 
 @router.get("/actions/feed-status", response_model=FeedingStatusOut)
-async def feed_status(db: AsyncSession = Depends(get_db)):
+async def feed_status(tank_id: int = 1, db: AsyncSession = Depends(get_db)):
     """Return current feeding pause state."""
     now = datetime.utcnow()
     result = await db.execute(
         select(FeedingPause).where(
             and_(
+                FeedingPause.tank_id == tank_id,
                 FeedingPause.cancelled_at.is_(None),
                 FeedingPause.resumed_at.is_(None),
             )
@@ -78,20 +93,23 @@ async def feed_status(db: AsyncSession = Depends(get_db)):
 
 
 @router.post("/actions/feed-now")
-async def feed_now(db: AsyncSession = Depends(get_db)):
-    """Pause filter + air pump for 3 min, log feed."""
-    entities = [settings.tapo_filter_entity, settings.tapo_air_entity]
+async def feed_now(tank_id: int = 1, db: AsyncSession = Depends(get_db)):
+    """Pause the tank's filter/pump devices for 3 min, log feed."""
+    entities = FEED_ENTITIES_BY_TANK.get(tank_id)
+    if not entities:
+        raise HTTPException(422, f"Unknown tank_id {tank_id}")
     await ha_client.pause_devices_for_feeding(entities)
 
     now = datetime.utcnow()
     pause = FeedingPause(
+        tank_id=tank_id,
         started_at=now,
         resume_at=now + timedelta(seconds=FEEDING_PAUSE_SECS),
     )
     pause.paused_entities = entities
     db.add(pause)
 
-    log = FeedingLog(manual=True, timestamp=now, notes="Feed Now button")
+    log = FeedingLog(tank_id=tank_id, manual=True, timestamp=now, notes="Feed Now button")
     db.add(log)
     await db.commit()
     await broadcast_change("schedule")
@@ -99,12 +117,13 @@ async def feed_now(db: AsyncSession = Depends(get_db)):
 
 
 @router.post("/actions/cancel-feed")
-async def cancel_feed(db: AsyncSession = Depends(get_db)):
+async def cancel_feed(tank_id: int = 1, db: AsyncSession = Depends(get_db)):
     """Immediately cancel feeding pause and resume devices."""
     now = datetime.utcnow()
     result = await db.execute(
         select(FeedingPause).where(
             and_(
+                FeedingPause.tank_id == tank_id,
                 FeedingPause.cancelled_at.is_(None),
                 FeedingPause.resumed_at.is_(None),
             )

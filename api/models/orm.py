@@ -112,6 +112,7 @@ class FeedingSchedule(Base):
     __tablename__ = "feeding_schedule"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    tank_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
     time_of_day: Mapped[str] = mapped_column(String(5))
     active: Mapped[bool] = mapped_column(Boolean, default=True)
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
@@ -123,6 +124,7 @@ class FeedingLog(Base):
     __tablename__ = "feeding_log"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    tank_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
     scheduled_id: Mapped[int | None] = mapped_column(ForeignKey("feeding_schedule.id"), nullable=True)
     timestamp: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
     manual: Mapped[bool] = mapped_column(Boolean, default=False)
@@ -136,6 +138,7 @@ class FeedingPause(Base):
     __tablename__ = "feeding_pauses"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    tank_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
     started_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
     resume_at: Mapped[datetime] = mapped_column(DateTime)
     cancelled_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
@@ -196,6 +199,7 @@ class CalendarTask(Base):
     __tablename__ = "calendar_tasks"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    tank_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
     name: Mapped[str] = mapped_column(String(100))
     name_pl: Mapped[str] = mapped_column(String(100))
     color: Mapped[str] = mapped_column(String(20))

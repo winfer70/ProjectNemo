@@ -31,6 +31,9 @@ def _get_entity_names() -> dict[str, tuple[str, str]]:
             settings.tapo_heater_entity: ("Heater", "Grzałka"),
             settings.tapo_light_entity: ("Light", "Światło"),
             settings.tapo_air_entity: ("Air Pump", "Pompa Powietrza"),
+            settings.tapo_heater_entity_2: ("Heater (Salon)", "Grzałka (Salon)"),
+            settings.tapo_filter_entity_2: ("Filter+Pump (Salon)", "Filtr+Pompka (Salon)"),
+            settings.tapo_light_entity_2: ("Light (Salon)", "Światło (Salon)"),
         }
     return _ENTITY_NAMES
 
@@ -42,10 +45,13 @@ def _get_device_meta() -> list[dict]:
     global _DEVICE_META
     if _DEVICE_META is None:
         _DEVICE_META = [
-            {"entity_id": settings.tapo_filter_entity, "name": "Filter", "name_pl": "Filtr", "role": "filter"},
-            {"entity_id": settings.tapo_heater_entity, "name": "Heater", "name_pl": "Grzałka", "role": "heater"},
-            {"entity_id": settings.tapo_light_entity, "name": "Light", "name_pl": "Światło", "role": "light"},
-            {"entity_id": settings.tapo_air_entity, "name": "Air Pump", "name_pl": "Pompa Powietrza", "role": "air"},
+            {"entity_id": settings.tapo_filter_entity, "name": "Filter", "name_pl": "Filtr", "role": "filter", "tank_id": 1},
+            {"entity_id": settings.tapo_heater_entity, "name": "Heater", "name_pl": "Grzałka", "role": "heater", "tank_id": 1},
+            {"entity_id": settings.tapo_light_entity, "name": "Light", "name_pl": "Światło", "role": "light", "tank_id": 1},
+            {"entity_id": settings.tapo_air_entity, "name": "Air Pump", "name_pl": "Pompa Powietrza", "role": "air", "tank_id": 1},
+            {"entity_id": settings.tapo_heater_entity_2, "name": "Heater", "name_pl": "Grzałka", "role": "heater", "tank_id": 2},
+            {"entity_id": settings.tapo_filter_entity_2, "name": "Filter+Pump", "name_pl": "Filtr+Pompka", "role": "filter", "tank_id": 2},
+            {"entity_id": settings.tapo_light_entity_2, "name": "Light", "name_pl": "Światło", "role": "light", "tank_id": 2},
         ]
     return _DEVICE_META
 
@@ -175,6 +181,7 @@ async def live_push_loop():
                     "name": d["name"],
                     "name_pl": d["name_pl"],
                     "role": d["role"],
+                    "tank_id": d["tank_id"],
                     "state": state_str,
                     "watts": watts,
                     "kwh_today": kwh_today,

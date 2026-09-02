@@ -8,10 +8,15 @@ from services.ha_client import ha_client
 router = APIRouter(prefix="/api/devices", tags=["devices"])
 
 DEVICE_MAP = [
-    {"entity_id": settings.tapo_filter_entity, "name": "Filter", "name_pl": "Filtr", "role": "filter"},
-    {"entity_id": settings.tapo_heater_entity, "name": "Heater", "name_pl": "Grzałka", "role": "heater"},
-    {"entity_id": settings.tapo_light_entity, "name": "Light", "name_pl": "Światło", "role": "light"},
-    {"entity_id": settings.tapo_air_entity, "name": "Air Pump", "name_pl": "Pompa Powietrza", "role": "air"},
+    {"entity_id": settings.tapo_filter_entity, "name": "Filter", "name_pl": "Filtr", "role": "filter", "tank_id": 1},
+    {"entity_id": settings.tapo_heater_entity, "name": "Heater", "name_pl": "Grzałka", "role": "heater", "tank_id": 1},
+    {"entity_id": settings.tapo_light_entity, "name": "Light", "name_pl": "Światło", "role": "light", "tank_id": 1},
+    {"entity_id": settings.tapo_air_entity, "name": "Air Pump", "name_pl": "Pompa Powietrza", "role": "air", "tank_id": 1},
+    # Tank 2 (Akwarium Salon) - single Meross power strip, no power monitoring
+    # available on this integration (watts/kwh will read as None).
+    {"entity_id": settings.tapo_heater_entity_2, "name": "Heater", "name_pl": "Grzałka", "role": "heater", "tank_id": 2},
+    {"entity_id": settings.tapo_filter_entity_2, "name": "Filter+Pump", "name_pl": "Filtr+Pompka", "role": "filter", "tank_id": 2},
+    {"entity_id": settings.tapo_light_entity_2, "name": "Light", "name_pl": "Światło", "role": "light", "tank_id": 2},
 ]
 
 
@@ -22,9 +27,11 @@ def _power_entities(switch_id: str) -> tuple[str, str]:
 
 
 @router.get("", response_model=list[DeviceOut])
-async def list_devices():
+async def list_devices(tank_id: int | None = None):
     devices = []
     for d in DEVICE_MAP:
+        if tank_id is not None and d["tank_id"] != tank_id:
+            continue
         state_data = await ha_client.get_entity_state(d["entity_id"])
         state_str = state_data.get("state", "unavailable")
         watts_entity, kwh_entity = _power_entities(d["entity_id"])
@@ -38,6 +45,7 @@ async def list_devices():
             watts=watts,
             kwh_today=kwh_today,
             role=d["role"],
+            tank_id=d["tank_id"],
         ))
     return devices
 

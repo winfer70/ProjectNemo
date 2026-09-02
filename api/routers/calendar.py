@@ -40,13 +40,16 @@ def _task_applies(task: CalendarTask, d: date) -> bool:
 # ── Task CRUD ──────────────────────────────────────────────────────────────────
 
 @router.get("/tasks")
-async def list_tasks(db: AsyncSession = Depends(get_db)):
-    """List all active calendar tasks."""
-    result = await db.execute(select(CalendarTask).where(CalendarTask.active == True))  # noqa: E712
+async def list_tasks(tank_id: int = 1, db: AsyncSession = Depends(get_db)):
+    """List all active calendar tasks for a tank."""
+    result = await db.execute(
+        select(CalendarTask).where(CalendarTask.active == True, CalendarTask.tank_id == tank_id)  # noqa: E712
+    )
     tasks = result.scalars().all()
     return [
         {
             "id": t.id,
+            "tank_id": t.tank_id,
             "name": t.name,
             "name_pl": t.name_pl,
             "color": t.color,
@@ -65,6 +68,7 @@ async def list_tasks(db: AsyncSession = Depends(get_db)):
 @router.post("/tasks", status_code=201)
 async def create_task(data: CalendarTaskCreate, db: AsyncSession = Depends(get_db)):
     task = CalendarTask(
+        tank_id=data.tank_id if data.tank_id is not None else 1,
         name=data.name,
         name_pl=data.name_pl,
         color=data.color,
@@ -117,12 +121,14 @@ async def delete_task(task_id: int, db: AsyncSession = Depends(get_db)):
 # ── Today view ─────────────────────────────────────────────────────────────────
 
 @router.get("/today")
-async def get_today(db: AsyncSession = Depends(get_db)):
-    """Return tasks due today + overdue tasks from last 7 days."""
+async def get_today(tank_id: int = 1, db: AsyncSession = Depends(get_db)):
+    """Return tasks due today + overdue tasks from last 7 days, for a tank."""
     today = date.today()
     today_str = today.isoformat()
 
-    result = await db.execute(select(CalendarTask).where(CalendarTask.active == True))  # noqa: E712
+    result = await db.execute(
+        select(CalendarTask).where(CalendarTask.active == True, CalendarTask.tank_id == tank_id)  # noqa: E712
+    )
     tasks = result.scalars().all()
 
     comp_result = await db.execute(

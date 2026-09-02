@@ -14,8 +14,8 @@ export const useCalendarStore = defineStore('calendar', () => {
     currentMonth.value = { year, month }
   }
 
-  async function fetchToday() {
-    const r = await axios.get('/api/calendar/today')
+  async function fetchToday(tankId = 1) {
+    const r = await axios.get('/api/calendar/today', { params: { tank_id: tankId } })
     todayTasks.value = r.data.tasks
   }
 
@@ -42,19 +42,19 @@ export const useCalendarStore = defineStore('calendar', () => {
 
   async function createTask(data) {
     await axios.post('/api/calendar/tasks', data)
-    await fetchToday()
+    await fetchToday(data.tank_id ?? 1)
     await refetchCurrent()
   }
 
   async function updateTask(taskId, data) {
     await axios.put(`/api/calendar/tasks/${taskId}`, data)
-    await fetchToday()
+    await fetchToday(data.tank_id ?? 1)
     await refetchCurrent()
   }
 
-  async function deleteTask(taskId) {
+  async function deleteTask(taskId, tankId = 1) {
     await axios.delete(`/api/calendar/tasks/${taskId}`)
-    await fetchToday()
+    await fetchToday(tankId)
     await refetchCurrent()
   }
 
