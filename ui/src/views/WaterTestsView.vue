@@ -43,8 +43,8 @@
             <span class="sec-lab" style="padding:0;text-align:center">Trend</span>
           </div>
 
-          <!-- Data rows -->
-          <div v-for="p in latestReadings" :key="p.parameter_key" class="prow">
+          <!-- Data rows - tap a row to edit that parameter's value -->
+          <div v-for="p in latestReadings" :key="p.parameter_key" class="prow" style="cursor:pointer" @click="openEditParam(p)">
             <span class="pp">{{ p.name_pl }}</span>
             <span class="pv">{{ p.value }}{{ p.unit ? ' ' + p.unit : '' }}</span>
             <span class="ps" :style="{ color: statusColor(p), justifyContent: 'center' }">
@@ -81,6 +81,18 @@
                 </svg>
               </span>
             </span>
+          </div>
+
+          <!-- Manual params with no reading yet in this test - tap to add -->
+          <div
+            v-for="p in missingManualParams"
+            :key="'missing-' + p.id"
+            class="prow"
+            style="cursor:pointer"
+            @click="openAddParam(p)"
+          >
+            <span class="pp muted">+ {{ p.name_pl }}</span>
+            <span class="pv muted" style="grid-column:span 3;text-align:right">{{ locale === 'pl' ? 'Dodaj wartość' : 'Add value' }}</span>
           </div>
         </div>
 
@@ -226,15 +238,40 @@
         </div>
       </div>
     </div>
+
+    <!-- Edit/add single parameter popup -->
+    <Teleport to="body">
+      <div v-if="editParam" class="backdrop" @click.self="editParam = null">
+        <div class="modal" style="max-width:360px;padding:20px;display:flex;flex-direction:column;gap:12px" @click.stop>
+          <div class="spread">
+            <span style="font-weight:700;font-size:17px">{{ editParam.name_pl }}</span>
+            <button class="btn icon-btn btn-ghost" @click="editParam = null">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M6 6l12 12"/><path d="M18 6L6 18"/>
+              </svg>
+            </button>
+          </div>
+          <div class="row" style="gap:8px">
+            <input class="input" type="number" step="0.01" v-model="editParam.value" autofocus style="flex:1;font-size:16px;text-align:right" @keyup.enter="saveEditParam">
+            <span class="muted" style="min-width:30px">{{ editParam.unit }}</span>
+          </div>
+          <button class="btn btn-accent btn-block" :disabled="savingParam" @click="saveEditParam">
+            {{ savingParam ? (locale === 'pl' ? 'Zapisywanie…' : 'Saving…') : (locale === 'pl' ? 'Zapisz' : 'Save') }}
+          </button>
+        </div>
+      </div>
+    </Teleport>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import axios from 'axios'
+import { useI18n } from 'vue-i18n'
 import { useTankSelectorStore } from '../stores/tankSelector'
 import TankSwitcher from '../components/TankSwitcher.vue'
 
+const { locale } = useI18n()
 const tankStore = useTankSelectorStore()
 const allSessions = ref([])
 const parameters = ref([])
@@ -275,6 +312,12 @@ const lastTestDays = computed(() => {
 const manualParams = computed(() =>
   parameters.value.filter((p) => p.category === 'manual')
 )
+
+// Manual params not present in the latest test - offered as quick "+ add" rows.
+const missingManualParams = computed(() => {
+  const have = new Set(latestReadings.value.map((r) => r.parameter_id))
+  return manualParams.value.filter((p) => !have.has(p.id))
+})
 
 const statusColor = (p) => {
   if (p.out_of_range) return 'var(--warning)'
@@ -391,6 +434,54 @@ async function saveScan() {
   } finally {
     saving.value = false
     closeScanModal()
+  }
+}
+
+// ─── Edit/add single parameter popup ──────────────────────────────────────────
+const editParam = ref(null)
+const savingParam = ref(false)
+
+function openEditParam(reading) {
+  editParam.value = {
+    mode: 'edit',
+    readingId: reading.id,
+    parameterId: reading.parameter_id,
+    name_pl: reading.name_pl,
+    unit: reading.unit,
+    value: reading.value,
+  }
+}
+
+function openAddParam(param) {
+  editParam.value = {
+    mode: 'add',
+    readingId: null,
+    parameterId: param.id,
+    name_pl: param.name_pl,
+    unit: param.unit,
+    value: '',
+  }
+}
+
+async function saveEditParam() {
+  const value = parseFloat(editParam.value.value)
+  if (isNaN(value)) return
+
+  savingParam.value = true
+  try {
+    if (editParam.value.mode === 'edit') {
+      await axios.patch(`/api/water-tests/readings/${editParam.value.readingId}`, { value })
+    } else {
+      await axios.post('/api/water-tests/sessions', {
+        tank_id: tankStore.activeTankId,
+        readings: [{ parameter_id: editParam.value.parameterId, value }],
+      })
+    }
+    const sessR = await axios.get('/api/water-tests/sessions')
+    allSessions.value = sessR.data
+    editParam.value = null
+  } finally {
+    savingParam.value = false
   }
 }
 </script>

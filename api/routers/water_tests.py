@@ -15,6 +15,7 @@ from models.schemas import (
     WaterTestSessionCreate,
     WaterTestSessionOut,
     WaterTestReadingOut,
+    WaterTestReadingUpdate,
     SensorHistoryPoint,
 )
 from services.n8n_client import n8n_client
@@ -273,6 +274,39 @@ async def create_session(
         notes=session.notes,
         readings=[_reading_out(r) for r in session.readings],
     )
+
+
+@router.patch("/readings/{reading_id}", response_model=WaterTestReadingOut)
+async def update_reading(
+    reading_id: int,
+    data: WaterTestReadingUpdate,
+    db: AsyncSession = Depends(get_db),
+):
+    """Correct a single already-recorded reading's value in place - used by
+    the "edit this parameter" popup so a mistyped value doesn't require
+    re-doing a whole test session."""
+    result = await db.execute(
+        select(WaterTestReading)
+        .options(selectinload(WaterTestReading.parameter))
+        .where(WaterTestReading.id == reading_id)
+    )
+    reading = result.scalar_one_or_none()
+    if not reading:
+        raise HTTPException(404, "Reading not found")
+
+    param = reading.parameter
+    oor = False
+    if param.min_safe is not None and data.value < param.min_safe:
+        oor = True
+    if param.max_safe is not None and data.value > param.max_safe:
+        oor = True
+
+    reading.value = data.value
+    reading.out_of_range = oor
+    await db.commit()
+    await db.refresh(reading, attribute_names=["parameter"])
+    await broadcast_change("water_tests")
+    return _reading_out(reading)
 
 
 @router.get("/trends/{param_key}", response_model=list[SensorHistoryPoint])

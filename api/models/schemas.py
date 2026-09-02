@@ -164,6 +164,10 @@ class WaterTestReadingIn(BaseModel):
     notes: str | None = None
 
 
+class WaterTestReadingUpdate(BaseModel):
+    value: float
+
+
 class WaterTestSessionCreate(BaseModel):
     tank_id: int | None = None
     tested_at: datetime | None = None
