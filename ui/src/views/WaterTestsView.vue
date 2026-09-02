@@ -13,6 +13,7 @@
         </button>
       </div>
       <hr class="divider" />
+      <TankSwitcher />
 
       <!-- Empty state -->
       <div v-if="latestReadings.length === 0" class="empty" style="padding:34px 16px">
@@ -231,8 +232,11 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import axios from 'axios'
+import { useTankSelectorStore } from '../stores/tankSelector'
+import TankSwitcher from '../components/TankSwitcher.vue'
 
-const sessions = ref([])
+const tankStore = useTankSelectorStore()
+const allSessions = ref([])
 const parameters = ref([])
 
 onMounted(async () => {
@@ -240,9 +244,11 @@ onMounted(async () => {
     axios.get('/api/water-tests/sessions'),
     axios.get('/api/water-tests/parameters'),
   ])
-  sessions.value = sessR.data
+  allSessions.value = sessR.data
   parameters.value = paramR.data
 })
+
+const sessions = computed(() => allSessions.value.filter(tankStore.matchesActiveTank))
 
 const latestSession = computed(() => sessions.value[0] ?? null)
 
@@ -375,13 +381,13 @@ async function saveScan() {
 
   saving.value = true
   try {
-    const payload = { readings }
+    const payload = { readings, tank_id: tankStore.activeTankId }
     if (cacheId.value != null) payload.scan_cache_id = cacheId.value
     if (testDate.value) payload.tested_at = new Date(testDate.value).toISOString()
 
     await axios.post('/api/water-tests/sessions', payload)
     const sessR = await axios.get('/api/water-tests/sessions')
-    sessions.value = sessR.data
+    allSessions.value = sessR.data
   } finally {
     saving.value = false
     closeScanModal()

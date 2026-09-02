@@ -146,6 +146,7 @@
     </div>
 
     <!-- ═══════════════════════════ DOSING TILE ═══════════════════════════ -->
+    <TankSwitcher />
     <div class="tile">
       <div class="tile-hd">
         <h2>
@@ -163,7 +164,7 @@
       </div>
       <hr class="divider">
       <div class="tile-body">
-        <div v-if="scheduleStore.dosingTasks.length === 0" class="empty">
+        <div v-if="filteredDosingTasks.length === 0" class="empty">
           <span>{{ locale === 'pl' ? 'Brak dawkowań' : 'No doses configured' }}</span>
           <button class="btn btn-sm btn-accent" @click="openDoseEdit(null)">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -173,7 +174,7 @@
           </button>
         </div>
         <div
-          v-for="(task, i) in scheduleStore.dosingTasks"
+          v-for="(task, i) in filteredDosingTasks"
           :key="task.id"
           :style="{ paddingTop: '12px', paddingBottom: '12px', borderTop: i > 0 ? '1px solid var(--border)' : 'none' }"
         >
@@ -292,11 +293,11 @@
         </div>
         <hr class="divider">
         <div class="tile-body" style="padding-top:6px">
-          <div v-if="maintenanceStore.tasks.length === 0" class="empty">
+          <div v-if="filteredMaintenanceTasks.length === 0" class="empty">
             <span>{{ locale === 'pl' ? 'Brak zadań' : 'No tasks' }}</span>
           </div>
           <div
-            v-for="(task, i) in maintenanceStore.tasks"
+            v-for="(task, i) in filteredMaintenanceTasks"
             :key="task.id"
             class="maint-row"
             :class="{ overdue: maintDays(task) < 0 && !task.started_at, 'maint-row--first': i === 0 }"
@@ -460,6 +461,19 @@
             <option value="drops">{{ locale === 'pl' ? 'krople' : 'drops' }}</option>
           </select>
         </div>
+        <div v-if="tankStore.tanks.length > 1" class="field">
+          <label>{{ locale === 'pl' ? 'Zbiornik' : 'Tank' }}</label>
+          <div class="seg">
+            <button
+              v-for="t in tankStore.tanks"
+              :key="t.id"
+              :class="{ on: doseForm.tankId === t.id }"
+              @click="doseForm.tankId = t.id"
+            >
+              {{ t.name }}
+            </button>
+          </div>
+        </div>
         <div class="modal-actions">
           <button class="btn btn-block" @click="doseEditOpen = false">{{ locale === 'pl' ? 'Anuluj' : 'Cancel' }}</button>
           <button class="btn btn-accent btn-block" @click="saveDose">{{ locale === 'pl' ? 'Zapisz' : 'Save' }}</button>
@@ -585,6 +599,8 @@ import { useScheduleStore } from '../stores/schedule'
 import { useCalendarStore } from '../stores/calendar'
 import { useMaintenanceStore } from '../stores/maintenance'
 import { useSensorsStore } from '../stores/sensors'
+import { useTankSelectorStore } from '../stores/tankSelector'
+import TankSwitcher from '../components/TankSwitcher.vue'
 import * as bleService from '../services/bleService'
 
 const showToast = inject('showToast', () => {})
@@ -594,6 +610,10 @@ const scheduleStore = useScheduleStore()
 const calendarStore = useCalendarStore()
 const maintenanceStore = useMaintenanceStore()
 const sensorsStore = useSensorsStore()
+const tankStore = useTankSelectorStore()
+
+const filteredDosingTasks = computed(() => scheduleStore.dosingTasks.filter(tankStore.matchesActiveTank))
+const filteredMaintenanceTasks = computed(() => maintenanceStore.tasks.filter(tankStore.matchesActiveTank))
 
 // ─── BLE / Lighting ───────────────────────────────────────────────────────────
 const bleError = ref(null)
@@ -769,7 +789,7 @@ async function handleRestock() {
 // Dose edit modal
 const doseEditOpen = ref(false)
 const doseEditTask = ref(null)
-const doseForm = reactive({ name_pl: '', name: '', amount: '', unit: 'ml', time: '08:00' })
+const doseForm = reactive({ name_pl: '', name: '', amount: '', unit: 'ml', time: '08:00', tankId: 1 })
 
 function openDoseEdit(task) {
   doseEditTask.value = task
@@ -779,12 +799,14 @@ function openDoseEdit(task) {
     doseForm.amount = String(task.dose_amount ?? '')
     doseForm.unit = task.dose_unit ?? 'ml'
     doseForm.time = task.time_of_day ?? '08:00'
+    doseForm.tankId = task.tank_id ?? tankStore.activeTankId
   } else {
     doseForm.name_pl = ''
     doseForm.name = ''
     doseForm.amount = ''
     doseForm.unit = 'ml'
     doseForm.time = '08:00'
+    doseForm.tankId = tankStore.activeTankId
   }
   doseEditOpen.value = true
 }
@@ -796,6 +818,7 @@ async function saveDose() {
     dose_amount: parseFloat(doseForm.amount) || 0,
     dose_unit: doseForm.unit,
     time_of_day: doseForm.time || null,
+    tank_id: doseForm.tankId,
   }
   try {
     if (doseEditTask.value) {

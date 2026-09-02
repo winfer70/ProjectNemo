@@ -18,6 +18,7 @@
       </button>
     </div>
     <hr class="divider">
+    <TankSwitcher />
 
     <!-- Empty state -->
     <div v-if="!fish.length && !plants.length" class="empty" style="padding:40px 16px">
@@ -167,6 +168,16 @@
                 </button>
                 <button :class="{ on: lsFormKind === 'plant' }" @click="lsFormKind = 'plant'">
                   {{ locale === 'pl' ? 'Roślina' : 'Plant' }}
+                </button>
+              </div>
+              <div v-if="tankStore.tanks.length > 1" class="seg">
+                <button
+                  v-for="t in tankStore.tanks"
+                  :key="t.id"
+                  :class="{ on: lsFormTankId === t.id }"
+                  @click="lsFormTankId = t.id"
+                >
+                  {{ t.name }}
                 </button>
               </div>
               <button class="btn btn-ghost" style="font-size:12px" @click="searchImg" :disabled="obsadaStore.searching">
@@ -354,12 +365,15 @@
 <script setup>
 import { useObsadaStore } from '../stores/obsada'
 import { usePlantHealthStore } from '../stores/plantHealth'
+import { useTankSelectorStore } from '../stores/tankSelector'
+import TankSwitcher from '../components/TankSwitcher.vue'
 import { useI18n } from 'vue-i18n'
 import { ref, computed, onMounted, watch } from 'vue'
 
 const { locale } = useI18n()
 const obsadaStore = useObsadaStore()
 const phStore = usePlantHealthStore()
+const tankStore = useTankSelectorStore()
 
 // ── UI state ──────────────────────────────────────────────────
 const statusPicker = ref(null)   // id of item showing status picker
@@ -422,6 +436,7 @@ const lsFormKind = ref('fish')
 const lsFormStatus = ref('planned')
 const lsConfirmDelete = ref(false)
 const lsFormImg = ref('')
+const lsFormTankId = ref(1)
 
 watch(editModal, (val) => {
   if (!val) return
@@ -436,6 +451,7 @@ watch(editModal, (val) => {
   lsFormStatus.value = item?.status || 'planned'
   lsConfirmDelete.value = false
   lsFormImg.value = item?.img || ''
+  lsFormTankId.value = item?.tank_id ?? tankStore.activeTankId
   obsadaStore.clearSearch()
 })
 
@@ -454,6 +470,7 @@ async function saveLs() {
     qty: parseInt(lsFormQty.value) || 1,
     added_at: lsFormDate.value,
     img: lsFormImg.value,
+    tank_id: lsFormTankId.value,
     ...(lsFormKind.value === 'fish' && { status: lsFormStatus.value }),
   }
   const { item, kind } = editModal.value
