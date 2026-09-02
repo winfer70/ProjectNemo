@@ -51,15 +51,6 @@
         >{{ deficiencyName(leaf.key) }}</text>
       </svg>
 
-      <div v-if="selectedKey" class="ls-card" style="flex-direction:column;align-items:flex-start;gap:4px;padding:12px;margin-top:10px;width:100%">
-        <span style="font-weight:700;font-size:14px">{{ deficiencyName(selectedKey) }}</span>
-        <span class="muted" style="font-size:12px">{{ deficiencySymptom(selectedKey) }}</span>
-        <span class="muted" style="font-size:11px">{{ deficiencyTreatment(selectedKey) }}</span>
-        <button class="btn btn-sm btn-accent" style="margin-top:6px" @click="logSelected">
-          {{ locale === 'pl' ? 'Zapisz dla rośliny' : 'Log for a plant' }}
-        </button>
-      </div>
-
       <!-- Active issues across both tanks -->
       <div class="sec-lab" style="padding-top:16px">{{ locale === 'pl' ? 'Aktywne problemy' : 'Active issues' }}</div>
       <div v-if="!pendingEvents.length" class="muted" style="font-size:12px;padding:8px 0">
@@ -99,6 +90,33 @@
       </div>
     </div>
   </div>
+
+  <!-- ── Leaf detail popup ───────────────────────────────────────
+       Shown when a leaf on the diagram is clicked; easier to read than
+       an inline card, especially on mobile. -->
+  <Teleport to="body">
+    <div
+      v-if="selectedKey"
+      class="backdrop"
+      @click.self="selectedKey = null"
+    >
+      <div class="modal" style="max-width:360px;padding:18px;display:flex;flex-direction:column;gap:8px" @click.stop>
+        <div class="spread">
+          <span style="font-weight:700;font-size:16px">{{ deficiencyName(selectedKey) }}</span>
+          <button class="btn icon-btn btn-ghost" @click="selectedKey = null">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M6 6l12 12"/><path d="M18 6L6 18"/>
+            </svg>
+          </button>
+        </div>
+        <span class="muted" style="font-size:13px">{{ deficiencySymptom(selectedKey) }}</span>
+        <span class="muted" style="font-size:13px">{{ deficiencyTreatment(selectedKey) }}</span>
+        <button class="btn btn-accent" style="margin-top:8px" @click="logSelected">
+          {{ locale === 'pl' ? 'Zapisz dla rośliny' : 'Log for a plant' }}
+        </button>
+      </div>
+    </div>
+  </Teleport>
 
   <!-- ── Plant picker (full-screen) ──────────────────────────────
        Shown after either a manual diagram pick or a photo scan needs to
