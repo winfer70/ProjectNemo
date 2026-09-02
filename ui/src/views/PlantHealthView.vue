@@ -19,6 +19,13 @@
            click a leaf to see its details, then log it against a plant. -->
       <div class="sec-lab">{{ locale === 'pl' ? 'Diagram niedoborów' : 'Deficiency diagram' }}</div>
       <svg viewBox="0 0 320 460" class="ph-svg" @click.self="selectedKey = null">
+        <defs>
+          <!-- nitrogen: old growth yellow fading to light green new growth -->
+          <linearGradient id="nitrogenGrad" x1="0" y1="0" x2="78" y2="0" gradientUnits="userSpaceOnUse">
+            <stop offset="0" stop-color="#e8d94a"/>
+            <stop offset="1" stop-color="#7fae52"/>
+          </linearGradient>
+        </defs>
         <path d="M140,438 L180,438 L172,458 L148,458 Z" fill="#2a2a2a"/>
         <line x1="160" y1="438" x2="160" y2="70" stroke="#3a6b2f" stroke-width="4" stroke-linecap="round"/>
         <line x1="20" y1="240" x2="300" y2="240" stroke="var(--border)" stroke-width="1.5" stroke-dasharray="5,4"/>
@@ -28,13 +35,44 @@
         <g
           v-for="leaf in DIAGRAM_LEAVES"
           :key="leaf.key"
-          :transform="`translate(160,${leaf.y}) scale(${leaf.side === 'left' ? -1 : 1},1)`"
+          :transform="`translate(160,${leaf.y}) scale(${(leaf.side === 'left' ? -1 : 1) * (leaf.scale || 1)},${leaf.scale || 1})`"
           class="ph-leaf"
           :class="{ on: selectedKey === leaf.key }"
           @click="selectedKey = leaf.key"
         >
+          <!-- base leaf shape, colored/textured per symptom so it's visible at a glance -->
           <path d="M0,0 Q18,-22 42,-19 Q68,-16 78,0 Q68,16 42,19 Q18,22 0,0 Z" :fill="leaf.color"/>
           <line x1="8" y1="0" x2="70" y2="0" stroke="rgba(0,0,0,0.25)" stroke-width="1"/>
+
+          <template v-if="leaf.key === 'manganese'">
+            <circle cx="30" cy="-8" r="3" fill="#274d29"/>
+            <circle cx="50" cy="6" r="2.5" fill="#274d29"/>
+            <circle cx="20" cy="10" r="2.5" fill="var(--bg)" stroke="#274d29" stroke-width="0.5"/>
+            <circle cx="45" cy="-12" r="2" fill="var(--bg)" stroke="#274d29" stroke-width="0.5"/>
+          </template>
+
+          <template v-if="leaf.key === 'potassium'">
+            <path d="M0,0 Q18,-22 42,-19 Q68,-16 78,0 Q68,16 42,19 Q18,22 0,0 Z" fill="none" stroke="#e0c94a" stroke-width="3"/>
+            <circle cx="35" cy="-4" r="2" fill="var(--bg)" stroke="#e0c94a" stroke-width="0.5"/>
+            <circle cx="55" cy="8" r="1.8" fill="var(--bg)" stroke="#e0c94a" stroke-width="0.5"/>
+            <circle cx="25" cy="10" r="1.8" fill="var(--bg)" stroke="#e0c94a" stroke-width="0.5"/>
+          </template>
+
+          <template v-if="leaf.key === 'magnesium'">
+            <line x1="20" y1="0" x2="10" y2="-10" stroke="#3f6b3a" stroke-width="1"/>
+            <line x1="35" y1="0" x2="25" y2="-13" stroke="#3f6b3a" stroke-width="1"/>
+            <line x1="50" y1="0" x2="42" y2="-12" stroke="#3f6b3a" stroke-width="1"/>
+            <line x1="20" y1="0" x2="12" y2="10" stroke="#3f6b3a" stroke-width="1"/>
+            <line x1="35" y1="0" x2="27" y2="13" stroke="#3f6b3a" stroke-width="1"/>
+            <line x1="50" y1="0" x2="43" y2="12" stroke="#3f6b3a" stroke-width="1"/>
+          </template>
+
+          <template v-if="leaf.key === 'phosphate'">
+            <ellipse cx="28" cy="-6" rx="7" ry="5" fill="#1f2a17" opacity="0.6"/>
+            <ellipse cx="48" cy="8" rx="6" ry="4" fill="#1f2a17" opacity="0.6"/>
+            <circle cx="18" cy="8" r="2.5" fill="var(--bg)" stroke="#1f2a17" stroke-width="0.5"/>
+            <circle cx="60" cy="-6" r="2" fill="var(--bg)" stroke="#1f2a17" stroke-width="0.5"/>
+          </template>
         </g>
 
         <text
@@ -220,15 +258,17 @@ onMounted(() => {
 // ── Diagram ────────────────────────────────────────────────────
 // Matches the Aquathusiast "5 Min Guide: Freshwater Nutrient Deficiencies"
 // chart - 4 new-growth leaves above the dashed line, 4 old-growth below.
+// Each leaf's color/texture depicts its own symptom (spots, holes, veins,
+// gradient, rim) rather than a flat swatch, so the problem reads at a glance.
 const DIAGRAM_LEAVES = [
-  { key: 'iron', side: 'left', y: 110, color: '#d9e07a' },
-  { key: 'calcium', side: 'right', y: 110, color: '#a9d18e' },
+  { key: 'iron', side: 'left', y: 110, color: '#e8d94a' },
+  { key: 'calcium', side: 'right', y: 110, color: '#dce9ba', scale: 0.72 },
   { key: 'manganese', side: 'left', y: 195, color: '#4f9153' },
-  { key: 'nitrogen', side: 'right', y: 195, color: '#bcd35f' },
+  { key: 'nitrogen', side: 'right', y: 195, color: 'url(#nitrogenGrad)' },
   { key: 'potassium', side: 'left', y: 285, color: '#5a9c4a' },
-  { key: 'magnesium', side: 'right', y: 285, color: '#3f6b3a' },
-  { key: 'phosphate', side: 'left', y: 365, color: '#2f5233' },
-  { key: 'co2', side: 'right', y: 365, color: '#e9e4cf' },
+  { key: 'magnesium', side: 'right', y: 285, color: '#a9c97a' },
+  { key: 'phosphate', side: 'left', y: 365, color: '#4a4a2a' },
+  { key: 'co2', side: 'right', y: 365, color: '#cfcac0', scale: 0.65 },
 ]
 
 const selectedKey = ref(null)
