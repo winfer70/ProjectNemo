@@ -28,8 +28,8 @@ WATER_TEST_PARAMS = [
     # Strip params: read at 30S — except ammonia (3 min)
     ("temp",            "Temperature",                   "Temperatura",                    "°C",   24.5,     27.5,     "continuous"),
     ("ph",              "pH",                            "pH",                             "",     7.2,      7.6,      "manual"),
-    ("kh",              "KH / Total Alkalinity",         "KH / Twardość Węglanowa",        "ppm",  40,       120,      "manual"),
-    ("gh",              "Hardness (GH)",                 "Twardość Ogólna (GH)",           "ppm",  125,      250,      "manual"),
+    ("kh",              "KH / Total Alkalinity",         "KH / Twardość Węglanowa",        "°dKH", 40,       120,      "manual"),
+    ("gh",              "Hardness (GH)",                 "Twardość Ogólna (GH)",           "°dGH", 125,      250,      "manual"),
     ("total_alkalinity","Total Alkalinity (TAL)",        "Zasadowość Całkowita (TAL)",     "ppm",  80,       120,      "manual"),
     ("nitrate",         "Nitrate (NO3)",                 "Azotany (NO3)",                  "mg/L", None,     30.0,     "manual"),
     ("nitrite",         "Nitrite (NO2)",                 "Azotyny (NO2)",                  "mg/L", None,     0.0,      "manual"),
