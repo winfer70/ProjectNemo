@@ -16,12 +16,15 @@
       </button>
     </div>
 
-    <!-- ═══════════════════════════ TODAY TILE(S) ═══════════════════════════ -->
-    <!-- One tile per displayedTankIds entry - single mode = just the active
+    <!-- ═══════════════════════════ TANK COLUMN(S) ═══════════════════════════ -->
+    <!-- One column per displayedTankIds entry - single mode = just the active
          tank, combined mode = both tanks side by side (Tank 1 left, Tank 2
-         right), each independently interactive (its own Feed Now / task list). -->
+         right). Every tile inside a column (Today, Lighting, Maintenance,
+         Plugs) is scoped to that column's own tank only. -->
     <div :class="{ row2: tankStore.viewMode === 'combined' }">
-    <div v-for="tid in displayedTankIds" :key="'today-' + tid" class="tile" :class="{ feeding: scheduleStore.feedStatusFor(tid).paused, 'today-tile-compact': tankStore.viewMode === 'combined' }">
+    <div v-for="tid in displayedTankIds" :key="'tankcol-' + tid" class="tank-column">
+
+    <div class="tile" :class="{ feeding: scheduleStore.feedStatusFor(tid).paused, 'today-tile-compact': tankStore.viewMode === 'combined' }">
       <div class="tile-hd">
         <h2>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -149,10 +152,9 @@
         </button>
       </div>
     </div>
-    </div>
 
-    <!-- ═══════════════════════════ LIGHTING TILE ═══════════════════════════ -->
-    <div v-if="tankStore.activeTankId === 1" class="tile">
+    <!-- LIGHTING TILE (Tank 1: BLE RGBW controller) -->
+    <div v-if="tid === 1" class="tile">
       <div class="tile-hd">
         <h2>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -206,7 +208,7 @@
       </div>
     </div>
 
-    <!-- Tank 2 lighting: plain on/off outlet, no BLE/RGBW controller -->
+    <!-- LIGHTING TILE (Tank 2: plain on/off outlet, no BLE/RGBW controller) -->
     <div v-else class="tile">
       <div class="tile-hd">
         <h2>
@@ -239,137 +241,137 @@
       </div>
     </div>
 
-    <!-- ═══════════════════════════ ROW: MAINTENANCE + PLUGS ═══════════════════════════ -->
-    <div class="row2">
-      <!-- MAINTENANCE TILE -->
-      <div class="tile">
-        <div class="tile-hd">
-          <h2>
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="3.2"/>
-              <path d="M12 3v2.5"/><path d="M12 18.5V21"/><path d="M3 12h2.5"/><path d="M18.5 12H21"/>
-              <path d="M5.5 5.5l1.8 1.8"/><path d="M16.7 16.7l1.8 1.8"/>
-              <path d="M18.5 5.5l-1.8 1.8"/><path d="M7.3 16.7l-1.8 1.8"/>
-            </svg>
-            {{ locale === 'pl' ? 'KONSERWACJA' : 'MAINT.' }}
-          </h2>
+    <!-- MAINTENANCE TILE -->
+    <div class="tile">
+      <div class="tile-hd">
+        <h2>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3.2"/>
+            <path d="M12 3v2.5"/><path d="M12 18.5V21"/><path d="M3 12h2.5"/><path d="M18.5 12H21"/>
+            <path d="M5.5 5.5l1.8 1.8"/><path d="M16.7 16.7l1.8 1.8"/>
+            <path d="M18.5 5.5l-1.8 1.8"/><path d="M7.3 16.7l-1.8 1.8"/>
+          </svg>
+          {{ locale === 'pl' ? 'KONSERWACJA' : 'MAINT.' }}
+        </h2>
+      </div>
+      <hr class="divider">
+      <div class="tile-body" style="padding-top:6px">
+        <div v-if="maintenanceTasksFor(tid).length === 0" class="empty">
+          <span>{{ locale === 'pl' ? 'Brak zadań' : 'No tasks' }}</span>
         </div>
-        <hr class="divider">
-        <div class="tile-body" style="padding-top:6px">
-          <div v-if="filteredMaintenanceTasks.length === 0" class="empty">
-            <span>{{ locale === 'pl' ? 'Brak zadań' : 'No tasks' }}</span>
-          </div>
-          <div
-            v-for="(task, i) in filteredMaintenanceTasks"
-            :key="task.id"
-            class="maint-row"
-            :class="{ overdue: maintDays(task) < 0 && !task.started_at, 'maint-row--first': i === 0 }"
-          >
-            <div class="spread" style="margin-bottom:8px">
-              <div class="row" style="gap:8px;min-width:0;flex:1;overflow:hidden">
-                <span style="display:flex;flex-shrink:0" :style="{ color: maintDays(task) < 0 && !task.started_at ? 'var(--danger)' : 'var(--text-muted)' }">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="3.2"/>
-                    <path d="M12 3v2.5"/><path d="M12 18.5V21"/><path d="M3 12h2.5"/><path d="M18.5 12H21"/>
-                    <path d="M5.5 5.5l1.8 1.8"/><path d="M16.7 16.7l1.8 1.8"/>
-                    <path d="M18.5 5.5l-1.8 1.8"/><path d="M7.3 16.7l-1.8 1.8"/>
-                  </svg>
-                </span>
-                <span
-                  style="font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"
-                  :style="{ fontWeight: maintDays(task) < 0 && !task.started_at ? 700 : 500 }"
-                >{{ locale === 'pl' ? task.name_pl : task.name }}</span>
-              </div>
-              <span
-                class="task-badge"
-                :class="task.started_at ? 'b-pending' : maintDays(task) < 0 ? 'b-overdue' : 'b-due'"
-                style="flex-shrink:0;margin-left:6px"
-              >
-                <template v-if="task.started_at">{{ locale === 'pl' ? 'W toku' : 'In prog.' }}</template>
-                <template v-else-if="maintDays(task) < 0">{{ Math.abs(maintDays(task)) }}{{ locale === 'pl' ? ' po' : ' over' }}</template>
-                <template v-else>{{ maintDays(task) }}{{ locale === 'pl' ? ' dni' : 'd' }}</template>
-              </span>
-            </div>
-            <button
-              class="btn btn-sm btn-block"
-              :class="{ 'btn-success': !!task.started_at }"
-              @click="handleMaintToggle(task)"
-            >
-              <template v-if="task.started_at">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M4 12.5l5 5 11-12"/>
+        <div
+          v-for="(task, i) in maintenanceTasksFor(tid)"
+          :key="task.id"
+          class="maint-row"
+          :class="{ overdue: maintDays(task) < 0 && !task.started_at, 'maint-row--first': i === 0 }"
+        >
+          <div class="spread" style="margin-bottom:8px">
+            <div class="row" style="gap:8px;min-width:0;flex:1;overflow:hidden">
+              <span style="display:flex;flex-shrink:0" :style="{ color: maintDays(task) < 0 && !task.started_at ? 'var(--danger)' : 'var(--text-muted)' }">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="3.2"/>
+                  <path d="M12 3v2.5"/><path d="M12 18.5V21"/><path d="M3 12h2.5"/><path d="M18.5 12H21"/>
+                  <path d="M5.5 5.5l1.8 1.8"/><path d="M16.7 16.7l1.8 1.8"/>
+                  <path d="M18.5 5.5l-1.8 1.8"/><path d="M7.3 16.7l-1.8 1.8"/>
                 </svg>
-                {{ locale === 'pl' ? 'Zakończ' : 'Finish' }}
+              </span>
+              <span
+                style="font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"
+                :style="{ fontWeight: maintDays(task) < 0 && !task.started_at ? 700 : 500 }"
+              >{{ locale === 'pl' ? task.name_pl : task.name }}</span>
+            </div>
+            <span
+              class="task-badge"
+              :class="task.started_at ? 'b-pending' : maintDays(task) < 0 ? 'b-overdue' : 'b-due'"
+              style="flex-shrink:0;margin-left:6px"
+            >
+              <template v-if="task.started_at">{{ locale === 'pl' ? 'W toku' : 'In prog.' }}</template>
+              <template v-else-if="maintDays(task) < 0">{{ Math.abs(maintDays(task)) }}{{ locale === 'pl' ? ' po' : ' over' }}</template>
+              <template v-else>{{ maintDays(task) }}{{ locale === 'pl' ? ' dni' : 'd' }}</template>
+            </span>
+          </div>
+          <button
+            class="btn btn-sm btn-block"
+            :class="{ 'btn-success': !!task.started_at }"
+            @click="handleMaintToggle(task)"
+          >
+            <template v-if="task.started_at">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 12.5l5 5 11-12"/>
+              </svg>
+              {{ locale === 'pl' ? 'Zakończ' : 'Finish' }}
+            </template>
+            <template v-else>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M7 5l11 7-11 7V5z"/>
+              </svg>
+              {{ locale === 'pl' ? 'Start' : 'Start' }}
+            </template>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PLUGS TILE -->
+    <div class="tile">
+      <div class="tile-hd">
+        <h2>{{ locale === 'pl' ? 'WTYCZKI' : 'PLUGS' }}</h2>
+      </div>
+      <hr class="divider">
+      <div class="tile-body" style="padding-top:4px">
+        <div v-if="plugDevicesFor(tid).length === 0" class="empty">
+          <span>{{ locale === 'pl' ? 'Brak urządzeń' : 'No devices' }}</span>
+        </div>
+        <div
+          v-for="device in plugDevicesFor(tid)"
+          :key="device.entity_id"
+          class="dev"
+          :class="{ off: device.state !== 'on' }"
+          style="padding:9px 6px;margin:0 -4px"
+          @click="sheetDevice = device"
+        >
+          <span class="dev-ico" style="width:26px;height:26px">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <template v-if="device.role === 'filter'">
+                <circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/>
+                <path d="M12 4v3"/><path d="M12 17v3"/><path d="M4 12h3"/><path d="M17 12h3"/>
+              </template>
+              <template v-else-if="device.role === 'heater'">
+                <path d="M7 4v16"/><path d="M12 4v16"/><path d="M17 4v16"/>
+                <rect x="3" y="7" width="18" height="10" rx="2"/>
+              </template>
+              <template v-else-if="device.role === 'air'">
+                <path d="M5 9a3 3 0 1 1 3 3H3"/><path d="M11 7a2.4 2.4 0 1 1 2.5 2.5"/>
+                <path d="M14 16a3 3 0 1 0 3-3h-6"/>
+              </template>
+              <template v-else-if="device.role === 'light'">
+                <path d="M9 18h6"/><path d="M10 21h4"/>
+                <path d="M12 3a6 6 0 0 0-4 10.5c.7.7 1 1.3 1 2.5h6c0-1.2.3-1.8 1-2.5A6 6 0 0 0 12 3z"/>
               </template>
               <template v-else>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M7 5l11 7-11 7V5z"/>
-                </svg>
-                {{ locale === 'pl' ? 'Start' : 'Start' }}
+                <path d="M9 3v6"/><path d="M15 3v6"/>
+                <path d="M7 9h10v3a5 5 0 0 1-10 0V9z"/><path d="M12 17v4"/>
               </template>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- PLUGS TILE -->
-      <div class="tile">
-        <div class="tile-hd">
-          <h2>{{ locale === 'pl' ? 'WTYCZKI' : 'PLUGS' }}</h2>
-        </div>
-        <hr class="divider">
-        <div class="tile-body" style="padding-top:4px">
-          <div v-if="filteredPlugDevices.length === 0" class="empty">
-            <span>{{ locale === 'pl' ? 'Brak urządzeń' : 'No devices' }}</span>
-          </div>
-          <div
-            v-for="device in filteredPlugDevices"
-            :key="device.entity_id"
-            class="dev"
-            :class="{ off: device.state !== 'on' }"
-            style="padding:9px 6px;margin:0 -4px"
-            @click="sheetDevice = device"
-          >
-            <span class="dev-ico" style="width:26px;height:26px">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <template v-if="device.role === 'filter'">
-                  <circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/>
-                  <path d="M12 4v3"/><path d="M12 17v3"/><path d="M4 12h3"/><path d="M17 12h3"/>
-                </template>
-                <template v-else-if="device.role === 'heater'">
-                  <path d="M7 4v16"/><path d="M12 4v16"/><path d="M17 4v16"/>
-                  <rect x="3" y="7" width="18" height="10" rx="2"/>
-                </template>
-                <template v-else-if="device.role === 'air'">
-                  <path d="M5 9a3 3 0 1 1 3 3H3"/><path d="M11 7a2.4 2.4 0 1 1 2.5 2.5"/>
-                  <path d="M14 16a3 3 0 1 0 3-3h-6"/>
-                </template>
-                <template v-else-if="device.role === 'light'">
-                  <path d="M9 18h6"/><path d="M10 21h4"/>
-                  <path d="M12 3a6 6 0 0 0-4 10.5c.7.7 1 1.3 1 2.5h6c0-1.2.3-1.8 1-2.5A6 6 0 0 0 12 3z"/>
-                </template>
-                <template v-else>
-                  <path d="M9 3v6"/><path d="M15 3v6"/>
-                  <path d="M7 9h10v3a5 5 0 0 1-10 0V9z"/><path d="M12 17v4"/>
-                </template>
-              </svg>
-            </span>
-            <div class="dev-name">
-              <div class="n" style="font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ locale === 'pl' ? device.name_pl : device.name }}</div>
-              <div class="w">
-                <span>{{ device.state === 'on' ? (device.watts ?? 0) : 0 }}W</span>
-                <span v-if="device.kwh_today != null" style="margin-left:5px;opacity:0.65">{{ device.kwh_today.toFixed(2) }} kWh</span>
-              </div>
+            </svg>
+          </span>
+          <div class="dev-name">
+            <div class="n" style="font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ locale === 'pl' ? device.name_pl : device.name }}</div>
+            <div class="w">
+              <span>{{ device.state === 'on' ? (device.watts ?? 0) : 0 }}W</span>
+              <span v-if="device.kwh_today != null" style="margin-left:5px;opacity:0.65">{{ device.kwh_today.toFixed(2) }} kWh</span>
             </div>
-            <span v-if="device.state !== 'on' && !scheduleStore.feedStatusFor(tankStore.activeTankId).paused && !hasAnyInProgressMaintenance" class="warn-ico">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M12 4l9 15H3l9-15z"/><path d="M12 10v4"/><circle cx="12" cy="16.5" r="0.6" fill="currentColor" stroke="none"/>
-              </svg>
-            </span>
-            <span v-else class="dot" :class="device.state === 'on' ? 'on' : 'off'"></span>
           </div>
+          <span v-if="device.state !== 'on' && !scheduleStore.feedStatusFor(tid).paused && !hasInProgressMaintenanceFor(tid)" class="warn-ico">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 4l9 15H3l9-15z"/><path d="M12 10v4"/><circle cx="12" cy="16.5" r="0.6" fill="currentColor" stroke="none"/>
+            </svg>
+          </span>
+          <span v-else class="dot" :class="device.state === 'on' ? 'on' : 'off'"></span>
         </div>
       </div>
+    </div>
+
+    </div>
     </div>
 
     <!-- ═══════════════════════════ CALENDAR EDIT MODAL (full-screen) ═══════════════════════════ -->
@@ -503,8 +505,14 @@ const maintenanceStore = useMaintenanceStore()
 const sensorsStore = useSensorsStore()
 const tankStore = useTankSelectorStore()
 
-const filteredMaintenanceTasks = computed(() => maintenanceStore.tasks.filter(tankStore.matchesActiveTank))
-const filteredPlugDevices = computed(() => sensorsStore.devices.filter(tankStore.matchesActiveTank))
+// Per-tank-column lookups (combined view renders one Maintenance/Plugs
+// tile per tank, each scoped to its own devices/tasks only).
+function maintenanceTasksFor(tankId) {
+  return maintenanceStore.tasks.filter(t => (t.tank_id ?? 1) === tankId)
+}
+function plugDevicesFor(tankId) {
+  return sensorsStore.devices.filter(d => (d.tank_id ?? 1) === tankId)
+}
 
 // Tank 2's Led outlet - plain on/off, no BLE/RGBW controller like Tank 1
 const tank2LightOn = computed(() => {
@@ -741,9 +749,9 @@ const inProgressTask = computed(() =>
   maintenanceStore.tasks.find(t => t.started_at !== null) ?? null
 )
 
-const hasAnyInProgressMaintenance = computed(() =>
-  maintenanceStore.tasks.some(t => t.started_at !== null)
-)
+function hasInProgressMaintenanceFor(tankId) {
+  return maintenanceTasksFor(tankId).some(t => t.started_at !== null)
+}
 
 async function handleMaintToggle(task) {
   try {
@@ -827,6 +835,14 @@ onUnmounted(() => {
 }
 input[type='range'] {
   accent-color: var(--accent);
+}
+
+/* Combined view: each tank's Today/Lighting/Maintenance/Plugs tiles stacked
+   in their own column, side by side with the other tank's column. */
+.tank-column {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
 }
 
 /* Today split layout */
