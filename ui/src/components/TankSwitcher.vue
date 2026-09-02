@@ -1,19 +1,19 @@
 <template>
   <div v-if="tankStore.tanks.length > 1" class="seg tank-switcher">
     <button
-      v-for="t in tankStore.tanks"
-      :key="t.id"
-      :class="{ on: tankStore.viewMode === 'single' && tankStore.activeTankId === t.id }"
-      @click="tankStore.setActiveTank(t.id)"
-    >
-      {{ t.name }}
-    </button>
-    <button
       v-if="allowCombined"
       :class="{ on: tankStore.viewMode === 'combined' }"
       @click="tankStore.setCombinedView()"
     >
       {{ locale === 'pl' ? 'Oba' : 'Both' }}
+    </button>
+    <button
+      v-for="t in tankStore.tanks"
+      :key="t.id"
+      :class="{ on: (!allowCombined || tankStore.viewMode === 'single') && tankStore.activeTankId === t.id }"
+      @click="tankStore.setActiveTank(t.id)"
+    >
+      {{ t.name }}
     </button>
   </div>
 </template>

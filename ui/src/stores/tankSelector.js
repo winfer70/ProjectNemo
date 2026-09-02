@@ -12,8 +12,9 @@ export const useTankSelectorStore = defineStore('tankSelector', () => {
   // 'single' = one tank's tiles shown at a time (Lighting/Maintenance/Plugs
   // always follow this regardless of viewMode). 'combined' additionally
   // renders the Dzisiaj (Today) section as one tile per tank side by side -
-  // scoped to Dzisiaj only, per user's explicit request.
-  const viewMode = ref(localStorage.getItem(VIEW_MODE_KEY) || 'single')
+  // scoped to Dzisiaj only, per user's explicit request. Default is
+  // 'combined' - it's the first/default tab.
+  const viewMode = ref(localStorage.getItem(VIEW_MODE_KEY) || 'combined')
 
   watch(activeTankId, (val) => localStorage.setItem(STORAGE_KEY, String(val)))
   watch(viewMode, (val) => localStorage.setItem(VIEW_MODE_KEY, val))

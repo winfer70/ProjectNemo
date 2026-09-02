@@ -18,9 +18,10 @@
 
     <!-- ═══════════════════════════ TODAY TILE(S) ═══════════════════════════ -->
     <!-- One tile per displayedTankIds entry - single mode = just the active
-         tank, combined mode = both tanks stacked, each independently
-         interactive (its own Feed Now / task list). -->
-    <div v-for="tid in displayedTankIds" :key="'today-' + tid" class="tile" :class="{ feeding: scheduleStore.feedStatusFor(tid).paused }">
+         tank, combined mode = both tanks side by side (Tank 1 left, Tank 2
+         right), each independently interactive (its own Feed Now / task list). -->
+    <div :class="{ row2: tankStore.viewMode === 'combined' }">
+    <div v-for="tid in displayedTankIds" :key="'today-' + tid" class="tile" :class="{ feeding: scheduleStore.feedStatusFor(tid).paused, 'today-tile-compact': tankStore.viewMode === 'combined' }">
       <div class="tile-hd">
         <h2>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -147,6 +148,7 @@
           + {{ locale === 'pl' ? 'Dodaj' : 'Add' }}
         </button>
       </div>
+    </div>
     </div>
 
     <!-- ═══════════════════════════ LIGHTING TILE ═══════════════════════════ -->
@@ -620,9 +622,12 @@ const todayLabel = computed(() => {
 })
 
 // Single-tank mode shows just the active tank; combined mode shows one tile
-// per known tank, independently interactive.
+// per known tank, independently interactive. Sorted ascending so Tank 1
+// always renders left / first regardless of API response order.
 const displayedTankIds = computed(() =>
-  tankStore.viewMode === 'combined' ? tankStore.tanks.map(t => t.id) : [tankStore.activeTankId]
+  tankStore.viewMode === 'combined'
+    ? tankStore.tanks.map(t => t.id).sort((a, b) => a - b)
+    : [tankStore.activeTankId]
 )
 
 const tempClass = computed(() => {
@@ -862,6 +867,29 @@ input[type='range'] {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* Combined view: two Today tiles side by side (row2 grid) need a narrower
+   internal layout - stack temp above tasks instead of the normal 50/50
+   side-by-side split, and shrink the temperature font. */
+.today-tile-compact .today-split {
+  flex-direction: column;
+  gap: 8px;
+}
+.today-tile-compact .today-temp {
+  width: 100%;
+  flex-direction: row;
+  justify-content: center;
+  gap: 10px;
+  padding: 6px 4px;
+  border-right: none;
+  border-bottom: 1px solid var(--border);
+}
+.today-tile-compact .today-temp .temp-value {
+  font-size: 26px;
+}
+.today-tile-compact .today-tasks {
+  padding-left: 0;
 }
 .temp-value {
   font-size: 42px;
