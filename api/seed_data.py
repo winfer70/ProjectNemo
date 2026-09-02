@@ -38,6 +38,41 @@ WATER_TEST_PARAMS = [
     ("free_chlorine",   "Free Chlorine (Cl)",            "Wolny Chlor (Cl)",               "mg/L", None,     0.0,      "manual"),
 ]
 
+# key -> (test_frequency_days, high_effect_en, high_effect_pl). None frequency
+# = no reminder (continuous sensor). Based on standard freshwater community
+# tank test-kit guidance.
+WATER_TEST_REMINDER_DEFAULTS = {
+    "temp": (None, None, None),
+    "ph": (7,
+        "High pH increases the toxicity of ammonia and can stress or burn fish; sudden swings during water changes are especially dangerous.",
+        "Wysokie pH zwiększa toksyczność amoniaku i może stresować lub poparzyć ryby; nagłe skoki podczas podmian są szczególnie niebezpieczne."),
+    "kh": (7,
+        "Very high KH keeps pH locked stubbornly high, making it hard to lower and stressing fish that prefer softer water.",
+        "Bardzo wysokie KH usztywnia pH na wysokim poziomie, utrudniając jego obniżenie i stresując ryby preferujące miększą wodę."),
+    "gh": (30,
+        "High GH (very hard water) stresses soft-water species, can impair osmoregulation and reduce breeding success.",
+        "Wysokie GH (bardzo twarda woda) stresuje gatunki miękkowodne, może zaburzać osmoregulację i obniżać sukces rozrodu."),
+    "total_alkalinity": (14,
+        "High alkalinity buffers pH very high and can stress fish adapted to softer, more acidic water.",
+        "Wysoka zasadowość utrzymuje pH na wysokim poziomie i może stresować ryby przystosowane do miększej, bardziej kwaśnej wody."),
+    "nitrate": (7,
+        "Chronic high nitrate causes stress, stunted growth, poor coloration and fuels algae blooms — usually means it's time for a water change.",
+        "Przewlekle wysokie azotany powodują stres, zahamowanie wzrostu, słabsze wybarwienie i sprzyjają glonom — zwykle czas na podmianę wody."),
+    "nitrite": (7,
+        "Even a small rise in nitrite blocks oxygen transport in the blood ('brown blood disease') and can suffocate fish within hours.",
+        "Nawet niewielki wzrost azotynów blokuje transport tlenu we krwi ('choroba brunatnej krwi') i może udusić ryby w ciągu kilku godzin."),
+    "ammonia": (7,
+        "Ammonia is highly toxic — it burns gills and fins and can kill fish within hours, especially at higher pH/temperature.",
+        "Amoniak jest silnie toksyczny — poparza skrzela i płetwy i może zabić ryby w ciągu kilku godzin, zwłaszcza przy wyższym pH/temperaturze."),
+    "copper": (30,
+        "Copper is lethal to shrimp, snails and other invertebrates even at low concentrations, and can damage fish gills/liver.",
+        "Miedź jest śmiertelna dla krewetek, ślimaków i innych bezkręgowców nawet w niskich stężeniach i może uszkodzić skrzela/wątrobę ryb."),
+    "free_chlorine": (30,
+        "Chlorine destroys gill tissue and kills the beneficial bacteria your filter depends on — usually only a risk after a tap water treatment failure.",
+        "Chlor niszczy tkankę skrzelową i zabija pożyteczne bakterie w filtrze — zwykle zagrożenie tylko po awarii uzdatniania wody kranowej."),
+}
+
+
 DEFAULT_SUPPLIES = [
     # name                              name_pl                                     type      amount  unit    min_thresh
     ("Seachem Prime",                   "Seachem Prime",                            "liquid", 500,    "ml",   50),
@@ -401,9 +436,11 @@ async def seed(session: AsyncSession):
     existing = await session.scalar(select(WaterTestParameter).limit(1))
     if not existing:
         for key, name_en, name_pl, unit, min_safe, max_safe, category in WATER_TEST_PARAMS:
+            freq, effect_en, effect_pl = WATER_TEST_REMINDER_DEFAULTS.get(key, (None, None, None))
             session.add(WaterTestParameter(
                 key=key, name_en=name_en, name_pl=name_pl,
                 unit=unit, min_safe=min_safe, max_safe=max_safe, category=category,
+                test_frequency_days=freq, high_effect_en=effect_en, high_effect_pl=effect_pl,
             ))
 
     # Supplies

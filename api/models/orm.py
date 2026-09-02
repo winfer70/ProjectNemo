@@ -165,13 +165,18 @@ class WaterTestParameter(Base):
     min_safe: Mapped[float | None] = mapped_column(Float, nullable=True)
     max_safe: Mapped[float | None] = mapped_column(Float, nullable=True)
     category: Mapped[str] = mapped_column(String(20))
+    # Reminder defaults - None means no reminder (e.g. "continuous" temp).
+    test_frequency_days: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    high_effect_en: Mapped[str | None] = mapped_column(Text, nullable=True)
+    high_effect_pl: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     readings: Mapped[list["WaterTestReading"]] = relationship(back_populates="parameter")
 
 
 class WaterTestParameterNorm(Base):
-    """Per-tank override of a parameter's safe range - two differently
-    stocked/planted tanks can want different min/max for the same test."""
+    """Per-tank override of a parameter's safe range and test frequency -
+    two differently stocked/planted tanks can want different min/max and
+    test cadence for the same test."""
     __tablename__ = "water_test_parameter_norms"
     __table_args__ = (UniqueConstraint("tank_id", "parameter_id", name="uq_watertest_norm_tank_param"),)
 
@@ -180,8 +185,25 @@ class WaterTestParameterNorm(Base):
     parameter_id: Mapped[int] = mapped_column(ForeignKey("water_test_parameters.id"))
     min_safe: Mapped[float | None] = mapped_column(Float, nullable=True)
     max_safe: Mapped[float | None] = mapped_column(Float, nullable=True)
+    test_frequency_days: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
     parameter: Mapped["WaterTestParameter"] = relationship()
+
+
+class WaterTestSnooze(Base):
+    """Tracks an in-progress "remind me later" for one overdue tank+parameter
+    test. Deleted once a new reading for that tank+parameter is logged."""
+    __tablename__ = "water_test_snoozes"
+    __table_args__ = (UniqueConstraint("tank_id", "parameter_id", name="uq_watertest_snooze_tank_param"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    tank_id: Mapped[int] = mapped_column(Integer)
+    parameter_id: Mapped[int] = mapped_column(ForeignKey("water_test_parameters.id"))
+    snoozed_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+    notified_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+
+    parameter: Mapped["WaterTestParameter"] = relationship()
+
 
 
 class WaterTestSession(Base):
@@ -204,6 +226,9 @@ class WaterTestReading(Base):
     value: Mapped[float] = mapped_column(Float)
     out_of_range: Mapped[bool] = mapped_column(Boolean, default=False)
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+    # Per-parameter stamp so a KH-only update does not inherit the session time
+    # of older pH/GH rows carried in a merge, and so /current can show each age.
+    updated_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
     session: Mapped["WaterTestSession"] = relationship(back_populates="readings")
     parameter: Mapped["WaterTestParameter"] = relationship(back_populates="readings")

@@ -224,7 +224,8 @@ html, body, #app { height: 100%; margin: 0; padding: 0; background: #0e1117; }
 .ptable { width: 100%; }
 .ptable .prow { display: grid; grid-template-columns: 1fr auto 56px 28px; align-items: center; gap: 8px; padding: 11px 2px; }
 .ptable .prow + .prow { border-top: 1px solid var(--border); }
-.ptable .pp { font-weight: 600; font-size: 14px; }
+.ptable .pp { font-weight: 600; font-size: 14px; display: flex; flex-direction: column; gap: 2px; }
+.ptable .pp-time { font-weight: 400; font-size: 11px; color: var(--text-muted); }
 .ptable .pv { font-variant-numeric: tabular-nums; font-size: 14px; color: var(--text-muted); text-align: right; }
 .ptable .ps { display: flex; align-items: center; gap: 5px; font-size: 12px; }
 .ptable .pt { text-align: center; color: var(--text-muted); }

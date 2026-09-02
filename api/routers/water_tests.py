@@ -1,21 +1,25 @@
 """Water test sessions + readings + trends."""
 import base64
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from fastapi.responses import JSONResponse
-from sqlalchemy import select, desc
+from sqlalchemy import select, desc, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from config import settings
 from database import get_db
-from models.orm import WaterTestParameter, WaterTestParameterNorm, WaterTestReading, WaterTestSession
+from models.orm import WaterTestParameter, WaterTestParameterNorm, WaterTestReading, WaterTestSession, WaterTestSnooze
 from models.schemas import (
     WaterTestParameterOut,
     WaterTestParameterNormIn,
+    WaterTestReminderOut,
+    WaterTestSnoozeIn,
     WaterTestSessionCreate,
     WaterTestSessionOut,
     WaterTestReadingOut,
+    WaterTestCurrentOut,
     SensorHistoryPoint,
 )
 from services.n8n_client import n8n_client
@@ -34,8 +38,11 @@ router = APIRouter(prefix="/api/water-tests", tags=["water-tests"])
 
 
 
-def _reading_out(r: WaterTestReading) -> WaterTestReadingOut:
+def _reading_out(r: WaterTestReading, session_tested_at: datetime | None = None) -> WaterTestReadingOut:
     p = r.parameter
+    updated = getattr(r, "updated_at", None) or session_tested_at
+    if updated is None and getattr(r, "session", None) is not None:
+        updated = r.session.tested_at
     return WaterTestReadingOut(
         id=r.id,
         parameter_id=r.parameter_id,
@@ -46,20 +53,22 @@ def _reading_out(r: WaterTestReading) -> WaterTestReadingOut:
         value=r.value,
         out_of_range=r.out_of_range,
         notes=r.notes,
+        updated_at=updated,
     )
 
 
-async def _effective_norms_map(db: AsyncSession, tank_id: int) -> dict[int, tuple[float | None, float | None]]:
-    """parameter_id -> (min_safe, max_safe), using this tank's override row
-    when one exists, else the parameter's global default."""
+async def _effective_norms_map(db: AsyncSession, tank_id: int) -> dict[int, tuple[float | None, float | None, int | None]]:
+    """parameter_id -> (min_safe, max_safe, test_frequency_days), using this
+    tank's override row when one exists, else the parameter's global default."""
     params_result = await db.execute(select(WaterTestParameter))
-    norms = {p.id: (p.min_safe, p.max_safe) for p in params_result.scalars().all()}
+    norms = {p.id: (p.min_safe, p.max_safe, p.test_frequency_days) for p in params_result.scalars().all()}
 
     norms_result = await db.execute(
         select(WaterTestParameterNorm).where(WaterTestParameterNorm.tank_id == tank_id)
     )
     for n in norms_result.scalars().all():
-        norms[n.parameter_id] = (n.min_safe, n.max_safe)
+        base = norms.get(n.parameter_id, (None, None, None))
+        norms[n.parameter_id] = (n.min_safe, n.max_safe, n.test_frequency_days if n.test_frequency_days is not None else base[2])
     return norms
 
 
@@ -173,7 +182,7 @@ async def list_parameters(tank_id: int | None = None, db: AsyncSession = Depends
         WaterTestParameterOut(
             id=p.id, key=p.key, name_en=p.name_en, name_pl=p.name_pl, unit=p.unit,
             category=p.category,
-            min_safe=norms[p.id][0], max_safe=norms[p.id][1],
+            min_safe=norms[p.id][0], max_safe=norms[p.id][1], test_frequency_days=norms[p.id][2],
         )
         for p in params
     ]
@@ -185,7 +194,7 @@ async def set_parameter_norm(
     data: WaterTestParameterNormIn,
     db: AsyncSession = Depends(get_db),
 ):
-    """Upsert this tank's safe-range override for one parameter."""
+    """Upsert this tank's safe-range + test-frequency override for one parameter."""
     param = await db.get(WaterTestParameter, param_id)
     if not param:
         raise HTTPException(404, "Parameter not found")
@@ -200,10 +209,12 @@ async def set_parameter_norm(
     if norm:
         norm.min_safe = data.min_safe
         norm.max_safe = data.max_safe
+        norm.test_frequency_days = data.test_frequency_days
     else:
         norm = WaterTestParameterNorm(
             tank_id=data.tank_id, parameter_id=param_id,
             min_safe=data.min_safe, max_safe=data.max_safe,
+            test_frequency_days=data.test_frequency_days,
         )
         db.add(norm)
     await db.commit()
@@ -212,8 +223,71 @@ async def set_parameter_norm(
     return WaterTestParameterOut(
         id=param.id, key=param.key, name_en=param.name_en, name_pl=param.name_pl,
         unit=param.unit, category=param.category,
-        min_safe=data.min_safe, max_safe=data.max_safe,
+        min_safe=data.min_safe, max_safe=data.max_safe, test_frequency_days=data.test_frequency_days,
     )
+
+
+@router.get("/reminders", response_model=list[WaterTestReminderOut])
+async def list_reminders(tank_id: int = 1, db: AsyncSession = Depends(get_db)):
+    """Manual-category parameters that are due (or overdue) for this tank,
+    based on the last time each was actually tested here."""
+    params_result = await db.execute(
+        select(WaterTestParameter).where(WaterTestParameter.category == "manual").order_by(WaterTestParameter.id)
+    )
+    params = params_result.scalars().all()
+    norms = await _effective_norms_map(db, tank_id)
+
+    readings_result = await db.execute(
+        select(WaterTestReading, WaterTestSession.tested_at)
+        .join(WaterTestSession, WaterTestReading.session_id == WaterTestSession.id)
+        .where(WaterTestSession.tank_id == tank_id)
+        .order_by(desc(func.coalesce(WaterTestReading.updated_at, WaterTestSession.tested_at)))
+    )
+    last_tested: dict[int, datetime] = {}
+    for reading, session_tested_at in readings_result.all():
+        if reading.parameter_id not in last_tested:
+            last_tested[reading.parameter_id] = reading.updated_at or session_tested_at
+
+    snoozes_result = await db.execute(select(WaterTestSnooze).where(WaterTestSnooze.tank_id == tank_id))
+    snoozes = {s.parameter_id: s for s in snoozes_result.scalars().all()}
+
+    now = datetime.utcnow()
+    out = []
+    for p in params:
+        _, _, frequency_days = norms.get(p.id, (p.min_safe, p.max_safe, p.test_frequency_days))
+        if frequency_days is None:
+            continue
+        last_at = last_tested.get(p.id)
+        due = last_at is None or (now - last_at) >= timedelta(days=frequency_days)
+        if not due:
+            continue
+        out.append(WaterTestReminderOut(
+            parameter_id=p.id, key=p.key, name_en=p.name_en, name_pl=p.name_pl, unit=p.unit,
+            last_tested_at=last_at, frequency_days=frequency_days, due=True,
+            snoozed_at=snoozes[p.id].snoozed_at if p.id in snoozes else None,
+            high_effect_en=p.high_effect_en, high_effect_pl=p.high_effect_pl,
+        ))
+    return out
+
+
+@router.post("/reminders/{parameter_id}/snooze")
+async def snooze_reminder(
+    parameter_id: int,
+    data: WaterTestSnoozeIn,
+    db: AsyncSession = Depends(get_db),
+):
+    """Defer a due reminder. Keeps the original snoozed_at on repeat taps so
+    the \"snoozed for more than 2 days\" escalation check stays accurate."""
+    result = await db.execute(
+        select(WaterTestSnooze).where(
+            WaterTestSnooze.tank_id == data.tank_id,
+            WaterTestSnooze.parameter_id == parameter_id,
+        )
+    )
+    if not result.scalar_one_or_none():
+        db.add(WaterTestSnooze(tank_id=data.tank_id, parameter_id=parameter_id))
+        await db.commit()
+    return {"ok": True}
 
 
 @router.get("/sessions", response_model=list[WaterTestSessionOut])
@@ -236,10 +310,34 @@ async def list_sessions(
             tank_id=s.tank_id,
             tested_at=s.tested_at,
             notes=s.notes,
-            readings=[_reading_out(r) for r in s.readings],
+            readings=[_reading_out(r, s.tested_at) for r in s.readings],
         )
         for s in sessions
     ]
+
+
+@router.get("/current", response_model=WaterTestCurrentOut)
+async def current_values(tank_id: int = 1, db: AsyncSession = Depends(get_db)):
+    """Latest value per parameter for this tank, each with its own updated_at."""
+    result = await db.execute(
+        select(WaterTestReading)
+        .join(WaterTestSession, WaterTestReading.session_id == WaterTestSession.id)
+        .options(
+            selectinload(WaterTestReading.parameter),
+            selectinload(WaterTestReading.session),
+        )
+        .where(WaterTestSession.tank_id == tank_id)
+        .order_by(desc(func.coalesce(WaterTestReading.updated_at, WaterTestSession.tested_at)))
+    )
+    latest: dict[int, WaterTestReading] = {}
+    for r in result.scalars().all():
+        if r.parameter_id not in latest:
+            latest[r.parameter_id] = r
+    readings = [
+        _reading_out(r, r.session.tested_at if r.session else None)
+        for r in sorted(latest.values(), key=lambda x: x.parameter_id)
+    ]
+    return WaterTestCurrentOut(tank_id=tank_id, readings=readings)
 
 
 @router.get("/sessions/latest", response_model=WaterTestSessionOut | None)
@@ -258,7 +356,7 @@ async def latest_session(db: AsyncSession = Depends(get_db)):
         tank_id=session.tank_id,
         tested_at=session.tested_at,
         notes=session.notes,
-        readings=[_reading_out(r) for r in session.readings],
+        readings=[_reading_out(r, session.tested_at) for r in session.readings],
     )
 
 
@@ -271,9 +369,10 @@ async def create_session(
     params = {p.id: p for p in params_result.scalars().all()}
     norms = await _effective_norms_map(db, data.tank_id or 1)
 
+    stamped = data.tested_at or datetime.utcnow()
     session = WaterTestSession(
         tank_id=data.tank_id,
-        tested_at=data.tested_at or datetime.utcnow(),
+        tested_at=stamped,
         notes=data.notes,
     )
     db.add(session)
@@ -285,7 +384,7 @@ async def create_session(
         if not param:
             raise HTTPException(422, f"Unknown parameter_id {reading_in.parameter_id}")
 
-        min_safe, max_safe = norms.get(param.id, (param.min_safe, param.max_safe))
+        min_safe, max_safe, _ = norms.get(param.id, (param.min_safe, param.max_safe, param.test_frequency_days))
         oor = False
         if min_safe is not None and reading_in.value < min_safe:
             oor = True
@@ -298,10 +397,24 @@ async def create_session(
             value=reading_in.value,
             out_of_range=oor,
             notes=reading_in.notes,
+            updated_at=stamped,
         )
         db.add(reading)
         if oor:
             out_of_range_alerts.append((param, reading_in.value))
+
+    # a fresh reading resolves any pending "remind me later" for this param
+    tested_tank_id = data.tank_id or 1
+    param_ids = [r.parameter_id for r in data.readings]
+    if param_ids:
+        snoozes_result = await db.execute(
+            select(WaterTestSnooze).where(
+                WaterTestSnooze.tank_id == tested_tank_id,
+                WaterTestSnooze.parameter_id.in_(param_ids),
+            )
+        )
+        for snooze in snoozes_result.scalars().all():
+            await db.delete(snooze)
 
     await db.commit()
     await broadcast_change("water_tests")
@@ -337,7 +450,7 @@ async def create_session(
         tank_id=session.tank_id,
         tested_at=session.tested_at,
         notes=session.notes,
-        readings=[_reading_out(r) for r in session.readings],
+        readings=[_reading_out(r, session.tested_at) for r in session.readings],
     )
 
 

@@ -10,7 +10,7 @@ from config import settings
 from database import init_db, AsyncSessionLocal
 from ble_manager import ble_manager
 from routers import calendar, devices, dosing, maintenance, obsada, plant_health, schedule, sensors, supplies, water_tests
-from seed_data import seed
+from seed_data import seed, WATER_TEST_REMINDER_DEFAULTS
 from services.scheduler import scheduler
 from services.websocket_manager import live_push_loop, ws_endpoint
 
@@ -59,6 +59,19 @@ async def _run_migrations():
         migrations = [
             "ALTER TABLE maintenance_tasks ADD COLUMN started_at DATETIME",
             "ALTER TABLE maintenance_tasks ADD COLUMN affects_entity VARCHAR(100)",
+            "ALTER TABLE water_test_readings ADD COLUMN updated_at DATETIME",
+            "ALTER TABLE water_test_parameters ADD COLUMN test_frequency_days INTEGER",
+            "ALTER TABLE water_test_parameters ADD COLUMN high_effect_en TEXT",
+            "ALTER TABLE water_test_parameters ADD COLUMN high_effect_pl TEXT",
+            "ALTER TABLE water_test_parameter_norms ADD COLUMN test_frequency_days INTEGER",
+            """CREATE TABLE IF NOT EXISTS water_test_snoozes (
+                id INTEGER PRIMARY KEY,
+                tank_id INTEGER NOT NULL,
+                parameter_id INTEGER NOT NULL,
+                snoozed_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                notified_at DATETIME,
+                UNIQUE(tank_id, parameter_id)
+            )""",
         ]
         for sql in migrations:
             try:
@@ -66,6 +79,28 @@ async def _run_migrations():
                 await db.commit()
             except Exception:
                 pass  # column already exists
+        try:
+            await db.execute(text(
+                "UPDATE water_test_readings SET updated_at = ("
+                "SELECT tested_at FROM water_test_sessions "
+                "WHERE water_test_sessions.id = water_test_readings.session_id"
+                ") WHERE updated_at IS NULL"
+            ))
+            await db.commit()
+        except Exception:
+            pass
+        # Backfill reminder defaults (frequency + high-level-effect text) onto
+        # existing parameter rows - never overwrites a value already set.
+        for key, (freq, effect_en, effect_pl) in WATER_TEST_REMINDER_DEFAULTS.items():
+            try:
+                await db.execute(text(
+                    "UPDATE water_test_parameters SET test_frequency_days = :freq, "
+                    "high_effect_en = :en, high_effect_pl = :pl "
+                    "WHERE key = :key AND test_frequency_days IS NULL AND high_effect_en IS NULL"
+                ), {"freq": freq, "en": effect_en, "pl": effect_pl, "key": key})
+                await db.commit()
+            except Exception:
+                pass
 
 
 @app.on_event("startup")

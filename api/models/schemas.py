@@ -156,6 +156,7 @@ class WaterTestParameterOut(BaseModel):
     min_safe: float | None
     max_safe: float | None
     category: str
+    test_frequency_days: int | None = None
 
 
 class WaterTestReadingIn(BaseModel):
@@ -168,6 +169,25 @@ class WaterTestParameterNormIn(BaseModel):
     tank_id: int
     min_safe: float | None = None
     max_safe: float | None = None
+    test_frequency_days: int | None = None
+
+
+class WaterTestReminderOut(BaseModel):
+    parameter_id: int
+    key: str
+    name_en: str
+    name_pl: str
+    unit: str
+    last_tested_at: datetime | None
+    frequency_days: int | None
+    due: bool
+    snoozed_at: datetime | None
+    high_effect_en: str | None
+    high_effect_pl: str | None
+
+
+class WaterTestSnoozeIn(BaseModel):
+    tank_id: int
 
 
 class WaterTestSessionCreate(BaseModel):
@@ -189,6 +209,12 @@ class WaterTestReadingOut(BaseModel):
     value: float
     out_of_range: bool
     notes: str | None
+    updated_at: datetime | None = None
+
+
+class WaterTestCurrentOut(BaseModel):
+    tank_id: int
+    readings: list[WaterTestReadingOut]
 
 
 class WaterTestSessionOut(BaseModel):

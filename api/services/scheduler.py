@@ -4,12 +4,15 @@ from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from sqlalchemy import select, and_
+from sqlalchemy import select, and_, desc, func
 from sqlalchemy.orm import selectinload
 
 from config import settings
 from database import AsyncSessionLocal
-from models.orm import DosingTask, FeedingPause, FeedingSchedule, MaintenanceTask, Supply, WaterTestSession
+from models.orm import (
+    DosingTask, FeedingPause, FeedingSchedule, MaintenanceTask, Supply,
+    WaterTestReading, WaterTestSession, WaterTestSnooze,
+)
 from services.ha_client import ha_client
 from services.n8n_client import n8n_client
 from services.ntfy_client import ntfy_client
@@ -92,14 +95,6 @@ async def check_overdue():
             select(WaterTestSession).order_by(WaterTestSession.tested_at.desc()).limit(1)
         )
         last_test = last.scalar_one_or_none()
-        if last_test:
-            tested_at = last_test.tested_at.replace(tzinfo=timezone.utc) if last_test.tested_at.tzinfo is None else last_test.tested_at
-            days_ago = (now - tested_at).days
-            if days_ago >= 7:
-                await n8n_client.reminder(
-                    f"🧪 Water test overdue — last tested {days_ago} days ago",
-                    f"🧪 Test wody zaległy — ostatni test {days_ago} dni temu",
-                )
 
         supply_result = await db.execute(select(Supply))
         for supply in supply_result.scalars().all():
@@ -108,6 +103,54 @@ async def check_overdue():
 
 
 TANK_NAMES = {1: settings.tank_1_name, 2: settings.tank_2_name}
+
+
+@scheduler.scheduled_job("cron", hour="*/6")
+async def water_test_snooze_escalation():
+    """A due water-test reminder gets snoozed in the UI first (no Telegram
+    yet); only once it's been snoozed for 2+ days without a new reading do
+    we escalate to Telegram - once per snooze, with last-tested date and
+    what a high reading of that parameter can do to the tank."""
+    now = datetime.now(timezone.utc)
+    async with AsyncSessionLocal() as db:
+        result = await db.execute(
+            select(WaterTestSnooze).options(selectinload(WaterTestSnooze.parameter))
+        )
+        for snooze in result.scalars().all():
+            if snooze.notified_at is not None:
+                continue
+            snoozed_at = snooze.snoozed_at.replace(tzinfo=timezone.utc) if snooze.snoozed_at.tzinfo is None else snooze.snoozed_at
+            if (now - snoozed_at) < timedelta(days=2):
+                continue
+
+            param = snooze.parameter
+            tank_name = TANK_NAMES.get(snooze.tank_id, f"Tank {snooze.tank_id}")
+
+            last_result = await db.execute(
+                select(WaterTestReading, WaterTestSession.tested_at)
+                .join(WaterTestSession, WaterTestReading.session_id == WaterTestSession.id)
+                .where(WaterTestSession.tank_id == snooze.tank_id, WaterTestReading.parameter_id == param.id)
+                .order_by(desc(func.coalesce(WaterTestReading.updated_at, WaterTestSession.tested_at)))
+                .limit(1)
+            )
+            row = last_result.first()
+            if row:
+                reading, session_tested_at = row
+                last_at = reading.updated_at or session_tested_at
+                last_str_en = last_at.strftime("%d %b %Y")
+                last_str_pl = last_at.strftime("%d.%m.%Y")
+            else:
+                last_str_en = "never"
+                last_str_pl = "nigdy"
+
+            effect_en = f" {param.high_effect_en}" if param.high_effect_en else ""
+            effect_pl = f" {param.high_effect_pl}" if param.high_effect_pl else ""
+            await n8n_client.reminder(
+                f"🧪 {tank_name}: {param.name_en} test still overdue (last tested: {last_str_en}).{effect_en}",
+                f"🧪 {tank_name}: test {param.name_pl} wciąż zaległy (ostatni test: {last_str_pl}).{effect_pl}",
+            )
+            snooze.notified_at = now
+        await db.commit()
 
 
 @scheduler.scheduled_job("cron", minute="*")

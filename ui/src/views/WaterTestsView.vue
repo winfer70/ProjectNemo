@@ -23,8 +23,28 @@
       <hr class="divider" />
       <TankSwitcher />
 
+      <!-- Overdue test reminders - log a value or snooze until later -->
+      <div v-if="reminders.length" class="tile-body" style="padding-top:12px;padding-bottom:4px;display:flex;flex-direction:column;gap:8px">
+        <div v-for="r in reminders" :key="'rem-' + r.parameter_id" class="ls-card" style="flex-direction:column;align-items:stretch;gap:6px;padding:10px 12px;border-left:3px solid var(--warning)">
+          <div class="spread">
+            <span style="font-weight:600;font-size:13px">🧪 {{ r.name_pl }}</span>
+            <span class="muted" style="font-size:11px">{{ formatUpdatedAt(r.last_tested_at) }}</span>
+          </div>
+          <div class="row" style="gap:8px">
+            <input class="input" type="number" step="0.01" v-model="reminderValues[r.parameter_id]" :placeholder="locale === 'pl' ? 'Wynik' : 'Result'" style="flex:1;text-align:right">
+            <span class="muted" style="min-width:30px;font-size:12px">{{ r.unit }}</span>
+            <button class="btn btn-sm btn-accent" :disabled="!reminderValues[r.parameter_id]" @click="logReminder(r)">
+              {{ locale === 'pl' ? 'Zapisz' : 'Log' }}
+            </button>
+            <button class="btn btn-sm btn-ghost" @click="snoozeReminder(r)">
+              {{ r.snoozed_at ? (locale === 'pl' ? 'Odłożone' : 'Snoozed') : (locale === 'pl' ? 'Później' : 'Snooze') }}
+            </button>
+          </div>
+        </div>
+      </div>
+
       <!-- Empty state -->
-      <div v-if="latestReadings.length === 0" class="empty" style="padding:34px 16px">
+      <div v-if="currentReadings.length === 0" class="empty" style="padding:34px 16px">
         <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
           <path d="M9 3h6" />
           <path d="M10 3v6L5 18a2 2 0 0 0 2 3h10a2 2 0 0 0 2-3l-5-9V3" />
@@ -36,13 +56,7 @@
 
       <!-- Test table -->
       <template v-else>
-        <div class="tile-body" style="padding-top:12px;padding-bottom:8px">
-          <span class="muted" style="font-size:13px">
-            Ostatni test: <b style="color:var(--text)">{{ lastTestDays }} dni temu</b>
-          </span>
-        </div>
-
-        <div class="tile-body ptable" style="padding-top:0">
+        <div class="tile-body ptable" style="padding-top:12px">
           <!-- Header row -->
           <div class="prow" style="padding-bottom:6px">
             <span class="sec-lab" style="padding:0">Parametr</span>
@@ -52,8 +66,11 @@
           </div>
 
           <!-- Data rows - tap a row to edit that parameter's value -->
-          <div v-for="p in latestReadings" :key="p.parameter_key" class="prow" style="cursor:pointer" @click="openEditParam(p)">
-            <span class="pp">{{ p.name_pl }}</span>
+          <div v-for="p in currentReadings" :key="p.parameter_key" class="prow" style="cursor:pointer" @click="openEditParam(p)">
+            <span class="pp">
+              {{ p.name_pl }}
+              <span class="pp-time">{{ formatUpdatedAt(p.updated_at) }}</span>
+            </span>
             <span class="pv">{{ p.value }}{{ p.unit ? ' ' + p.unit : '' }}</span>
             <span class="ps" :style="{ color: statusColor(p), justifyContent: 'center' }">
               <svg v-if="!p.out_of_range" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -294,10 +311,17 @@
                 <input class="input" type="number" step="0.01" v-model="normDrafts[p.id].min_safe" :placeholder="locale === 'pl' ? 'Min' : 'Min'" style="flex:1;text-align:right">
                 <span class="muted">–</span>
                 <input class="input" type="number" step="0.01" v-model="normDrafts[p.id].max_safe" :placeholder="locale === 'pl' ? 'Maks' : 'Max'" style="flex:1;text-align:right">
-                <button class="btn btn-sm btn-accent" :disabled="savingNorm === p.id" @click="saveNorm(p)">
+              </div>
+              <div v-if="p.category === 'manual'" class="row" style="gap:8px;margin-top:6px">
+                <span class="muted" style="font-size:12px;white-space:nowrap">{{ locale === 'pl' ? 'Co (dni)' : 'Every (days)' }}</span>
+                <input class="input" type="number" step="1" v-model="normDrafts[p.id].test_frequency_days" placeholder="—" style="width:70px;text-align:right">
+                <button class="btn btn-sm btn-accent" style="margin-left:auto" :disabled="savingNorm === p.id" @click="saveNorm(p)">
                   {{ savingNorm === p.id ? '…' : (locale === 'pl' ? 'Zapisz' : 'Save') }}
                 </button>
               </div>
+              <button v-else class="btn btn-sm btn-accent" style="margin-top:6px" :disabled="savingNorm === p.id" @click="saveNorm(p)">
+                {{ savingNorm === p.id ? '…' : (locale === 'pl' ? 'Zapisz' : 'Save') }}
+              </button>
             </div>
           </div>
         </div>
@@ -315,7 +339,7 @@ import TankSwitcher from '../components/TankSwitcher.vue'
 
 const { locale } = useI18n()
 const tankStore = useTankSelectorStore()
-const allSessions = ref([])
+const currentReadingsRaw = ref([])
 const parameters = ref([])
 
 async function fetchParameters() {
@@ -323,41 +347,58 @@ async function fetchParameters() {
   parameters.value = paramR.data
 }
 
+async function fetchCurrent() {
+  const r = await axios.get('/api/water-tests/current', { params: { tank_id: tankStore.activeTankId } })
+  currentReadingsRaw.value = r.data?.readings || []
+}
+
+const reminders = ref([])
+const reminderValues = ref({})
+
+async function fetchReminders() {
+  const r = await axios.get('/api/water-tests/reminders', { params: { tank_id: tankStore.activeTankId } })
+  reminders.value = r.data
+}
+
 onMounted(async () => {
-  const [sessR] = await Promise.all([
-    axios.get('/api/water-tests/sessions'),
-    fetchParameters(),
-  ])
-  allSessions.value = sessR.data
+  await Promise.all([fetchCurrent(), fetchParameters(), fetchReminders()])
 })
 
-// Norms are per-tank, so re-fetch parameters (and their effective min/max)
-// whenever the active tank changes.
-watch(() => tankStore.activeTankId, fetchParameters)
+watch(() => tankStore.activeTankId, async () => {
+  await Promise.all([fetchCurrent(), fetchParameters(), fetchReminders()])
+})
 
-const sessions = computed(() => allSessions.value.filter(tankStore.matchesActiveTank))
-
-const latestSession = computed(() => sessions.value[0] ?? null)
-
-const latestReadings = computed(() => {
-  if (!latestSession.value) return []
-  return latestSession.value.readings.map((r) => {
+const currentReadings = computed(() => {
+  return currentReadingsRaw.value.map((r) => {
     const param = parameters.value.find((p) => p.id === r.parameter_id)
     return {
       ...r,
-      name_pl: param?.name_pl ?? param?.name_en ?? r.parameter_id,
-      name_en: param?.name_en,
-      unit: param?.unit ?? '',
+      name_pl: param?.name_pl ?? r.parameter_name_pl ?? r.parameter_id,
+      name_en: param?.name_en ?? r.parameter_name_en,
+      unit: param?.unit ?? r.unit ?? '',
       trend: 'flat',
-      parameter_key: param?.key,
+      parameter_key: param?.key ?? r.parameter_key,
     }
   })
 })
 
-const lastTestDays = computed(() => {
-  if (!latestSession.value) return 0
-  return Math.floor((Date.now() - new Date(latestSession.value.tested_at)) / 86400000)
-})
+function formatUpdatedAt(iso) {
+  if (!iso) return locale.value === 'pl' ? 'brak daty' : 'no date'
+  const d = new Date(iso)
+  if (isNaN(d.getTime())) return locale.value === 'pl' ? 'brak daty' : 'no date'
+  const ms = Date.now() - d.getTime()
+  const mins = Math.floor(ms / 60000)
+  const hours = Math.floor(ms / 3600000)
+  const days = Math.floor(ms / 86400000)
+  if (mins < 1) return locale.value === 'pl' ? 'przed chwilą' : 'just now'
+  if (mins < 60) return locale.value === 'pl' ? `${mins} min temu` : `${mins}m ago`
+  if (hours < 24) return locale.value === 'pl' ? `${hours} godz. temu` : `${hours}h ago`
+  if (days === 1) return locale.value === 'pl' ? 'wczoraj' : 'yesterday'
+  const when = d.toLocaleString(locale.value === 'pl' ? 'pl-PL' : 'en-GB', {
+    day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
+  })
+  return `${days} dni · ${when}`
+}
 
 const manualParams = computed(() =>
   parameters.value.filter((p) => p.category === 'manual')
@@ -365,7 +406,7 @@ const manualParams = computed(() =>
 
 // Manual params not present in the latest test - offered as quick "+ add" rows.
 const missingManualParams = computed(() => {
-  const have = new Set(latestReadings.value.map((r) => r.parameter_id))
+  const have = new Set(currentReadings.value.map((r) => r.parameter_id))
   return manualParams.value.filter((p) => !have.has(p.id))
 })
 
@@ -479,8 +520,7 @@ async function saveScan() {
     if (testDate.value) payload.tested_at = new Date(testDate.value).toISOString()
 
     await axios.post('/api/water-tests/sessions', payload)
-    const sessR = await axios.get('/api/water-tests/sessions')
-    allSessions.value = sessR.data
+    await fetchCurrent()
   } finally {
     saving.value = false
     closeScanModal()
@@ -521,12 +561,29 @@ async function saveEditParam() {
       tank_id: tankStore.activeTankId,
       readings: [{ parameter_id: editParam.value.parameterId, value }],
     })
-    const sessR = await axios.get('/api/water-tests/sessions')
-    allSessions.value = sessR.data
+    await fetchCurrent()
     editParam.value = null
   } finally {
     savingParam.value = false
   }
+}
+
+async function logReminder(reminder) {
+  const value = parseFloat(reminderValues.value[reminder.parameter_id])
+  if (isNaN(value)) return
+  await axios.post('/api/water-tests/sessions', {
+    tank_id: tankStore.activeTankId,
+    readings: [{ parameter_id: reminder.parameter_id, value }],
+  })
+  reminderValues.value[reminder.parameter_id] = ''
+  await Promise.all([fetchCurrent(), fetchReminders()])
+}
+
+async function snoozeReminder(reminder) {
+  await axios.post(`/api/water-tests/reminders/${reminder.parameter_id}/snooze`, {
+    tank_id: tankStore.activeTankId,
+  })
+  await fetchReminders()
 }
 
 // ─── Norms (per-tank safe range) settings ─────────────────────────────────────
@@ -537,7 +594,11 @@ const savingNorm = ref(null)
 function openNormsModal() {
   const drafts = {}
   parameters.value.forEach((p) => {
-    drafts[p.id] = { min_safe: p.min_safe ?? '', max_safe: p.max_safe ?? '' }
+    drafts[p.id] = {
+      min_safe: p.min_safe ?? '',
+      max_safe: p.max_safe ?? '',
+      test_frequency_days: p.test_frequency_days ?? '',
+    }
   })
   normDrafts.value = drafts
   normsModal.value = true
@@ -551,8 +612,9 @@ async function saveNorm(param) {
       tank_id: tankStore.activeTankId,
       min_safe: draft.min_safe === '' ? null : parseFloat(draft.min_safe),
       max_safe: draft.max_safe === '' ? null : parseFloat(draft.max_safe),
+      test_frequency_days: draft.test_frequency_days === '' ? null : parseInt(draft.test_frequency_days),
     })
-    await fetchParameters()
+    await Promise.all([fetchParameters(), fetchReminders()])
   } finally {
     savingNorm.value = null
   }
