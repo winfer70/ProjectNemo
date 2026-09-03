@@ -49,6 +49,12 @@ rest_command:
   heimdall_plant_health_treat:
     url: "http://nemo-api:8000/api/plant-health/kamilo/treat?plant_name={{ plant_name | urlencode }}{% if treatment_notes is defined %}&treatment_notes={{ treatment_notes | urlencode }}{% endif %}"
     method: POST
+  # Water test logging (Kamilo write) - name-based tank/parameter resolution
+  # happens server-side since voice only gives spoken names, never ids. See
+  # api/routers/water_tests.py's kamilo/log endpoint.
+  heimdall_water_test_log:
+    url: "http://nemo-api:8000/api/water-tests/kamilo/log?tank_name={{ tank_name | urlencode }}&parameter_name={{ parameter_name | urlencode }}&value={{ value }}"
+    method: POST
 
 script:
   heimdall_remember_fact:
@@ -242,6 +248,44 @@ script:
         response_variable: treat_result
       - stop: "Plant health issue updated"
         response_variable: "{{ treat_result.content }}"
+  heimdall_water_test_log:
+    alias: "Heimdall: Log a water test result"
+    description: >-
+      Record a water test parameter value for one aquarium tank, e.g. user
+      says "update ph in the salon to 7.9" or "KH w kuchni to 5". tank_name
+      must be the tank as spoken (e.g. Salon, Kuchnia); parameter_name must
+      be the test parameter as spoken/known (e.g. pH, KH, GH, nitrate,
+      nitrite, ammonia, azotany, azotyny, amoniak) - both are resolved by
+      fuzzy match server-side. Always logs a brand-new dated result, never
+      overwrites history.
+    fields:
+      tank_name:
+        description: "The tank name as spoken by the user"
+        example: "Salon"
+        required: true
+        selector:
+          text:
+      parameter_name:
+        description: "The water test parameter as spoken by the user"
+        example: "pH"
+        required: true
+        selector:
+          text:
+      value:
+        description: "The numeric test result"
+        example: "7.9"
+        required: true
+        selector:
+          number:
+    sequence:
+      - action: rest_command.heimdall_water_test_log
+        data:
+          tank_name: "{{ tank_name }}"
+          parameter_name: "{{ parameter_name }}"
+          value: "{{ value }}"
+        response_variable: water_test_log_result
+      - stop: "Water test result logged"
+        response_variable: "{{ water_test_log_result.content }}"
 
 # Heimdall persistent memory context sensor (Task 8 / M7). Polls the memory
 # service on jaskier for the current facts + rolling summary, exposed via

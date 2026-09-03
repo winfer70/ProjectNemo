@@ -18,6 +18,7 @@ from models.schemas import (
     WaterTestSnoozeIn,
     WaterTestSessionCreate,
     WaterTestSessionOut,
+    WaterTestReadingIn,
     WaterTestReadingOut,
     WaterTestCurrentOut,
     SensorHistoryPoint,
@@ -514,3 +515,58 @@ async def parameter_trend(
     )
     rows = result.all()
     return [SensorHistoryPoint(time=tested_at, value=r.value) for r, tested_at in reversed(rows)]
+
+
+# ── Kamilo (voice) convenience endpoint ────────────────────────────────────────
+# Voice input only gives spoken tank/parameter names, never ids - resolve
+# those server-side (same pattern as plant_health's kamilo endpoints) so the
+# HA script stays a thin passthrough.
+
+def _resolve_tank_id(tank_name: str) -> int | None:
+    needle = tank_name.strip().lower()
+    if not needle:
+        return None
+    if needle in settings.tank_1_name.lower() or settings.tank_1_name.lower() in needle:
+        return 1
+    if needle in settings.tank_2_name.lower() or settings.tank_2_name.lower() in needle:
+        return 2
+    return None
+
+
+async def _resolve_parameter(db: AsyncSession, parameter_name: str) -> WaterTestParameter | None:
+    needle = parameter_name.strip().lower()
+    result = await db.execute(select(WaterTestParameter))
+    for p in result.scalars().all():
+        haystack_words = " ".join(filter(None, [p.key, p.name_en, p.name_pl])).lower().replace("/", " ").split()
+        if needle in haystack_words or any(needle in w or w in needle for w in haystack_words):
+            return p
+    return None
+
+
+@router.post("/kamilo/log")
+async def kamilo_log(
+    tank_name: str,
+    parameter_name: str,
+    value: float,
+    db: AsyncSession = Depends(get_db),
+):
+    tank_id = _resolve_tank_id(tank_name)
+    if tank_id is None:
+        return {"status": "tank_not_found", "summary": f"No tank matching '{tank_name}' was found."}
+
+    param = await _resolve_parameter(db, parameter_name)
+    if not param:
+        return {"status": "param_not_found", "summary": f"No water test parameter matching '{parameter_name}' was found."}
+
+    data = WaterTestSessionCreate(tank_id=tank_id, readings=[WaterTestReadingIn(parameter_id=param.id, value=value)])
+    await create_session(data, db)
+
+    tank_display = settings.tank_1_name if tank_id == 1 else settings.tank_2_name
+    return {
+        "status": "logged",
+        "tank_name": tank_display,
+        "parameter_name": param.name_en,
+        "value": value,
+        "unit": param.unit,
+        "summary": f"Logged {param.name_en} = {value} {param.unit or ''} for {tank_display}.".strip(),
+    }
