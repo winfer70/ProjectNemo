@@ -190,11 +190,14 @@ async def get_today(tank_id: int = 1, db: AsyncSession = Depends(get_db)):
 # ── Month view ─────────────────────────────────────────────────────────────────
 
 @router.get("/month/{year}/{month}")
-async def get_month(year: int, month: int, db: AsyncSession = Depends(get_db)):
+async def get_month(year: int, month: int, tank_id: int | None = None, db: AsyncSession = Depends(get_db)):
     if not (1 <= month <= 12):
         raise HTTPException(400, "Invalid month")
 
-    result = await db.execute(select(CalendarTask).where(CalendarTask.active == True))  # noqa: E712
+    query = select(CalendarTask).where(CalendarTask.active == True)  # noqa: E712
+    if tank_id is not None:
+        query = query.where(CalendarTask.tank_id == tank_id)
+    result = await db.execute(query)
     tasks = result.scalars().all()
 
     prefix = f"{year:04d}-{month:02d}"
