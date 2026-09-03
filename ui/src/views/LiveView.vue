@@ -117,9 +117,10 @@
     <div class="tile">
       <div class="tile-hd"><h2>URZĄDZENIA</h2></div>
       <hr class="divider" />
-      <div class="tile-body" style="padding-top:4px">
+      <div v-for="tid in deviceTankIds" :key="'devtank-' + tid" class="tile-body" style="padding-top:4px">
+        <div class="sec-lab">{{ tankName(tid) }}</div>
         <div
-          v-for="d in sensorsStore.devices"
+          v-for="d in devicesFor(tid)"
           :key="d.entity_id"
           class="dev"
           style="padding:12px 2px"
@@ -152,10 +153,20 @@
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useSensorsStore } from '../stores/sensors'
+import { useTankSelectorStore } from '../stores/tankSelector'
 import { useI18n } from 'vue-i18n'
 
 const { locale } = useI18n()
 const sensorsStore = useSensorsStore()
+const tankStore = useTankSelectorStore()
+
+const deviceTankIds = computed(() => tankStore.tanks.map((t) => t.id).sort((a, b) => a - b))
+function tankName(tid) {
+  return tankStore.tanks.find((t) => t.id === tid)?.name ?? `Tank ${tid}`
+}
+function devicesFor(tid) {
+  return sensorsStore.devices.filter((d) => (d.tank_id ?? 1) === tid)
+}
 
 const HIST_MAX = 12
 const tempHistory = ref([])

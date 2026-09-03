@@ -36,7 +36,7 @@ html, body, #app { height: 100%; margin: 0; padding: 0; background: #0e1117; }
   background: var(--bg);
   color: var(--text);
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  font-size: 14px;
+  font-size: 20px;
   line-height: 1.4;
   -webkit-font-smoothing: antialiased;
   position: relative;
@@ -232,10 +232,10 @@ html, body, #app { height: 100%; margin: 0; padding: 0; background: #0e1117; }
 
 /* ───────── Calendar ───────── */
 .cal-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 2px; }
-.cal-dow { text-align: center; font-size: 10px; color: var(--text-muted); padding: 3px 0; font-weight: 600; }
+.cal-dow { text-align: center; font-size: 30px; color: var(--text-muted); padding: 3px 0; font-weight: 600; }
 .cal-cell {
   height: 32px; border-radius: 7px; display: flex; flex-direction: column;
-  align-items: center; justify-content: center; font-size: 12px; cursor: pointer;
+  align-items: center; justify-content: center; font-size: 30px; cursor: pointer;
   position: relative; color: var(--text); border: 1px solid transparent;
 }
 .cal-cell.muted { color: var(--text-muted); opacity: 0.45; }

@@ -355,7 +355,12 @@ function goTab(id) {
 }
 
 const _refreshMap = {
-  water_tests: () => { waterTestsStore.fetchLatest(); waterTestsStore.fetchSessions() },
+  water_tests: () => {
+    waterTestsStore.fetchLatest()
+    waterTestsStore.fetchSessions()
+    waterTestsStore.fetchCurrent(1)
+    waterTestsStore.fetchCurrent(2)
+  },
   maintenance: () => maintenanceStore.fetchTasks(),
   schedule: () => { scheduleStore.fetchFeedings(); scheduleStore.fetchHistory(); scheduleStore.fetchDosing() },
   supplies: () => { sensorsStore.fetchSupplies(); scheduleStore.fetchDosing() },

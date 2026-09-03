@@ -13,6 +13,7 @@ export const useWaterTestsStore = defineStore('waterTests', () => {
   const parameters = ref([])
   const sessions = ref([])
   const latestSession = ref(null)
+  const currentByTank = ref({})
 
   async function fetchParameters() {
     const r = await axios.get('/api/water-tests/parameters')
@@ -24,6 +25,12 @@ export const useWaterTestsStore = defineStore('waterTests', () => {
     latestSession.value = r.data
   }
 
+  async function fetchCurrent(tankId = 1) {
+    const r = await axios.get('/api/water-tests/current', { params: { tank_id: tankId } })
+    currentByTank.value = { ...currentByTank.value, [Number(tankId)]: r.data?.readings || [] }
+    return r.data
+  }
+
   async function fetchSessions(limit = 20) {
     const r = await axios.get(`/api/water-tests/sessions?limit=${limit}`)
     sessions.value = r.data
@@ -33,6 +40,7 @@ export const useWaterTestsStore = defineStore('waterTests', () => {
     const r = await axios.post('/api/water-tests/sessions', { tested_at, notes, readings, scan_cache_id })
     await fetchLatest()
     await fetchSessions()
+    await fetchCurrent(r.data?.tank_id || 1)
     return r.data
   }
 
@@ -51,5 +59,8 @@ export const useWaterTestsStore = defineStore('waterTests', () => {
     })
   }
 
-  return { parameters, sessions, latestSession, fetchParameters, fetchLatest, fetchSessions, createSession, fetchTrend, isCycled }
+  return {
+    parameters, sessions, latestSession, currentByTank,
+    fetchParameters, fetchLatest, fetchCurrent, fetchSessions, createSession, fetchTrend, isCycled,
+  }
 })

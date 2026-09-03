@@ -476,6 +476,22 @@ async def create_session(
     )
 
 
+@router.post("/readings", response_model=WaterTestCurrentOut)
+async def upsert_readings(
+    data: WaterTestSessionCreate,
+    db: AsyncSession = Depends(get_db),
+):
+    """Add or change specific parameters. Does not replace the rest of the table.
+
+    Writes a new session containing only the posted keys. GET /current then
+    shows those new values plus older params that were not in this payload.
+    """
+    if not data.readings:
+        raise HTTPException(422, "readings required")
+    await create_session(data, db)
+    return await current_values(data.tank_id or 1, db)
+
+
 @router.get("/trends/{param_key}", response_model=list[SensorHistoryPoint])
 async def parameter_trend(
     param_key: str,

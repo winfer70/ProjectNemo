@@ -406,11 +406,13 @@ import { ref, computed, onMounted, watch } from 'vue'
 import axios from 'axios'
 import { useI18n } from 'vue-i18n'
 import { useTankSelectorStore } from '../stores/tankSelector'
+import { useWaterTestsStore } from '../stores/waterTests'
 import TankSwitcher from '../components/TankSwitcher.vue'
 
 const { locale } = useI18n()
 const tankStore = useTankSelectorStore()
-const currentReadingsRaw = ref([])
+const waterStore = useWaterTestsStore()
+const currentReadingsRaw = computed(() => waterStore.currentByTank[Number(tankStore.activeTankId)] || [])
 const parameters = ref([])
 
 async function fetchParameters() {
@@ -419,8 +421,7 @@ async function fetchParameters() {
 }
 
 async function fetchCurrent() {
-  const r = await axios.get('/api/water-tests/current', { params: { tank_id: tankStore.activeTankId } })
-  currentReadingsRaw.value = r.data?.readings || []
+  await waterStore.fetchCurrent(tankStore.activeTankId)
 }
 
 const reminders = ref([])

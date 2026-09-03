@@ -153,8 +153,10 @@
       </div>
     </div>
 
-    <!-- LIGHTING TILE (Tank 1: BLE RGBW controller) -->
-    <div v-if="tid === 1" class="tile">
+    <!-- LIGHTING TILE (Tank 1: BLE RGBW controller) - hidden in the Oba
+         combined view since BLE only works from the tablet paired locally,
+         not useful/reachable from both columns at once. -->
+    <div v-if="tid === 1 && tankStore.viewMode !== 'combined'" class="tile">
       <div class="tile-hd">
         <h2>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -209,7 +211,7 @@
     </div>
 
     <!-- LIGHTING TILE (Tank 2: plain on/off outlet, no BLE/RGBW controller) -->
-    <div v-else class="tile">
+    <div v-else-if="tid !== 1" class="tile">
       <div class="tile-hd">
         <h2>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -876,7 +878,7 @@ input[type='range'] {
   min-width: 0;
 }
 .today-temp-multi .temp-value {
-  font-size: 28px;
+  font-size: 120px;
 }
 .today-temp-multi .temp-label {
   max-width: 90px;
@@ -902,13 +904,13 @@ input[type='range'] {
   border-bottom: 1px solid var(--border);
 }
 .today-tile-compact .today-temp .temp-value {
-  font-size: 26px;
+  font-size: 120px;
 }
 .today-tile-compact .today-tasks {
   padding-left: 0;
 }
 .temp-value {
-  font-size: 42px;
+  font-size: 120px;
   font-weight: 700;
   line-height: 1;
   font-variant-numeric: tabular-nums;
