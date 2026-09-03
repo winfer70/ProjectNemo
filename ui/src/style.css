@@ -435,3 +435,23 @@ html, body, #app { height: 100%; margin: 0; padding: 0; background: #0e1117; }
 
 /* ───────── Toast ───────── */
 .toast-msg { position: absolute; bottom: 76px; left: 50%; transform: translateX(-50%); background: var(--surface-alt); border: 1px solid var(--border); border-radius: 10px; padding: 10px 16px; font-size: 13px; font-weight: 600; z-index: 45; box-shadow: 0 8px 24px rgba(0,0,0,0.4); white-space: nowrap; pointer-events: none; }
+
+/* Kamilo assistant floating shortcut */
+.kamilo-fab {
+  position: fixed;
+  right: 16px;
+  bottom: 84px;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+  z-index: 50;
+  cursor: pointer;
+}
+.nemo.tablet .kamilo-fab { bottom: 16px; }

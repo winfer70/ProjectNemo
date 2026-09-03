@@ -226,6 +226,20 @@ class WaterTestSessionOut(BaseModel):
     readings: list[WaterTestReadingOut]
 
 
+# ── Assistant (Kamilo voice/text via HA conversation API) ─────────────────────
+
+class AssistantAsk(BaseModel):
+    text: str
+    language: str = "en"
+    conversation_id: str | None = None
+
+
+class AssistantReply(BaseModel):
+    reply: str
+    response_type: str | None = None
+    conversation_id: str | None = None
+
+
 # ── Plant Health ──────────────────────────────────────────────────────────────
 
 class DeficiencyOut(BaseModel):

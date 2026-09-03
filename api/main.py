@@ -9,7 +9,7 @@ from sqlalchemy import text
 from config import settings
 from database import init_db, AsyncSessionLocal
 from ble_manager import ble_manager
-from routers import calendar, devices, dosing, maintenance, obsada, plant_health, schedule, sensors, supplies, water_tests
+from routers import calendar, devices, dosing, maintenance, obsada, plant_health, schedule, sensors, supplies, water_tests, assistant
 from seed_data import seed, WATER_TEST_REMINDER_DEFAULTS
 from services.scheduler import scheduler
 from services.websocket_manager import live_push_loop, ws_endpoint
@@ -36,6 +36,7 @@ app.include_router(sensors.router)
 app.include_router(devices.router)
 app.include_router(obsada.router)
 app.include_router(plant_health.router)
+app.include_router(assistant.router)
 
 
 @app.websocket("/ws/ble")

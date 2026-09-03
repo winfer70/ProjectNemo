@@ -70,5 +70,18 @@ class HAClient:
             {"type": "fluval_channels", "r": r, "g": g, "b": b, "w": w, "ch5": ch5}
         )
 
+    async def converse(self, text: str, language: str = "en", conversation_id: str | None = None) -> dict:
+        """Send text to HA's conversation API (Kamilo/Heimdall or whichever
+        agent is configured) - the same pipeline voice commands go through,
+        just typed/spoken from the website instead of a smart speaker."""
+        payload = {"text": text, "language": language}
+        if settings.ha_conversation_agent_id:
+            payload["agent_id"] = settings.ha_conversation_agent_id
+        if conversation_id:
+            payload["conversation_id"] = conversation_id
+        r = await self._client.post("/api/conversation/process", json=payload, timeout=20)
+        r.raise_for_status()
+        return r.json()
+
 
 ha_client = HAClient()

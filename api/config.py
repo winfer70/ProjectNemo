@@ -6,6 +6,9 @@ class Settings(BaseSettings):
 
     ha_url: str = "http://homeassistant:8123"
     ha_token: str = ""
+    # Optional - HA conversation agent entity id to target (e.g. Kamilo/Heimdall's
+    # pipeline agent). Empty = HA's default configured conversation agent.
+    ha_conversation_agent_id: str = ""
 
     influxdb_url: str = "http://influxdb:8086"
     influxdb_token: str = ""

@@ -181,11 +181,76 @@
         </div>
       </div>
     </template>
+
+    <!-- Kamilo assistant - floating shortcut on every tab, talk or type to
+         update anything without hunting through the UI. -->
+    <button class="kamilo-fab" @click="kamiloOpen = true" :title="$t('kamilo.title') || 'Kamilo'">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 2a3 3 0 0 1 3 3v4a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3z"/>
+        <path d="M19 10v1a7 7 0 0 1-14 0v-1"/>
+        <path d="M12 18v4"/>
+        <path d="M9 22h6"/>
+      </svg>
+    </button>
+
+    <Teleport to="body">
+      <div v-if="kamiloOpen" class="backdrop" @click.self="kamiloOpen = false">
+        <div class="modal" style="max-width:420px;width:92vw;padding:20px;display:flex;flex-direction:column;gap:12px;max-height:80vh" @click.stop>
+          <div class="spread">
+            <span style="font-weight:700;font-size:18px">Kamilo</span>
+            <button class="btn icon-btn btn-ghost" @click="kamiloOpen = false">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M6 6l12 12"/><path d="M18 6L6 18"/>
+              </svg>
+            </button>
+          </div>
+
+          <div style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:8px;min-height:120px">
+            <div v-if="!kamiloLog.length" class="muted" style="font-size:12.5px;text-align:center;padding:16px 0">
+              {{ locale === 'pl' ? 'Zapytaj lub powiedz Kamilo, co zaktualizować.' : 'Ask or tell Kamilo what to update.' }}
+            </div>
+            <div v-for="(m, i) in kamiloLog" :key="i" :style="{ alignSelf: m.role === 'user' ? 'flex-end' : 'flex-start', maxWidth: '85%' }">
+              <div style="padding:8px 12px;border-radius:12px;font-size:13.5px" :style="{ background: m.role === 'user' ? 'var(--accent)' : 'var(--surface-2,rgba(255,255,255,0.06))', color: m.role === 'user' ? '#fff' : 'var(--text)' }">
+                {{ m.text }}
+              </div>
+            </div>
+            <div v-if="kamiloBusy" class="muted" style="font-size:12.5px">{{ locale === 'pl' ? 'Kamilo myśli…' : 'Kamilo is thinking…' }}</div>
+          </div>
+
+          <div class="row" style="gap:8px">
+            <button
+              v-if="speechSupported"
+              class="btn icon-btn"
+              :class="kamiloListening ? 'btn-danger-o' : 'btn-ghost'"
+              @click="toggleListening"
+              :title="locale === 'pl' ? 'Mów' : 'Speak'"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2a3 3 0 0 1 3 3v4a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3z"/>
+                <path d="M19 10v1a7 7 0 0 1-14 0v-1"/>
+                <path d="M12 18v4"/><path d="M9 22h6"/>
+              </svg>
+            </button>
+            <input
+              class="input"
+              v-model="kamiloInput"
+              :placeholder="kamiloListening ? (locale === 'pl' ? 'Słucham…' : 'Listening…') : (locale === 'pl' ? 'Napisz do Kamilo…' : 'Type to Kamilo…')"
+              style="flex:1"
+              @keyup.enter="sendKamilo"
+            >
+            <button class="btn btn-accent" :disabled="kamiloBusy || !kamiloInput.trim()" @click="sendKamilo">
+              {{ locale === 'pl' ? 'Wyślij' : 'Send' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </Teleport>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted, provide, watch } from 'vue'
+import axios from 'axios'
 import { useI18n } from 'vue-i18n'
 import ScheduleView from './views/ScheduleView.vue'
 import LiveView from './views/LiveView.vue'
@@ -407,5 +472,61 @@ onUnmounted(() => {
   sensorsStore.disconnectWs()
   window.removeEventListener('nemo:invalidate', _handleInvalidate)
   if (ro) ro.disconnect()
+  if (recognition) recognition.stop()
 })
+
+// ─── Kamilo assistant popup ────────────────────────────────────────────────────
+const kamiloOpen = ref(false)
+const kamiloLog = ref([])
+const kamiloInput = ref('')
+const kamiloBusy = ref(false)
+const kamiloListening = ref(false)
+const kamiloConversationId = ref(null)
+
+const SpeechRecognitionImpl = window.SpeechRecognition || window.webkitSpeechRecognition
+const speechSupported = !!SpeechRecognitionImpl
+let recognition = null
+if (speechSupported) {
+  recognition = new SpeechRecognitionImpl()
+  recognition.continuous = false
+  recognition.interimResults = false
+  recognition.onresult = (e) => {
+    kamiloInput.value = e.results[0][0].transcript
+    sendKamilo()
+  }
+  recognition.onerror = () => { kamiloListening.value = false }
+  recognition.onend = () => { kamiloListening.value = false }
+}
+
+function toggleListening() {
+  if (!recognition) return
+  if (kamiloListening.value) {
+    recognition.stop()
+    return
+  }
+  recognition.lang = locale.value === 'pl' ? 'pl-PL' : 'en-US'
+  kamiloListening.value = true
+  recognition.start()
+}
+
+async function sendKamilo() {
+  const text = kamiloInput.value.trim()
+  if (!text || kamiloBusy.value) return
+  kamiloLog.value.push({ role: 'user', text })
+  kamiloInput.value = ''
+  kamiloBusy.value = true
+  try {
+    const r = await axios.post('/api/assistant/ask', {
+      text,
+      language: locale.value === 'pl' ? 'pl' : 'en',
+      conversation_id: kamiloConversationId.value,
+    })
+    kamiloConversationId.value = r.data.conversation_id || kamiloConversationId.value
+    kamiloLog.value.push({ role: 'assistant', text: r.data.reply })
+  } catch (err) {
+    kamiloLog.value.push({ role: 'assistant', text: locale.value === 'pl' ? 'Błąd połączenia z Kamilo.' : 'Could not reach Kamilo.' })
+  } finally {
+    kamiloBusy.value = false
+  }
+}
 </script>
