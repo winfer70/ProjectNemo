@@ -125,7 +125,7 @@
 
         <div class="tile-body" style="padding-top:14px">
           <div class="row" style="gap:10px">
-            <button class="btn btn-block">
+            <button class="btn btn-block" @click="openHistoryModal">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M3 12a9 9 0 1 0 3-6.7" />
                 <path d="M3 4v4h4" />
@@ -133,7 +133,7 @@
               </svg>
               Historia
             </button>
-            <button class="btn btn-block">
+            <button class="btn btn-block" @click="openCycleModal">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M3 12h3.5l2-6 4 12 2.5-6H21" />
               </svg>
@@ -324,6 +324,77 @@
               </button>
             </div>
           </div>
+        </div>
+      </div>
+    </Teleport>
+
+    <!-- Historia - past test sessions for this tank -->
+    <Teleport to="body">
+      <div v-if="historyModal" class="backdrop" style="align-items:stretch;justify-content:center" @click.self="historyModal = false">
+        <div class="modal full" @click.stop>
+          <div class="spread" style="padding:16px 16px 14px;border-bottom:1px solid var(--border);flex-shrink:0">
+            <button class="btn icon-btn btn-ghost" @click="historyModal = false">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M6 6l12 12"/><path d="M18 6L6 18"/>
+              </svg>
+            </button>
+            <span style="font-weight:700;font-size:16px">{{ locale === 'pl' ? 'Historia' : 'History' }} · {{ tankStore.tanks.find(t => t.id === tankStore.activeTankId)?.name }}</span>
+            <span style="width:34px"></span>
+          </div>
+          <div style="padding:16px;overflow-y:scroll;-webkit-overflow-scrolling:touch;overscroll-behavior:contain">
+            <div v-if="!historySessions.length" class="muted" style="font-size:13px;text-align:center;padding:24px 0">
+              {{ locale === 'pl' ? 'Brak testów' : 'No tests yet' }}
+            </div>
+            <div v-for="s in historySessions" :key="s.id" class="ls-card" style="flex-direction:column;align-items:stretch;gap:8px;padding:12px;margin-bottom:10px">
+              <div class="spread">
+                <span style="font-weight:700;font-size:13px">{{ formatSessionDate(s.tested_at) }}</span>
+              </div>
+              <div v-if="s.notes" class="muted" style="font-size:12px">{{ s.notes }}</div>
+              <div style="display:flex;flex-wrap:wrap;gap:6px">
+                <span
+                  v-for="r in s.readings"
+                  :key="r.id"
+                  class="pill"
+                  style="cursor:default"
+                  :style="{ color: r.out_of_range ? 'var(--warning)' : 'var(--success)' }"
+                >
+                  {{ r.parameter_name_pl }}: {{ r.value }}{{ r.unit ? ' ' + r.unit : '' }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Teleport>
+
+    <!-- Cykl zbiornika - nitrogen cycle status from current ammonia/nitrite/nitrate -->
+    <Teleport to="body">
+      <div v-if="cycleModal" class="backdrop" @click.self="cycleModal = false">
+        <div class="modal" style="max-width:400px;padding:20px;display:flex;flex-direction:column;gap:12px" @click.stop>
+          <div class="spread">
+            <span style="font-weight:700;font-size:17px">{{ locale === 'pl' ? 'Cykl zbiornika' : 'Tank Cycle' }}</span>
+            <button class="btn icon-btn btn-ghost" @click="cycleModal = false">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M6 6l12 12"/><path d="M18 6L6 18"/>
+              </svg>
+            </button>
+          </div>
+          <div class="spread" style="padding:10px 12px;border-radius:10px;background:var(--surface-2,rgba(255,255,255,0.04))">
+            <span style="font-weight:700" :style="{ color: cycleStatus.cycled ? 'var(--success)' : 'var(--warning)' }">
+              {{ cycleStatus.cycled ? (locale === 'pl' ? '✓ Zacyklowany' : '✓ Cycled') : (locale === 'pl' ? 'Wciąż się cykluje' : 'Still cycling') }}
+            </span>
+          </div>
+          <div v-for="row in cycleStatus.rows" :key="row.key" class="spread" style="font-size:13px">
+            <span>{{ row.label }}</span>
+            <span :style="{ fontWeight: 700, color: row.ok ? 'var(--success)' : 'var(--warning)' }">
+              {{ row.value != null ? row.value + ' ' + row.unit : (locale === 'pl' ? 'brak danych' : 'no data') }}
+            </span>
+          </div>
+          <p class="muted" style="font-size:12px;margin:4px 0 0">
+            {{ locale === 'pl'
+              ? 'Zacyklowany: amoniak i azotyny = 0, azotany obecne (bakterie nitryfikacyjne w pełni ustanowione).'
+              : 'Cycled means ammonia and nitrite are both 0 while nitrate is present (nitrifying bacteria fully established).' }}
+          </p>
         </div>
       </div>
     </Teleport>
@@ -618,5 +689,45 @@ async function saveNorm(param) {
   } finally {
     savingNorm.value = null
   }
+}
+
+// ─── Historia (past sessions) ─────────────────────────────────────────────────
+const historyModal = ref(false)
+const historySessions = ref([])
+
+async function openHistoryModal() {
+  const r = await axios.get('/api/water-tests/sessions', { params: { tank_id: tankStore.activeTankId, limit: 50 } })
+  historySessions.value = r.data
+  historyModal.value = true
+}
+
+function formatSessionDate(iso) {
+  const d = new Date(iso)
+  return d.toLocaleString(locale.value === 'pl' ? 'pl-PL' : 'en-GB', {
+    day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
+  })
+}
+
+// ─── Cykl zbiornika (nitrogen cycle status) ───────────────────────────────────
+const cycleModal = ref(false)
+
+const cycleStatus = computed(() => {
+  const find = (key) => currentReadings.value.find((r) => r.parameter_key === key)
+  const ammonia = find('ammonia')
+  const nitrite = find('nitrite')
+  const nitrate = find('nitrate')
+  const cycled = ammonia?.value === 0 && nitrite?.value === 0 && (nitrate?.value ?? 0) > 0
+  return {
+    cycled,
+    rows: [
+      { key: 'ammonia', label: locale.value === 'pl' ? 'Amoniak (NH3/NH4)' : 'Ammonia (NH3/NH4)', value: ammonia?.value ?? null, unit: ammonia?.unit ?? 'mg/L', ok: (ammonia?.value ?? 0) === 0 },
+      { key: 'nitrite', label: locale.value === 'pl' ? 'Azotyny (NO2)' : 'Nitrite (NO2)', value: nitrite?.value ?? null, unit: nitrite?.unit ?? 'mg/L', ok: (nitrite?.value ?? 0) === 0 },
+      { key: 'nitrate', label: locale.value === 'pl' ? 'Azotany (NO3)' : 'Nitrate (NO3)', value: nitrate?.value ?? null, unit: nitrate?.unit ?? 'mg/L', ok: (nitrate?.value ?? 0) > 0 },
+    ],
+  }
+})
+
+function openCycleModal() {
+  cycleModal.value = true
 }
 </script>

@@ -217,6 +217,26 @@ async def set_parameter_norm(
             test_frequency_days=data.test_frequency_days,
         )
         db.add(norm)
+
+    # Existing readings for this tank+parameter were flagged out_of_range
+    # using whatever norm was active when they were logged - recompute them
+    # against the new range so the status shown in the table stays correct.
+    readings_result = await db.execute(
+        select(WaterTestReading)
+        .join(WaterTestSession, WaterTestReading.session_id == WaterTestSession.id)
+        .where(
+            WaterTestSession.tank_id == data.tank_id,
+            WaterTestReading.parameter_id == param_id,
+        )
+    )
+    for reading in readings_result.scalars().all():
+        oor = False
+        if data.min_safe is not None and reading.value < data.min_safe:
+            oor = True
+        if data.max_safe is not None and reading.value > data.max_safe:
+            oor = True
+        reading.out_of_range = oor
+
     await db.commit()
     await broadcast_change("water_tests")
 
@@ -292,17 +312,19 @@ async def snooze_reminder(
 
 @router.get("/sessions", response_model=list[WaterTestSessionOut])
 async def list_sessions(
+    tank_id: int | None = None,
     limit: int = 20,
     offset: int = 0,
     db: AsyncSession = Depends(get_db),
 ):
-    result = await db.execute(
+    query = (
         select(WaterTestSession)
         .options(selectinload(WaterTestSession.readings).selectinload(WaterTestReading.parameter))
         .order_by(desc(WaterTestSession.tested_at))
-        .limit(limit)
-        .offset(offset)
     )
+    if tank_id is not None:
+        query = query.where(WaterTestSession.tank_id == tank_id)
+    result = await db.execute(query.limit(limit).offset(offset))
     sessions = result.scalars().all()
     return [
         WaterTestSessionOut(
