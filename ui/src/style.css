@@ -455,3 +455,44 @@ html, body, #app { height: 100%; margin: 0; padding: 0; background: #0e1117; }
   cursor: pointer;
 }
 .nemo.tablet .kamilo-fab { bottom: 16px; }
+
+/* Edit-layout mode - resize handle injected onto v-resizable tiles */
+.edit-fab {
+  position: fixed;
+  right: 16px;
+  bottom: 144px;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--surface-alt);
+  color: var(--text);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+  z-index: 50;
+  cursor: pointer;
+}
+.edit-fab.on { background: var(--accent); color: #fff; }
+.nemo.tablet .edit-fab { bottom: 76px; }
+.tile-resize-handle {
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  background: var(--accent);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  line-height: 1;
+  cursor: ns-resize;
+  z-index: 60;
+  opacity: 0.9;
+  touch-action: none;
+  user-select: none;
+}

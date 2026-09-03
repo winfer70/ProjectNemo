@@ -1,7 +1,7 @@
 <template>
   <div>
     <!-- Main tile -->
-    <div class="tile">
+    <div class="tile" v-resizable="'watertests.main'">
       <div class="tile-hd">
         <h2>TESTY WODY</h2>
         <div class="row" style="gap:8px">

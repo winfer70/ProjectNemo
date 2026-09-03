@@ -1,5 +1,5 @@
 <template>
-  <div class="tile">
+  <div class="tile" v-resizable="'planthealth.main'">
     <div class="tile-hd">
       <h2>
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">

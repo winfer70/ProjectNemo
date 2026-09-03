@@ -114,7 +114,7 @@
     </div>
 
     <!-- Devices tile -->
-    <div class="tile">
+    <div class="tile" v-resizable="'live.devices'">
       <div class="tile-hd"><h2>URZĄDZENIA</h2></div>
       <hr class="divider" />
       <div v-for="tid in deviceTankIds" :key="'devtank-' + tid" class="tile-body" style="padding-top:4px">

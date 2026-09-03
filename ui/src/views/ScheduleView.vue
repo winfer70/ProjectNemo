@@ -24,7 +24,7 @@
     <div :class="{ row2: tankStore.viewMode === 'combined' }">
     <div v-for="tid in displayedTankIds" :key="'tankcol-' + tid" class="tank-column">
 
-    <div class="tile" :class="{ feeding: scheduleStore.feedStatusFor(tid).paused, 'today-tile-compact': tankStore.viewMode === 'combined' }">
+    <div class="tile" v-resizable="'schedule.today.' + tid" :class="{ feeding: scheduleStore.feedStatusFor(tid).paused, 'today-tile-compact': tankStore.viewMode === 'combined' }">
       <div class="tile-hd">
         <h2>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -36,6 +36,7 @@
         <span class="meta">{{ todayLabel }}</span>
       </div>
       <hr class="divider">
+      <div v-if="tankStore.viewMode === 'combined'" class="today-tank-name">{{ tankDisplay(tid).name }}</div>
       <div class="tile-body today-split">
         <!-- Temperature widget -->
         <div class="today-temp">
@@ -156,7 +157,7 @@
     <!-- LIGHTING TILE (Tank 1: BLE RGBW controller) - hidden in the Oba
          combined view since BLE only works from the tablet paired locally,
          not useful/reachable from both columns at once. -->
-    <div v-if="tid === 1 && tankStore.viewMode !== 'combined'" class="tile">
+    <div v-if="tid === 1 && tankStore.viewMode !== 'combined'" class="tile" v-resizable="'schedule.lighting.' + tid">
       <div class="tile-hd">
         <h2>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -211,7 +212,7 @@
     </div>
 
     <!-- LIGHTING TILE (Tank 2: plain on/off outlet, no BLE/RGBW controller) -->
-    <div v-else-if="tid !== 1" class="tile">
+    <div v-else-if="tid !== 1" class="tile" v-resizable="'schedule.lighting.' + tid">
       <div class="tile-hd">
         <h2>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -244,7 +245,7 @@
     </div>
 
     <!-- MAINTENANCE TILE -->
-    <div class="tile">
+    <div class="tile" v-resizable="'schedule.maintenance.' + tid">
       <div class="tile-hd">
         <h2>
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -315,7 +316,7 @@
     </div>
 
     <!-- PLUGS TILE -->
-    <div class="tile">
+    <div class="tile" v-resizable="'schedule.plugs.' + tid">
       <div class="tile-hd">
         <h2>{{ locale === 'pl' ? 'WTYCZKI' : 'PLUGS' }}</h2>
       </div>
@@ -906,8 +907,19 @@ input[type='range'] {
 .today-tile-compact .today-temp .temp-value {
   font-size: 120px;
 }
+.today-tile-compact .today-temp .temp-label {
+  display: none;
+}
 .today-tile-compact .today-tasks {
   padding-left: 0;
+}
+.today-tank-name {
+  text-align: center;
+  text-transform: uppercase;
+  font-weight: 800;
+  font-size: 30px;
+  color: var(--text-muted);
+  padding: 12px 8px 0;
 }
 .temp-value {
   font-size: 120px;

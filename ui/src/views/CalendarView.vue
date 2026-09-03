@@ -3,7 +3,7 @@
   <div v-for="tid in tankIds" :key="'calcol-' + tid" style="display:flex;flex-direction:column;gap:var(--gap);min-width:0">
 
   <!-- ── Calendar grid ──────────────────────────────────── -->
-  <div class="tile">
+  <div class="tile" v-resizable="'calendar.grid.' + tid">
     <div class="tile-hd">
       <h2>
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -58,7 +58,7 @@
   </div>
 
   <!-- ── Selected day tasks ─────────────────────────────── -->
-  <div class="tile">
+  <div class="tile" v-resizable="'calendar.daytasks.' + tid">
     <div class="tile-hd">
       <h2>{{ formattedDayFor(tid) }}</h2>
     </div>

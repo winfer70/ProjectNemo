@@ -193,6 +193,18 @@
       </svg>
     </button>
 
+    <!-- Edit layout - toggles per-tile drag-to-resize handles, saved per device. -->
+    <button
+      class="edit-fab"
+      :class="{ on: editModeStore.enabled }"
+      @click="editModeStore.toggle()"
+      :title="locale === 'pl' ? 'Edytuj układ' : 'Edit layout'"
+    >
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 20h4L19 9l-4-4L4 16v4z"/><path d="M14 6l4 4"/>
+      </svg>
+    </button>
+
     <Teleport to="body">
       <div v-if="kamiloOpen" class="backdrop" @click.self="kamiloOpen = false">
         <div class="modal" style="max-width:420px;width:92vw;padding:20px;display:flex;flex-direction:column;gap:12px;max-height:80vh" @click.stop>
@@ -264,6 +276,7 @@ import { useWaterTestsStore } from './stores/waterTests'
 import { useMaintenanceStore } from './stores/maintenance'
 import { useScheduleStore } from './stores/schedule'
 import { useCalendarStore } from './stores/calendar'
+import { useEditModeStore } from './stores/editMode'
 
 const { locale } = useI18n()
 
@@ -272,6 +285,7 @@ const waterTestsStore = useWaterTestsStore()
 const maintenanceStore = useMaintenanceStore()
 const scheduleStore = useScheduleStore()
 const calendarStore = useCalendarStore()
+const editModeStore = useEditModeStore()
 
 const rootRef = ref(null)
 const scrollRef = ref(null)
