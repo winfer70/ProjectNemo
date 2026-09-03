@@ -1,4 +1,5 @@
 """Continuous sensor data — current state + history from InfluxDB."""
+import asyncio
 from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, Query
@@ -13,15 +14,22 @@ router = APIRouter(prefix="/api/sensors", tags=["sensors"])
 
 @router.get("/current", response_model=SensorCurrentOut)
 async def current_sensors():
-    temp = None
-    if settings.zigbee_temp_entity:
-        temp = await ha_client.get_state_float(settings.zigbee_temp_entity)
-    if temp is None:
-        temp = await ha_client.get_state_float(settings.esphome_temp_entity)
-    temp_2 = None
-    if settings.zigbee_temp_entity_2:
-        temp_2 = await ha_client.get_state_float(settings.zigbee_temp_entity_2)
-    ph = await ha_client.get_state_float(settings.esphome_ph_entity)
+    async def _tank1_temp():
+        if settings.zigbee_temp_entity:
+            v = await ha_client.get_state_float(settings.zigbee_temp_entity)
+            if v is not None:
+                return v
+        return await ha_client.get_state_float(settings.esphome_temp_entity)
+
+    async def _tank2_temp():
+        if settings.zigbee_temp_entity_2:
+            return await ha_client.get_state_float(settings.zigbee_temp_entity_2)
+        return None
+
+    # Fetched concurrently instead of one-by-one - each is an independent HA call.
+    temp, temp_2, ph = await asyncio.gather(
+        _tank1_temp(), _tank2_temp(), ha_client.get_state_float(settings.esphome_ph_entity),
+    )
     return SensorCurrentOut(
         temperature=temp,
         ph=ph,

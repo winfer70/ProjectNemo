@@ -12,17 +12,18 @@ class HAClient:
             "Authorization": f"Bearer {settings.ha_token}",
             "Content-Type": "application/json",
         }
+        # Reused across all requests - avoids a fresh TCP/TLS handshake on
+        # every single HA call, which was the main cause of slow page loads
+        # when a view fetches many entities (e.g. the devices list).
+        self._client = httpx.AsyncClient(base_url=self._base, headers=self._headers, timeout=5)
 
     async def get_entity_state(self, entity_id: str) -> dict:
-        async with httpx.AsyncClient(timeout=5) as client:
-            try:
-                r = await client.get(
-                    f"{self._base}/api/states/{entity_id}", headers=self._headers
-                )
-                r.raise_for_status()
-                return r.json()
-            except Exception:
-                return {"state": "unavailable", "attributes": {}}
+        try:
+            r = await self._client.get(f"/api/states/{entity_id}")
+            r.raise_for_status()
+            return r.json()
+        except Exception:
+            return {"state": "unavailable", "attributes": {}}
 
     async def get_state_float(self, entity_id: str) -> float | None:
         data = await self.get_entity_state(entity_id)
@@ -33,21 +34,13 @@ class HAClient:
 
     async def toggle_entity(self, entity_id: str):
         domain = entity_id.split(".")[0]
-        async with httpx.AsyncClient(timeout=5) as client:
-            await client.post(
-                f"{self._base}/api/services/{domain}/toggle",
-                headers=self._headers,
-                json={"entity_id": entity_id},
-            )
+        await self._client.post(
+            f"/api/services/{domain}/toggle", json={"entity_id": entity_id},
+        )
 
     async def call_service(self, domain: str, service: str, data: dict):
-        async with httpx.AsyncClient(timeout=10) as client:
-            r = await client.post(
-                f"{self._base}/api/services/{domain}/{service}",
-                headers=self._headers,
-                json=data,
-            )
-            r.raise_for_status()
+        r = await self._client.post(f"/api/services/{domain}/{service}", json=data, timeout=10)
+        r.raise_for_status()
 
     async def turn_on_entity(self, entity_id: str):
         domain = entity_id.split(".")[0]

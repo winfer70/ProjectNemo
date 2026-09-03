@@ -1,4 +1,6 @@
 """Device control — Tapo P110 toggle + Fluval RGBW sliders."""
+import asyncio
+
 from fastapi import APIRouter, Depends, HTTPException
 
 from config import settings
@@ -28,16 +30,17 @@ def _power_entities(switch_id: str) -> tuple[str, str]:
 
 @router.get("", response_model=list[DeviceOut])
 async def list_devices(tank_id: int | None = None):
-    devices = []
-    for d in DEVICE_MAP:
-        if tank_id is not None and d["tank_id"] != tank_id:
-            continue
-        state_data = await ha_client.get_entity_state(d["entity_id"])
-        state_str = state_data.get("state", "unavailable")
+    wanted = [d for d in DEVICE_MAP if tank_id is None or d["tank_id"] == tank_id]
+
+    async def _fetch(d: dict) -> DeviceOut:
         watts_entity, kwh_entity = _power_entities(d["entity_id"])
+        state_data, kwh_today = await asyncio.gather(
+            ha_client.get_entity_state(d["entity_id"]),
+            ha_client.get_state_float(kwh_entity),
+        )
+        state_str = state_data.get("state", "unavailable")
         watts = await ha_client.get_state_float(watts_entity) if state_str == "on" else None
-        kwh_today = await ha_client.get_state_float(kwh_entity)
-        devices.append(DeviceOut(
+        return DeviceOut(
             entity_id=d["entity_id"],
             name=d["name"],
             name_pl=d["name_pl"],
@@ -46,8 +49,12 @@ async def list_devices(tank_id: int | None = None):
             kwh_today=kwh_today,
             role=d["role"],
             tank_id=d["tank_id"],
-        ))
-    return devices
+        )
+
+    # All devices fetched concurrently instead of one-by-one - this was the
+    # main reason the tank view was slow to load (up to ~20 sequential HA
+    # round-trips for 7 devices).
+    return list(await asyncio.gather(*(_fetch(d) for d in wanted)))
 
 
 @router.post("/{entity_id}/toggle")
