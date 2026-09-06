@@ -162,6 +162,20 @@ script:
           b: "{{ b }}"
           w: "{{ w }}"
 
+# ── Telegram — alarm arm/disarm + triggered notifications ────────────────────
+# allowed_chat_ids is the hard security boundary: only this chat can issue
+# telegram_command events at all, regardless of what any automation does.
+telegram_bot:
+  - platform: polling
+    api_key: !secret alarm_telegram_bot_token
+    allowed_chat_ids:
+      - !secret alarm_telegram_chat_id
+    parse_mode: html
+
+notify:
+  - platform: telegram
+    name: alarm_telegram
+
 # ── Logger ────────────────────────────────────────────────────────────────────
 logger:
   default: warning

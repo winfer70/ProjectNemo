@@ -900,4 +900,166 @@
           gate.
         data:
           tag: frigate-gate-auto-open
+- id: alarm_telegram_triggered_notify
+  alias: "Alarm: Telegram alert on trigger (repeats until resolved)"
+  description: >
+    Fires the moment Glowne enters pending/triggered and repeats every 2
+    minutes while still triggered, so it can no longer sound for hours
+    unattended. Includes an inline Disarm button.
+  mode: restart
+  trigger:
+  - platform: state
+    entity_id: alarm_control_panel.glowne
+    to: pending
+    id: pending
+  - platform: state
+    entity_id: alarm_control_panel.glowne
+    to: triggered
+    id: triggered
+  action:
+  - action: notify.alarm_telegram
+    data:
+      message: "{{ '🚨 ALARM TRIGGERED' if trigger.id == 'triggered' else '⏳ Entry delay running (pending)' }}
+        — Glowne, {{ now().strftime('%H:%M:%S') }}"
+      data:
+        inline_keyboard:
+        - "🔕 Disarm now:/disarm"
+  - repeat:
+      while:
+      - condition: state
+        entity_id: alarm_control_panel.glowne
+        state: triggered
+      sequence:
+      - delay:
+          minutes: 2
+      - condition: state
+        entity_id: alarm_control_panel.glowne
+        state: triggered
+      - action: notify.alarm_telegram
+        data:
+          message: "🚨 STILL TRIGGERED — Glowne, {{ now().strftime('%H:%M:%S') }}"
+          data:
+            inline_keyboard:
+            - "🔕 Disarm now:/disarm"
+- id: alarm_telegram_commands
+  alias: "Alarm: Telegram arm/disarm/status commands"
+  description: >
+    Handles /arm_away, /arm_home, /disarm (text command or inline-keyboard
+    tap), and /status from the alarm Telegram bot. allowed_chat_ids on the
+    telegram_bot integration is the actual security boundary — only that
+    chat can ever generate these events.
+  trigger:
+  - platform: event
+    event_type: telegram_command
+    event_data:
+      command: /arm_away
+    id: arm_away
+  - platform: event
+    event_type: telegram_command
+    event_data:
+      command: /arm_home
+    id: arm_home
+  - platform: event
+    event_type: telegram_command
+    event_data:
+      command: /disarm
+    id: disarm
+  - platform: event
+    event_type: telegram_callback
+    event_data:
+      data: /disarm
+    id: disarm
+  - platform: event
+    event_type: telegram_command
+    event_data:
+      command: /status
+    id: status
+  action:
+  - variables:
+      window_ids:
+      - binary_sensor.0xf044d3fffe0876ee_contact
+      - binary_sensor.0x18690afffe102194_contact
+      - binary_sensor.0xf044d3fffe1b5a17_contact
+      - binary_sensor.0x18690afffe1024b0_contact
+      - binary_sensor.0xf044d3fffe087b46_contact
+      - binary_sensor.0x18690afffe1024a2_contact
+      - binary_sensor.0x18690afffe1024aa_contact
+      - binary_sensor.0xf044d3fffe087b44_contact
+      - binary_sensor.0x18690afffe1024ac_contact
+      - binary_sensor.0x18690afffe102920_contact
+      - binary_sensor.0xf044d3fffe1b5a4f_contact
+      - binary_sensor.0xf044d3fffe0876e3_contact
+      - binary_sensor.0x18690afffe10246f_contact
+      - binary_sensor.0x18690afffe10247c_contact
+      - binary_sensor.0x18690afffe1024af_contact
+      - binary_sensor.0x18690afffe101781_contact
+      - binary_sensor.0xf044d3fffe087b54_contact
+      - binary_sensor.0xf044d3fffe087b1f_contact
+      - binary_sensor.0x18690afffe10219e_contact
+      - binary_sensor.0xf044d3fffe087b65_contact
+  - variables:
+      open_windows: "{{ expand(window_ids) | selectattr('state', 'eq', 'on') | map(attribute='name')
+        | list }}"
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: arm_away
+      sequence:
+      - if:
+        - condition: template
+          value_template: "{{ open_windows | count > 0 }}"
+        then:
+        - action: notify.alarm_telegram
+          data:
+            message: "⚠️ Not arming away — open: {{ open_windows | join(', ') }}"
+        else:
+        - action: alarm_control_panel.alarm_arm_away
+          target:
+            entity_id: alarm_control_panel.glowne
+          data:
+            code: !secret alarm_code
+        - action: notify.alarm_telegram
+          data:
+            message: "🔒 Armed away."
+    - conditions:
+      - condition: trigger
+        id: arm_home
+      sequence:
+      - if:
+        - condition: template
+          value_template: "{{ open_windows | count > 0 }}"
+        then:
+        - action: notify.alarm_telegram
+          data:
+            message: "⚠️ Not arming home — open: {{ open_windows | join(', ') }}"
+        else:
+        - action: alarm_control_panel.alarm_arm_home
+          target:
+            entity_id: alarm_control_panel.glowne
+          data:
+            code: !secret alarm_code
+        - action: notify.alarm_telegram
+          data:
+            message: "🔒 Armed home."
+    - conditions:
+      - condition: trigger
+        id: disarm
+      sequence:
+      - action: alarm_control_panel.alarm_disarm
+        target:
+          entity_id: alarm_control_panel.glowne
+        data:
+          code: !secret alarm_code
+      - action: notify.alarm_telegram
+        data:
+          message: "🔓 Disarmed."
+    - conditions:
+      - condition: trigger
+        id: status
+      sequence:
+      - action: notify.alarm_telegram
+        data:
+          message: "Glowne: {{ states('alarm_control_panel.glowne') }} — {{ ('⚠️ Open: '
+            ~ (open_windows | join(', '))) if open_windows | count > 0 else '✅ all windows/doors closed'
+            }}"
   - delay: 00:05:00
