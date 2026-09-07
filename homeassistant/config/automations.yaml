@@ -917,7 +917,9 @@
     to: triggered
     id: triggered
   action:
-  - action: notify.alarm_telegram
+  - action: notify.send_message
+    target:
+      entity_id: notify.kamil_k
     data:
       message: "{{ '🚨 ALARM TRIGGERED' if trigger.id == 'triggered' else '⏳ Entry delay running (pending)' }}
         — Glowne, {{ now().strftime('%H:%M:%S') }}"
@@ -935,7 +937,9 @@
       - condition: state
         entity_id: alarm_control_panel.glowne
         state: triggered
-      - action: notify.alarm_telegram
+      - action: notify.send_message
+        target:
+          entity_id: notify.kamil_k
         data:
           message: "🚨 STILL TRIGGERED — Glowne, {{ now().strftime('%H:%M:%S') }}"
           data:
@@ -1009,7 +1013,9 @@
         - condition: template
           value_template: "{{ open_windows | count > 0 }}"
         then:
-        - action: notify.alarm_telegram
+        - action: notify.send_message
+          target:
+            entity_id: notify.kamil_k
           data:
             message: "⚠️ Not arming away — open: {{ open_windows | join(', ') }}"
         else:
@@ -1018,7 +1024,9 @@
             entity_id: alarm_control_panel.glowne
           data:
             code: !secret alarm_code
-        - action: notify.alarm_telegram
+        - action: notify.send_message
+          target:
+            entity_id: notify.kamil_k
           data:
             message: "🔒 Armed away."
     - conditions:
@@ -1029,7 +1037,9 @@
         - condition: template
           value_template: "{{ open_windows | count > 0 }}"
         then:
-        - action: notify.alarm_telegram
+        - action: notify.send_message
+          target:
+            entity_id: notify.kamil_k
           data:
             message: "⚠️ Not arming home — open: {{ open_windows | join(', ') }}"
         else:
@@ -1038,7 +1048,9 @@
             entity_id: alarm_control_panel.glowne
           data:
             code: !secret alarm_code
-        - action: notify.alarm_telegram
+        - action: notify.send_message
+          target:
+            entity_id: notify.kamil_k
           data:
             message: "🔒 Armed home."
     - conditions:
@@ -1050,16 +1062,19 @@
           entity_id: alarm_control_panel.glowne
         data:
           code: !secret alarm_code
-      - action: notify.alarm_telegram
+      - action: notify.send_message
+        target:
+          entity_id: notify.kamil_k
         data:
           message: "🔓 Disarmed."
     - conditions:
       - condition: trigger
         id: status
       sequence:
-      - action: notify.alarm_telegram
+      - action: notify.send_message
+        target:
+          entity_id: notify.kamil_k
         data:
           message: "Glowne: {{ states('alarm_control_panel.glowne') }} — {{ ('⚠️ Open: '
             ~ (open_windows | join(', '))) if open_windows | count > 0 else '✅ all windows/doors closed'
             }}"
-  - delay: 00:05:00
