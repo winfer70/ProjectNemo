@@ -186,3 +186,5 @@ logger:
 # ── Automation — Fluval BLE via tablet WebSocket gateway ─────────────────────
 
 automation: !include automations.yaml
+# UI editor cannot parse !secret — alarm/Telegram automations live here
+automation manual: !include automations_manual.yaml
