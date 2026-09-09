@@ -3,7 +3,7 @@
     <!-- Main tile -->
     <div class="tile" v-resizable="'watertests.main'">
       <div class="tile-hd">
-        <h2>TESTY WODY</h2>
+        <h2>{{ locale === 'pl' ? 'TESTY WODY' : 'WATER TESTS' }}</h2>
         <div class="row" style="gap:8px">
           <button class="btn btn-sm btn-ghost icon-btn" @click="openNormsModal" :title="locale === 'pl' ? 'Normy' : 'Norms'">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -16,7 +16,7 @@
               <path d="M3 8.5a2 2 0 0 1 2-2h2l1.5-2h7L17 6.5h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-9z" />
               <circle cx="12" cy="12.5" r="3.5" />
             </svg>
-            Skanuj
+            {{ locale === 'pl' ? 'Skanuj' : 'Scan' }}
           </button>
         </div>
       </div>
@@ -50,8 +50,8 @@
           <path d="M10 3v6L5 18a2 2 0 0 0 2 3h10a2 2 0 0 0 2-3l-5-9V3" />
           <path d="M7.5 14h9" />
         </svg>
-        <span>Brak testów — dodaj pierwszy wynik</span>
-        <button class="btn btn-sm btn-accent" @click="openScanModal">Skanuj</button>
+        <span>{{ locale === 'pl' ? 'Brak testów — dodaj pierwszy wynik' : 'No tests yet — add your first result' }}</span>
+        <button class="btn btn-sm btn-accent" @click="openScanModal">{{ locale === 'pl' ? 'Skanuj' : 'Scan' }}</button>
       </div>
 
       <!-- Test table -->
@@ -59,8 +59,8 @@
         <div class="tile-body ptable" style="padding-top:12px">
           <!-- Header row -->
           <div class="prow" style="padding-bottom:6px">
-            <span class="sec-lab" style="padding:0">Parametr</span>
-            <span class="sec-lab" style="padding:0;text-align:right">Wartość</span>
+            <span class="sec-lab" style="padding:0">{{ locale === 'pl' ? 'Parametr' : 'Parameter' }}</span>
+            <span class="sec-lab" style="padding:0;text-align:right">{{ locale === 'pl' ? 'Wartość' : 'Value' }}</span>
             <span class="sec-lab" style="padding:0;text-align:center">Status</span>
             <span class="sec-lab" style="padding:0;text-align:center">Trend</span>
           </div>
@@ -131,13 +131,13 @@
                 <path d="M3 4v4h4" />
                 <path d="M12 8v4l3 2" />
               </svg>
-              Historia
+              {{ locale === 'pl' ? 'Historia' : 'History' }}
             </button>
             <button class="btn btn-block" @click="openCycleModal">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M3 12h3.5l2-6 4 12 2.5-6H21" />
               </svg>
-              Cykl zbiornika
+              {{ locale === 'pl' ? 'Cykl zbiornika' : 'Tank Cycle' }}
             </button>
           </div>
         </div>
@@ -163,7 +163,7 @@
               <path d="M18 6L6 18" />
             </svg>
           </button>
-          <span style="font-weight:700;font-size:16px">Skanuj</span>
+          <span style="font-weight:700;font-size:16px">{{ locale === 'pl' ? 'Skanuj' : 'Scan' }}</span>
           <span style="width:32px" />
         </div>
 
@@ -184,13 +184,15 @@
                   <polyline points="17 8 12 3 7 8"/>
                   <line x1="12" y1="3" x2="12" y2="15"/>
                 </svg>
-                <span style="font-size:14px;font-weight:600">Wgraj zdjęcie</span>
-                <span style="font-size:12px">Dotknij aby wybrać</span>
+                <span style="font-size:14px;font-weight:600">{{ locale === 'pl' ? 'Wgraj zdjęcie' : 'Upload photo' }}</span>
+                <span style="font-size:12px">{{ locale === 'pl' ? 'Dotknij aby wybrać' : 'Tap to choose' }}</span>
               </div>
             </div>
 
             <p class="muted" style="font-size:12.5px;text-align:center;margin:14px 0 18px">
-              Wgraj zdjęcie paska testowego — data zostanie pobrana z EXIF.
+              {{ locale === 'pl'
+                ? 'Wgraj zdjęcie paska testowego — data zostanie pobrana z EXIF.'
+                : 'Upload a photo of the test strip — the date will be read from EXIF.' }}
             </p>
 
             <button
@@ -201,7 +203,7 @@
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M2 6h20v12H2z"/><path d="M6 10h.01"/><path d="M10 10h.01"/><path d="M14 10h.01"/><path d="M18 10h.01"/><path d="M8 14h8"/>
               </svg>
-              Wpisz ręcznie
+              {{ locale === 'pl' ? 'Wpisz ręcznie' : 'Enter manually' }}
             </button>
 
             <button
@@ -213,7 +215,7 @@
                 <polyline points="17 8 12 3 7 8"/>
                 <line x1="12" y1="3" x2="12" y2="15"/>
               </svg>
-              Wgraj zdjęcie
+              {{ locale === 'pl' ? 'Wgraj zdjęcie' : 'Upload photo' }}
             </button>
           </template>
 
@@ -224,7 +226,7 @@
             </div>
 
             <div class="field" style="margin-bottom:16px">
-              <label style="font-size:12px;color:var(--text-muted);font-weight:600;display:block;margin-bottom:6px">Data testu</label>
+              <label style="font-size:12px;color:var(--text-muted);font-weight:600;display:block;margin-bottom:6px">{{ locale === 'pl' ? 'Data testu' : 'Test date' }}</label>
               <input
                 class="input"
                 type="datetime-local"
@@ -256,7 +258,7 @@
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M4 12.5l5 5 11-12" />
               </svg>
-              {{ saving ? 'Zapisywanie…' : 'Zapisz' }}
+              {{ saving ? (locale === 'pl' ? 'Zapisywanie…' : 'Saving…') : (locale === 'pl' ? 'Zapisz' : 'Save') }}
             </button>
           </template>
 

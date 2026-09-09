@@ -3,7 +3,7 @@
     <!-- Connection header row -->
     <div class="spread" style="padding: 2px 4px">
       <h2 style="margin:0;font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted)">
-        NA ŻYWO
+        {{ locale === 'pl' ? 'NA ŻYWO' : 'LIVE' }}
       </h2>
       <span class="chip" :style="{ color: wsConnected ? 'var(--success)' : 'var(--warning)' }">
         <span v-if="wsConnected" class="dot on" />
@@ -108,14 +108,14 @@
         </svg>
         <span class="range">
           <span class="tnum">{{ phMin }}–{{ phMax }}</span>
-          <span style="color:var(--success)">optymalny</span>
+          <span style="color:var(--success)">{{ locale === 'pl' ? 'optymalny' : 'optimal' }}</span>
         </span>
       </div>
     </div>
 
     <!-- Devices tile -->
     <div class="tile" v-resizable="'live.devices'">
-      <div class="tile-hd"><h2>URZĄDZENIA</h2></div>
+      <div class="tile-hd"><h2>{{ locale === 'pl' ? 'URZĄDZENIA' : 'DEVICES' }}</h2></div>
       <hr class="divider" />
       <div v-for="tid in deviceTankIds" :key="'devtank-' + tid" class="tile-body" style="padding-top:4px">
         <div class="sec-lab">{{ tankName(tid) }}</div>
