@@ -7,6 +7,7 @@ from datetime import datetime, timezone
 from fastapi import WebSocket, WebSocketDisconnect
 
 from config import settings
+from services.device_status import DEVICE_MAP, fetch_device
 from services.ha_client import ha_client
 from services.n8n_client import n8n_client
 from services.ntfy_client import ntfy_client
@@ -38,22 +39,11 @@ def _get_entity_names() -> dict[str, tuple[str, str]]:
     return _ENTITY_NAMES
 
 
-_DEVICE_META: list[dict] | None = None
-
-
-def _get_device_meta() -> list[dict]:
-    global _DEVICE_META
-    if _DEVICE_META is None:
-        _DEVICE_META = [
-            {"entity_id": settings.tapo_filter_entity, "name": "Filter", "name_pl": "Filtr", "role": "filter", "tank_id": 1},
-            {"entity_id": settings.tapo_heater_entity, "name": "Heater", "name_pl": "Grzałka", "role": "heater", "tank_id": 1},
-            {"entity_id": settings.tapo_light_entity, "name": "Light", "name_pl": "Światło", "role": "light", "tank_id": 1},
-            {"entity_id": settings.tapo_air_entity, "name": "Air Pump", "name_pl": "Pompa Powietrza", "role": "air", "tank_id": 1},
-            {"entity_id": settings.tapo_heater_entity_2, "name": "Heater", "name_pl": "Grzałka", "role": "heater", "tank_id": 2},
-            {"entity_id": settings.tapo_filter_entity_2, "name": "Filter+Pump", "name_pl": "Filtr+Pompka", "role": "filter", "tank_id": 2},
-            {"entity_id": settings.tapo_light_entity_2, "name": "Light", "name_pl": "Światło", "role": "light", "tank_id": 2},
-        ]
-    return _DEVICE_META
+# DEVICE_MAP (imported from services.device_status) is the single shared
+# source of device metadata + power_monitored flags - this module used to
+# keep its own duplicate copy (_get_device_meta) that never got the Tank 2
+# power_monitored=False fix, so it kept polling nonexistent Meross power
+# sensors every 30s. Removed in favor of the shared list.
 
 
 async def _get_suppressed_entities() -> set[str]:
@@ -118,12 +108,6 @@ async def broadcast_change(domain: str):
     await _broadcast({"type": "invalidate", "domain": domain})
 
 
-def _power_entities(switch_id: str) -> tuple[str, str]:
-    """Derive Tapo power/energy sensor entity IDs from a switch entity ID."""
-    base = switch_id.removeprefix("switch.")
-    return f"sensor.{base}_current_consumption", f"sensor.{base}_today_s_consumption"
-
-
 async def live_push_loop():
     """Push sensor + device data every 30s and check for device-off alerts."""
     while True:
@@ -141,13 +125,12 @@ async def live_push_loop():
             now_dt = datetime.now(timezone.utc)
             suppressed = await _get_suppressed_entities()
             names = _get_entity_names()
-            meta = _get_device_meta()
 
             devices = []
-            for d in meta:
+            for d in DEVICE_MAP:
                 entity_id = d["entity_id"]
-                state = await ha_client.get_entity_state(entity_id)
-                state_str = state.get("state")
+                dev_out = await fetch_device(d)
+                state_str = dev_out.state
 
                 if state_str == "on":
                     _device_off_since.pop(entity_id, None)
@@ -173,9 +156,6 @@ async def live_push_loop():
                             logger.warning("device-off alert failed for %s: %s", entity_id, exc)
                         _device_alert_sent.add(entity_id)
 
-                watts_entity, kwh_entity = _power_entities(entity_id)
-                watts = await ha_client.get_state_float(watts_entity) if state_str == "on" else None
-                kwh_today = await ha_client.get_state_float(kwh_entity)
                 devices.append({
                     "entity_id": entity_id,
                     "name": d["name"],
@@ -183,8 +163,8 @@ async def live_push_loop():
                     "role": d["role"],
                     "tank_id": d["tank_id"],
                     "state": state_str,
-                    "watts": watts,
-                    "kwh_today": kwh_today,
+                    "watts": dev_out.watts,
+                    "kwh_today": dev_out.kwh_today,
                 })
 
             await _broadcast({
