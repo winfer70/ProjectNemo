@@ -413,31 +413,54 @@ const { locale } = useI18n()
 const tankStore = useTankSelectorStore()
 const waterStore = useWaterTestsStore()
 const currentReadingsRaw = computed(() => waterStore.currentByTank[Number(tankStore.activeTankId)] || [])
-const parameters = ref([])
 
-async function fetchParameters() {
-  const paramR = await axios.get('/api/water-tests/parameters', { params: { tank_id: tankStore.activeTankId } })
-  parameters.value = paramR.data
-}
-
-async function fetchCurrent() {
-  await waterStore.fetchCurrent(tankStore.activeTankId)
-}
-
-const reminders = ref([])
+// Per-tank caches - fetchParameters()/fetchReminders() hit axios directly
+// (unlike fetchCurrent(), which is backed by the store's own per-tank
+// currentByTank map), so we keep our own tank-keyed cache here. Prefetching
+// every known tank on mount and reading from these caches makes switching
+// tanks in the UI an instant re-render instead of a fresh round-trip.
+const parametersByTank = ref({})
+const remindersByTank = ref({})
+const parameters = computed(() => parametersByTank.value[Number(tankStore.activeTankId)] || [])
+const reminders = computed(() => remindersByTank.value[Number(tankStore.activeTankId)] || [])
 const reminderValues = ref({})
 
-async function fetchReminders() {
-  const r = await axios.get('/api/water-tests/reminders', { params: { tank_id: tankStore.activeTankId } })
-  reminders.value = r.data
+async function fetchParameters(tankId = tankStore.activeTankId) {
+  const paramR = await axios.get('/api/water-tests/parameters', { params: { tank_id: tankId } })
+  parametersByTank.value = { ...parametersByTank.value, [Number(tankId)]: paramR.data }
+}
+
+async function fetchCurrent(tankId = tankStore.activeTankId) {
+  await waterStore.fetchCurrent(tankId)
+}
+
+async function fetchReminders(tankId = tankStore.activeTankId) {
+  const r = await axios.get('/api/water-tests/reminders', { params: { tank_id: tankId } })
+  remindersByTank.value = { ...remindersByTank.value, [Number(tankId)]: r.data }
 }
 
 onMounted(async () => {
-  await Promise.all([fetchCurrent(), fetchParameters(), fetchReminders()])
+  // Prefetch both/all known tanks in parallel so switching tanks later is
+  // instant. Each tank's trio is independent - one tank's failure must not
+  // block the other's data from loading.
+  const tankIds = tankStore.tanks.map((t) => t.id)
+  await Promise.allSettled(
+    tankIds.flatMap((id) => [fetchCurrent(id), fetchParameters(id), fetchReminders(id)])
+  )
 })
 
-watch(() => tankStore.activeTankId, async () => {
-  await Promise.all([fetchCurrent(), fetchParameters(), fetchReminders()])
+// Prefetched tanks resolve here as a no-op (data's already cached) - this
+// only hits the network for a tank that wasn't known/prefetched on mount.
+watch(() => tankStore.activeTankId, async (newId) => {
+  const id = Number(newId)
+  const needsCurrent = !waterStore.currentByTank[id]
+  const needsParams = !parametersByTank.value[id]
+  const needsReminders = !remindersByTank.value[id]
+  await Promise.allSettled([
+    needsCurrent ? fetchCurrent(id) : Promise.resolve(),
+    needsParams ? fetchParameters(id) : Promise.resolve(),
+    needsReminders ? fetchReminders(id) : Promise.resolve(),
+  ])
 })
 
 const currentReadings = computed(() => {

@@ -784,6 +784,12 @@ async function handlePlugToggle(device) {
 }
 
 // ─── Lifecycle ────────────────────────────────────────────────────────────────
+// Tanks whose scoped data has already been loaded - lets loadDisplayedTanksData()
+// skip a tank it already has, so switching tanks (even in single-view mode,
+// where only one tank renders at a time) re-renders instantly instead of
+// re-hitting the network and showing a loading state.
+const _loadedTankIds = new Set()
+
 async function loadTankScopedData(tankId) {
   await Promise.all([
     calendarStore.fetchToday(tankId),
@@ -791,21 +797,28 @@ async function loadTankScopedData(tankId) {
     scheduleStore.pollFeedStatus(tankId),
   ])
   if (scheduleStore.feedStatusFor(tankId).paused) scheduleStore.startStatusPolling(tankId)
+  _loadedTankIds.add(tankId)
 }
 
 async function loadDisplayedTanksData() {
-  await Promise.all(displayedTankIds.value.map(loadTankScopedData))
+  await Promise.all(
+    displayedTankIds.value.filter((id) => !_loadedTankIds.has(id)).map(loadTankScopedData)
+  )
 }
 
 onMounted(async () => {
+  // Prefetch every known tank up front (not just the currently displayed
+  // one/s) so a later switch to single-view mode on a not-yet-shown tank is
+  // instant rather than a fresh fetch + loading state.
   await Promise.all([
     maintenanceStore.fetchTasks(),
     sensorsStore.fetchDevices(),
-    loadDisplayedTanksData(),
+    Promise.all(tankStore.tanks.map((t) => loadTankScopedData(t.id))),
   ])
 })
 
 // Combined mode needs both tanks' data; single mode only needs the active one.
+// loadDisplayedTanksData() is a no-op for any tank already prefetched above.
 watch(() => [tankStore.activeTankId, tankStore.viewMode], () => {
   loadDisplayedTanksData()
 })
