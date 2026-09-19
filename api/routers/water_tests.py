@@ -173,7 +173,9 @@ async def debug_strip(file: UploadFile = File(...)):
 
 @router.get("/parameters", response_model=list[WaterTestParameterOut])
 async def list_parameters(tank_id: int | None = None, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(WaterTestParameter).order_by(WaterTestParameter.id))
+    result = await db.execute(
+        select(WaterTestParameter).where(WaterTestParameter.active.is_(True)).order_by(WaterTestParameter.id)
+    )
     params = result.scalars().all()
     if tank_id is None:
         return params
@@ -253,7 +255,9 @@ async def list_reminders(tank_id: int = 1, db: AsyncSession = Depends(get_db)):
     """Manual-category parameters that are due (or overdue) for this tank,
     based on the last time each was actually tested here."""
     params_result = await db.execute(
-        select(WaterTestParameter).where(WaterTestParameter.category == "manual").order_by(WaterTestParameter.id)
+        select(WaterTestParameter)
+        .where(WaterTestParameter.category == "manual", WaterTestParameter.active.is_(True))
+        .order_by(WaterTestParameter.id)
     )
     params = params_result.scalars().all()
     norms = await _effective_norms_map(db, tank_id)

@@ -37,14 +37,25 @@ class InfluxClient:
         self._write.write(bucket=settings.influxdb_bucket, record=point)
 
     async def query_history(
-        self, measurement: str, hours: int = 24
+        self, measurement: str, hours: int = 24, tag_filter: dict[str, str] | None = None
     ) -> list[SensorHistoryPoint]:
+        # write_sensor() always writes under the "value" field, but
+        # write_power() writes "watts" + "kwh_today" fields instead (no
+        # "value" field exists on "power" points) - without this, a "power"
+        # query would always match zero points.
+        field = "watts" if measurement == "power" else "value"
+
+        tag_clauses = "".join(
+            f'  |> filter(fn: (r) => r.{key} == "{value}")\n'
+            for key, value in (tag_filter or {}).items()
+        )
+
         flux = f"""
 from(bucket: "{settings.influxdb_bucket}")
   |> range(start: -{hours}h)
   |> filter(fn: (r) => r._measurement == "{measurement}")
-  |> filter(fn: (r) => r._field == "value")
-  |> aggregateWindow(every: 5m, fn: mean, createEmpty: false)
+  |> filter(fn: (r) => r._field == "{field}")
+{tag_clauses}  |> aggregateWindow(every: 5m, fn: mean, createEmpty: false)
   |> sort(columns: ["_time"])
 """
         try:

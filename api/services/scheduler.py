@@ -1,4 +1,5 @@
 """APScheduler jobs — daily summary, overdue checks, feeding pause auto-resume."""
+import asyncio
 import logging
 from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
@@ -10,9 +11,10 @@ from sqlalchemy.orm import selectinload
 from config import settings
 from database import AsyncSessionLocal
 from models.orm import (
-    DosingTask, FeedingPause, FeedingSchedule, MaintenanceTask, Supply,
+    DosingTask, FeedingPause, FeedingSchedule, MaintenanceSnooze, MaintenanceTask, Supply,
     WaterTestReading, WaterTestSession, WaterTestSnooze,
 )
+from services.device_status import DEVICE_MAP, fetch_device
 from services.ha_client import ha_client
 from services.n8n_client import n8n_client
 from services.ntfy_client import ntfy_client
@@ -105,23 +107,31 @@ async def check_overdue():
 TANK_NAMES = {1: settings.tank_1_name, 2: settings.tank_2_name}
 
 
-@scheduler.scheduled_job("cron", hour="*/6")
+@scheduler.scheduled_job("cron", hour="*", minute=0)
 async def water_test_snooze_escalation():
-    """A due water-test reminder gets snoozed in the UI first (no Telegram
-    yet); only once it's been snoozed for 2+ days without a new reading do
-    we escalate to Telegram - once per snooze, with last-tested date and
-    what a high reading of that parameter can do to the tank."""
+    """A due water-test reminder gets snoozed in the UI first; once snoozed,
+    we keep escalating to Telegram roughly once per hour - naming the tank
+    and what a high reading of that parameter can do - for as long as the
+    snooze row exists. The snooze (and this escalation) only stops once a
+    fresh reading for that tank+parameter is logged (see create_session's
+    "a fresh reading resolves any pending remind me later" snooze-clearing
+    logic, which this job does not touch).
+
+    `notified_at` holds the LAST notification time (not the first) so this
+    can re-fire indefinitely rather than being one-shot.
+    """
     now = datetime.now(timezone.utc)
     async with AsyncSessionLocal() as db:
         result = await db.execute(
             select(WaterTestSnooze).options(selectinload(WaterTestSnooze.parameter))
         )
         for snooze in result.scalars().all():
-            if snooze.notified_at is not None:
-                continue
-            snoozed_at = snooze.snoozed_at.replace(tzinfo=timezone.utc) if snooze.snoozed_at.tzinfo is None else snooze.snoozed_at
-            if (now - snoozed_at) < timedelta(days=2):
-                continue
+            last_notified_at = snooze.notified_at
+            if last_notified_at is not None:
+                if last_notified_at.tzinfo is None:
+                    last_notified_at = last_notified_at.replace(tzinfo=timezone.utc)
+                if (now - last_notified_at) < timedelta(hours=1):
+                    continue
 
             param = snooze.parameter
             tank_name = TANK_NAMES.get(snooze.tank_id, f"Tank {snooze.tank_id}")
@@ -150,6 +160,45 @@ async def water_test_snooze_escalation():
                 f"🧪 {tank_name}: test {param.name_pl} wciąż zaległy (ostatni test: {last_str_pl}).{effect_pl}",
             )
             snooze.notified_at = now
+        await db.commit()
+
+
+@scheduler.scheduled_job("cron", minute=0)
+async def maintenance_snooze_reminder():
+    """Hourly repeating Telegram nudge for an overdue MaintenanceTask that's
+    been snoozed on the website - mirrors water_test_snooze_escalation's
+    pattern but repeats every hour from the start (per the user's request)
+    instead of firing once. Only re-sent once last_notified_at is >= 1h old;
+    the snooze row itself is deleted by complete_maintenance once the task
+    is actually finished, which stops the nudges."""
+    now = datetime.now(timezone.utc)
+    async with AsyncSessionLocal() as db:
+        result = await db.execute(
+            select(MaintenanceSnooze).options(selectinload(MaintenanceSnooze.task))
+        )
+        for snooze in result.scalars().all():
+            task = snooze.task
+            if not task or task.next_due is None:
+                continue
+            due = task.next_due.replace(tzinfo=timezone.utc) if task.next_due.tzinfo is None else task.next_due
+            if due > now:
+                continue  # no longer overdue
+
+            if snooze.last_notified_at is not None:
+                last_notified = (
+                    snooze.last_notified_at.replace(tzinfo=timezone.utc)
+                    if snooze.last_notified_at.tzinfo is None
+                    else snooze.last_notified_at
+                )
+                if (now - last_notified) < timedelta(hours=1):
+                    continue
+
+            tank_name = TANK_NAMES.get(task.tank_id, f"Tank {task.tank_id}")
+            await n8n_client.reminder(
+                f"🔧 {tank_name}: {task.name} maintenance is overdue.",
+                f"🔧 {tank_name}: konserwacja {task.name_pl} jest zaległa.",
+            )
+            snooze.last_notified_at = now
         await db.commit()
 
 
@@ -211,6 +260,29 @@ async def dosing_reminder():
                 f"💧 Dose {task.dose_amount}{task.dose_unit} {supply.name}{note}",
                 f"💧 Dawka {task.dose_amount}{task.dose_unit} {supply.name_pl or supply.name}{note_pl}",
             )
+
+
+@scheduler.scheduled_job("interval", minutes=5)
+async def record_power_history():
+    """Write current watts/kwh_today for every smart plug to InfluxDB so the
+    Plug Detail sheet in the UI has an actual trend to show instead of only
+    a live snapshot. Devices with no power sensor available (currently all
+    of Tank 2's Meross-based plugs - see the TODO in services/device_status.py)
+    are skipped, not errored.
+
+    NOTE: points are tagged by device.name only (per DeviceOut), which is not
+    unique across tanks today (e.g. "Heater"/"Light" exist for both Tank 1
+    and Tank 2). Harmless for now since Tank 2 devices always have
+    watts=None and are skipped below - revisit (e.g. tag by entity_id
+    instead) once Tank 2 gets real power sensors (see Part D TODO)."""
+    devices = await asyncio.gather(*(fetch_device(d) for d in DEVICE_MAP))
+    for device in devices:
+        if device.watts is None:
+            continue
+        try:
+            influx_client.write_power(device.name, device.watts, device.kwh_today or 0.0)
+        except Exception as exc:
+            logger.warning("Failed to write power history for %s: %s", device.name, exc)
 
 
 @scheduler.scheduled_job("interval", seconds=30)

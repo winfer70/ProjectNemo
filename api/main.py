@@ -1,9 +1,11 @@
 """FastAPI application orchestrator for the ProjectNemo aquarium monitoring system."""
 import asyncio
 import logging
+import os
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy import text
 
 from config import settings
@@ -25,6 +27,12 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Static file serving (uploaded/fetched obsada species images live under
+# static/obsada_images/ - see routers/obsada.py).
+_STATIC_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static")
+os.makedirs(os.path.join(_STATIC_DIR, "obsada_images"), exist_ok=True)
+app.mount("/static", StaticFiles(directory=_STATIC_DIR), name="static")
 
 app.include_router(schedule.router)
 app.include_router(calendar.router)
@@ -65,6 +73,7 @@ async def _run_migrations():
             "ALTER TABLE water_test_parameters ADD COLUMN high_effect_en TEXT",
             "ALTER TABLE water_test_parameters ADD COLUMN high_effect_pl TEXT",
             "ALTER TABLE water_test_parameter_norms ADD COLUMN test_frequency_days INTEGER",
+            "ALTER TABLE water_test_parameters ADD COLUMN active BOOLEAN DEFAULT 1",
             """CREATE TABLE IF NOT EXISTS water_test_snoozes (
                 id INTEGER PRIMARY KEY,
                 tank_id INTEGER NOT NULL,
@@ -73,6 +82,7 @@ async def _run_migrations():
                 notified_at DATETIME,
                 UNIQUE(tank_id, parameter_id)
             )""",
+            """CREATE TABLE IF NOT EXISTS maintenance_snoozes (id INTEGER PRIMARY KEY, task_id INTEGER NOT NULL, snoozed_at DATETIME DEFAULT CURRENT_TIMESTAMP, last_notified_at DATETIME, UNIQUE(task_id))""",
         ]
         for sql in migrations:
             try:
@@ -102,6 +112,16 @@ async def _run_migrations():
                 await db.commit()
             except Exception:
                 pass
+        # Retire "Total Alkalinity (TAL)" - redundant with the KH parameter.
+        # Soft-deactivate only, so past readings stay visible in history.
+        # Idempotent/safe to run every startup.
+        try:
+            await db.execute(text(
+                "UPDATE water_test_parameters SET active = 0 WHERE key = 'total_alkalinity'"
+            ))
+            await db.commit()
+        except Exception:
+            pass
 
 
 @app.on_event("startup")

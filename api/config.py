@@ -9,6 +9,11 @@ class Settings(BaseSettings):
     # Optional - HA conversation agent entity id to target (e.g. Kamilo/Heimdall's
     # pipeline agent). Empty = HA's default configured conversation agent.
     ha_conversation_agent_id: str = ""
+    # Optional - HA calendar entity id to push maintenance due-dates to (e.g.
+    # a Google Calendar synced into HA via Settings > Devices & Services >
+    # Add Integration > Google). Requires that integration to be configured
+    # in HA first - unset (None) until then, which keeps the sync a no-op.
+    ha_calendar_entity_id: str | None = None
 
     influxdb_url: str = "http://influxdb:8086"
     influxdb_token: str = ""

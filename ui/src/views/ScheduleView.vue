@@ -258,6 +258,25 @@
         </h2>
       </div>
       <hr class="divider">
+      <!-- Overdue maintenance reminders - Snooze defers the on-screen nudge
+           but keeps the hourly Telegram reminder going until actually done
+           (mirrors the water-test reminders pattern). -->
+      <div v-if="overdueMaintFor(tid).length" class="tile-body" style="padding-top:10px;padding-bottom:2px;display:flex;flex-direction:column;gap:8px">
+        <div
+          v-for="task in overdueMaintFor(tid)"
+          :key="'due-' + task.id"
+          class="ls-card"
+          style="flex-direction:column;align-items:stretch;gap:6px;padding:9px 11px;border-left:3px solid var(--warning)"
+        >
+          <div class="spread">
+            <span style="font-weight:600;font-size:12.5px">{{ locale === 'pl' ? task.name_pl : task.name }}</span>
+            <span class="muted" style="font-size:11px">{{ Math.abs(maintDays(task)) }}{{ locale === 'pl' ? ' dni po terminie' : ' days overdue' }}</span>
+          </div>
+          <button class="btn btn-sm btn-ghost" @click="handleMaintSnooze(task)">
+            {{ locale === 'pl' ? 'Odłóż przypomnienie' : 'Snooze reminder' }}
+          </button>
+        </div>
+      </div>
       <div class="tile-body" style="padding-top:6px">
         <div v-if="maintenanceTasksFor(tid).length === 0" class="empty">
           <span>{{ locale === 'pl' ? 'Brak zadań' : 'No tasks' }}</span>
@@ -293,24 +312,23 @@
               <template v-else>{{ maintDays(task) }}{{ locale === 'pl' ? ' dni' : 'd' }}</template>
             </span>
           </div>
-          <button
-            class="btn btn-sm btn-block"
-            :class="{ 'btn-success': !!task.started_at }"
-            @click="handleMaintToggle(task)"
-          >
-            <template v-if="task.started_at">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M4 12.5l5 5 11-12"/>
-              </svg>
-              {{ locale === 'pl' ? 'Zakończ' : 'Finish' }}
-            </template>
-            <template v-else>
+          <!-- Start and Done are independent actions - the user sometimes does
+               maintenance without ever opening the app (unplugs the filter,
+               does it, comes back), so Done must not require Start first. -->
+          <div class="row" style="gap:6px">
+            <button class="btn btn-sm" style="flex:1" @click="handleMaintStart(task)">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M7 5l11 7-11 7V5z"/>
               </svg>
               {{ locale === 'pl' ? 'Start' : 'Start' }}
-            </template>
-          </button>
+            </button>
+            <button class="btn btn-sm btn-success" style="flex:1" @click="handleMaintComplete(task)">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 12.5l5 5 11-12"/>
+              </svg>
+              {{ locale === 'pl' ? 'Zakończ' : 'Done' }}
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -473,6 +491,23 @@
               <span class="v tnum">{{ (sheetDevice.kwh_today ?? 0).toFixed(2) }} kWh</span>
             </div>
           </div>
+
+          <!-- ── 24h watts trend ── -->
+          <div style="margin-bottom:18px">
+            <div class="muted" style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:6px">
+              {{ locale === 'pl' ? 'Moc — 24h' : 'Power — 24h' }}
+            </div>
+            <div v-if="powerHistoryLoading" class="muted" style="font-size:12px">
+              {{ locale === 'pl' ? 'Ładowanie...' : 'Loading...' }}
+            </div>
+            <div v-else-if="powerHistory.length" style="height:80px">
+              <Line :data="powerChartData" :options="powerChartOptions" />
+            </div>
+            <div v-else class="muted" style="font-size:12px">
+              {{ locale === 'pl' ? 'Brak danych historycznych' : 'No data yet' }}
+            </div>
+          </div>
+
           <div class="modal-actions">
             <button
               class="btn btn-block"
@@ -491,6 +526,11 @@
 import { ref, reactive, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { inject } from 'vue'
+import axios from 'axios'
+import {
+  Chart as ChartJS, LineElement, PointElement, LinearScale, CategoryScale, Filler, Tooltip,
+} from 'chart.js'
+import { Line } from 'vue-chartjs'
 import { useScheduleStore } from '../stores/schedule'
 import { useCalendarStore } from '../stores/calendar'
 import { useMaintenanceStore } from '../stores/maintenance'
@@ -498,6 +538,8 @@ import { useSensorsStore } from '../stores/sensors'
 import { useTankSelectorStore } from '../stores/tankSelector'
 import TankSwitcher from '../components/TankSwitcher.vue'
 import * as bleService from '../services/bleService'
+
+ChartJS.register(LineElement, PointElement, LinearScale, CategoryScale, Filler, Tooltip)
 
 const showToast = inject('showToast', () => {})
 const { locale } = useI18n()
@@ -756,15 +798,36 @@ function hasInProgressMaintenanceFor(tankId) {
   return maintenanceTasksFor(tankId).some(t => t.started_at !== null)
 }
 
-async function handleMaintToggle(task) {
+// Start and Done are independent (see markup comment above) - Done works
+// whether or not Start was ever pressed, matching how the backend already
+// behaves (complete_maintenance doesn't require started_at to be set).
+async function handleMaintStart(task) {
   try {
-    if (task.started_at) {
-      await maintenanceStore.completeTask(task.id)
-      showToast(locale.value === 'pl' ? 'Zakończono' : 'Completed')
-    } else {
-      await maintenanceStore.startTask(task.id)
-      showToast(locale.value === 'pl' ? 'Rozpoczęto' : 'Started')
-    }
+    await maintenanceStore.startTask(task.id)
+    showToast(locale.value === 'pl' ? 'Rozpoczęto' : 'Started')
+  } catch (err) {
+    showToast(locale.value === 'pl' ? 'Błąd' : 'Error')
+  }
+}
+
+async function handleMaintComplete(task) {
+  try {
+    await maintenanceStore.completeTask(task.id)
+    showToast(locale.value === 'pl' ? 'Zakończono' : 'Completed')
+  } catch (err) {
+    showToast(locale.value === 'pl' ? 'Błąd' : 'Error')
+  }
+}
+
+// ─── Maintenance due-reminders (mirrors WaterTestsView's snooze pattern) ───────
+function overdueMaintFor(tankId) {
+  return maintenanceTasksFor(tankId).filter(t => maintDays(t) < 0)
+}
+
+async function handleMaintSnooze(task) {
+  try {
+    await maintenanceStore.snoozeTask(task.id)
+    showToast(locale.value === 'pl' ? 'Odłożono' : 'Snoozed')
   } catch (err) {
     showToast(locale.value === 'pl' ? 'Błąd' : 'Error')
   }
@@ -783,7 +846,74 @@ async function handlePlugToggle(device) {
   }
 }
 
+// ─── Plug power trend (24h sparkline in the detail sheet) ────────────────────
+const powerHistory = ref([])
+const powerHistoryLoading = ref(false)
+
+async function fetchPowerHistory(deviceName) {
+  powerHistoryLoading.value = true
+  powerHistory.value = []
+  try {
+    const r = await axios.get('/api/sensors/history', {
+      params: { measurement: 'power', device: deviceName, hours: 24 },
+    })
+    powerHistory.value = Array.isArray(r.data) ? r.data : []
+  } catch (err) {
+    // No history yet (brand new device / no InfluxDB data) - just show
+    // the "no data" note below instead of erroring.
+    powerHistory.value = []
+  } finally {
+    powerHistoryLoading.value = false
+  }
+}
+
+watch(sheetDevice, (device) => {
+  if (device) {
+    fetchPowerHistory(device.name)
+  } else {
+    powerHistory.value = []
+  }
+})
+
+const powerChartData = computed(() => ({
+  labels: powerHistory.value.map(p => {
+    const d = new Date(p.time)
+    return d.toLocaleTimeString(locale.value === 'pl' ? 'pl-PL' : 'en-GB', { hour: '2-digit', minute: '2-digit' })
+  }),
+  datasets: [{
+    data: powerHistory.value.map(p => p.value),
+    borderColor: '#58a6ff',
+    backgroundColor: 'rgba(88,166,255,0.12)',
+    fill: true,
+    tension: 0.3,
+    pointRadius: 0,
+    borderWidth: 2,
+  }],
+}))
+
+const powerChartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  animation: false,
+  plugins: { legend: { display: false }, tooltip: { enabled: true } },
+  scales: {
+    x: { display: false },
+    y: {
+      display: true,
+      beginAtZero: true,
+      ticks: { color: '#8b949e', font: { size: 10 }, maxTicksLimit: 4 },
+      grid: { color: '#30363d' },
+    },
+  },
+}
+
 // ─── Lifecycle ────────────────────────────────────────────────────────────────
+// Tanks whose scoped data has already been loaded - lets loadDisplayedTanksData()
+// skip a tank it already has, so switching tanks (even in single-view mode,
+// where only one tank renders at a time) re-renders instantly instead of
+// re-hitting the network and showing a loading state.
+const _loadedTankIds = new Set()
+
 async function loadTankScopedData(tankId) {
   await Promise.all([
     calendarStore.fetchToday(tankId),
@@ -791,21 +921,28 @@ async function loadTankScopedData(tankId) {
     scheduleStore.pollFeedStatus(tankId),
   ])
   if (scheduleStore.feedStatusFor(tankId).paused) scheduleStore.startStatusPolling(tankId)
+  _loadedTankIds.add(tankId)
 }
 
 async function loadDisplayedTanksData() {
-  await Promise.all(displayedTankIds.value.map(loadTankScopedData))
+  await Promise.all(
+    displayedTankIds.value.filter((id) => !_loadedTankIds.has(id)).map(loadTankScopedData)
+  )
 }
 
 onMounted(async () => {
+  // Prefetch every known tank up front (not just the currently displayed
+  // one/s) so a later switch to single-view mode on a not-yet-shown tank is
+  // instant rather than a fresh fetch + loading state.
   await Promise.all([
     maintenanceStore.fetchTasks(),
     sensorsStore.fetchDevices(),
-    loadDisplayedTanksData(),
+    Promise.all(tankStore.tanks.map((t) => loadTankScopedData(t.id))),
   ])
 })
 
 // Combined mode needs both tanks' data; single mode only needs the active one.
+// loadDisplayedTanksData() is a no-op for any tank already prefetched above.
 watch(() => [tankStore.activeTankId, tankStore.viewMode], () => {
   loadDisplayedTanksData()
 })

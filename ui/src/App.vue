@@ -182,6 +182,10 @@
       </div>
     </template>
 
+    <!-- Maintenance due-reminders popup - global, shown on every tab
+         regardless of activeTab, self-contained component/store logic. -->
+    <MaintenanceDuePopup />
+
     <!-- Kamilo assistant - floating shortcut on every tab, talk or type to
          update anything without hunting through the UI. -->
     <button class="kamilo-fab" @click="kamiloOpen = true" :title="$t('kamilo.title') || 'Kamilo'">
@@ -271,6 +275,7 @@ import CalendarView from './views/CalendarView.vue'
 import LivestockView from './views/LivestockView.vue'
 import PlantHealthView from './views/PlantHealthView.vue'
 import SettingsView from './views/SettingsView.vue'
+import MaintenanceDuePopup from './components/MaintenanceDuePopup.vue'
 import { useSensorsStore } from './stores/sensors'
 import { useWaterTestsStore } from './stores/waterTests'
 import { useMaintenanceStore } from './stores/maintenance'
@@ -466,6 +471,10 @@ onMounted(() => {
   })
   fetchWeather()
   wxTimer = setInterval(fetchWeather, 30 * 60 * 1000)
+  // Prime live sensor data via REST immediately instead of waiting for the
+  // first periodic WS push (design doc: WS pushes every 30s) - avoids a
+  // blank/loading first paint for both tanks on refresh.
+  sensorsStore.fetchCurrent()
   sensorsStore.connectWs()
   window.addEventListener('nemo:invalidate', _handleInvalidate)
   if (rootRef.value) {

@@ -8,6 +8,9 @@
     "planthealth": "Plants",
     "settings": "Settings"
   },
+  "kamilo": {
+    "title": "Kamilo"
+  },
   "schedule": {
     "title": "Schedule",
     "feeding": "Feeding",
