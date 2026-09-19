@@ -466,6 +466,10 @@ onMounted(() => {
   })
   fetchWeather()
   wxTimer = setInterval(fetchWeather, 30 * 60 * 1000)
+  // Prime live sensor data via REST immediately instead of waiting for the
+  // first periodic WS push (design doc: WS pushes every 30s) - avoids a
+  // blank/loading first paint for both tanks on refresh.
+  sensorsStore.fetchCurrent()
   sensorsStore.connectWs()
   window.addEventListener('nemo:invalidate', _handleInvalidate)
   if (rootRef.value) {
