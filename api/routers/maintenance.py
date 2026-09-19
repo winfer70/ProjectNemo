@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from database import get_db
-from models.orm import MaintenanceLog, MaintenanceTask, Supply
+from models.orm import MaintenanceLog, MaintenanceSnooze, MaintenanceTask, Supply
 from models.schemas import MaintenanceCompleteRequest, MaintenanceStartRequest, MaintenanceTaskOut
 from services.n8n_client import n8n_client
 from services.websocket_manager import broadcast_change
@@ -77,6 +77,27 @@ async def start_maintenance(
     return {"ok": True}
 
 
+@router.post("/{task_id}/snooze")
+async def snooze_maintenance(
+    task_id: int,
+    db: AsyncSession = Depends(get_db),
+):
+    """Defer an overdue maintenance task's on-screen due-reminder. Idempotent
+    insert, same pattern as water_tests.py's snooze_reminder - the hourly
+    maintenance_snooze_reminder job (services/scheduler.py) then keeps
+    sending a repeating Telegram nudge until the task is actually completed,
+    which deletes this row (see complete_maintenance below)."""
+    task = await db.get(MaintenanceTask, task_id)
+    if not task:
+        raise HTTPException(404, "Task not found")
+
+    result = await db.execute(select(MaintenanceSnooze).where(MaintenanceSnooze.task_id == task_id))
+    if not result.scalar_one_or_none():
+        db.add(MaintenanceSnooze(task_id=task_id))
+        await db.commit()
+    return {"ok": True}
+
+
 @router.post("/{task_id}/complete")
 async def complete_maintenance(
     task_id: int,
@@ -91,6 +112,16 @@ async def complete_maintenance(
     task.last_completed = now
     task.next_due = now + timedelta(days=task.interval_days)
     task.started_at = None  # clear in-progress state
+
+    # A completed task resolves any pending "remind me later" for it - the
+    # hourly Telegram nudge (services/scheduler.py's maintenance_snooze_reminder)
+    # only fires while a MaintenanceSnooze row exists for this task.
+    snooze_result = await db.execute(
+        select(MaintenanceSnooze).where(MaintenanceSnooze.task_id == task_id)
+    )
+    snooze = snooze_result.scalar_one_or_none()
+    if snooze:
+        await db.delete(snooze)
 
     for part in body.parts_replaced:
         if sid := part.get("supply_id"):

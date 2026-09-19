@@ -108,6 +108,20 @@ class MaintenanceLog(Base):
         self._parts_replaced = json.dumps(value)
 
 
+class MaintenanceSnooze(Base):
+    """Tracks an in-progress "remind me later" for one overdue maintenance
+    task - mirrors WaterTestSnooze. Deleted once that task is completed."""
+    __tablename__ = "maintenance_snoozes"
+    __table_args__ = (UniqueConstraint("task_id", name="uq_maintenance_snooze_task"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    task_id: Mapped[int] = mapped_column(ForeignKey("maintenance_tasks.id"))
+    snoozed_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+    last_notified_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+
+    task: Mapped["MaintenanceTask"] = relationship()
+
+
 class FeedingSchedule(Base):
     __tablename__ = "feeding_schedule"
 

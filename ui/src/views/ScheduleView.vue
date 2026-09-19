@@ -258,6 +258,25 @@
         </h2>
       </div>
       <hr class="divider">
+      <!-- Overdue maintenance reminders - Snooze defers the on-screen nudge
+           but keeps the hourly Telegram reminder going until actually done
+           (mirrors the water-test reminders pattern). -->
+      <div v-if="overdueMaintFor(tid).length" class="tile-body" style="padding-top:10px;padding-bottom:2px;display:flex;flex-direction:column;gap:8px">
+        <div
+          v-for="task in overdueMaintFor(tid)"
+          :key="'due-' + task.id"
+          class="ls-card"
+          style="flex-direction:column;align-items:stretch;gap:6px;padding:9px 11px;border-left:3px solid var(--warning)"
+        >
+          <div class="spread">
+            <span style="font-weight:600;font-size:12.5px">{{ locale === 'pl' ? task.name_pl : task.name }}</span>
+            <span class="muted" style="font-size:11px">{{ Math.abs(maintDays(task)) }}{{ locale === 'pl' ? ' dni po terminie' : ' days overdue' }}</span>
+          </div>
+          <button class="btn btn-sm btn-ghost" @click="handleMaintSnooze(task)">
+            {{ locale === 'pl' ? 'Odłóż przypomnienie' : 'Snooze reminder' }}
+          </button>
+        </div>
+      </div>
       <div class="tile-body" style="padding-top:6px">
         <div v-if="maintenanceTasksFor(tid).length === 0" class="empty">
           <span>{{ locale === 'pl' ? 'Brak zadań' : 'No tasks' }}</span>
@@ -293,24 +312,23 @@
               <template v-else>{{ maintDays(task) }}{{ locale === 'pl' ? ' dni' : 'd' }}</template>
             </span>
           </div>
-          <button
-            class="btn btn-sm btn-block"
-            :class="{ 'btn-success': !!task.started_at }"
-            @click="handleMaintToggle(task)"
-          >
-            <template v-if="task.started_at">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M4 12.5l5 5 11-12"/>
-              </svg>
-              {{ locale === 'pl' ? 'Zakończ' : 'Finish' }}
-            </template>
-            <template v-else>
+          <!-- Start and Done are independent actions - the user sometimes does
+               maintenance without ever opening the app (unplugs the filter,
+               does it, comes back), so Done must not require Start first. -->
+          <div class="row" style="gap:6px">
+            <button class="btn btn-sm" style="flex:1" @click="handleMaintStart(task)">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M7 5l11 7-11 7V5z"/>
               </svg>
               {{ locale === 'pl' ? 'Start' : 'Start' }}
-            </template>
-          </button>
+            </button>
+            <button class="btn btn-sm btn-success" style="flex:1" @click="handleMaintComplete(task)">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 12.5l5 5 11-12"/>
+              </svg>
+              {{ locale === 'pl' ? 'Zakończ' : 'Done' }}
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -756,15 +774,36 @@ function hasInProgressMaintenanceFor(tankId) {
   return maintenanceTasksFor(tankId).some(t => t.started_at !== null)
 }
 
-async function handleMaintToggle(task) {
+// Start and Done are independent (see markup comment above) - Done works
+// whether or not Start was ever pressed, matching how the backend already
+// behaves (complete_maintenance doesn't require started_at to be set).
+async function handleMaintStart(task) {
   try {
-    if (task.started_at) {
-      await maintenanceStore.completeTask(task.id)
-      showToast(locale.value === 'pl' ? 'Zakończono' : 'Completed')
-    } else {
-      await maintenanceStore.startTask(task.id)
-      showToast(locale.value === 'pl' ? 'Rozpoczęto' : 'Started')
-    }
+    await maintenanceStore.startTask(task.id)
+    showToast(locale.value === 'pl' ? 'Rozpoczęto' : 'Started')
+  } catch (err) {
+    showToast(locale.value === 'pl' ? 'Błąd' : 'Error')
+  }
+}
+
+async function handleMaintComplete(task) {
+  try {
+    await maintenanceStore.completeTask(task.id)
+    showToast(locale.value === 'pl' ? 'Zakończono' : 'Completed')
+  } catch (err) {
+    showToast(locale.value === 'pl' ? 'Błąd' : 'Error')
+  }
+}
+
+// ─── Maintenance due-reminders (mirrors WaterTestsView's snooze pattern) ───────
+function overdueMaintFor(tankId) {
+  return maintenanceTasksFor(tankId).filter(t => maintDays(t) < 0)
+}
+
+async function handleMaintSnooze(task) {
+  try {
+    await maintenanceStore.snoozeTask(task.id)
+    showToast(locale.value === 'pl' ? 'Odłożono' : 'Snoozed')
   } catch (err) {
     showToast(locale.value === 'pl' ? 'Błąd' : 'Error')
   }

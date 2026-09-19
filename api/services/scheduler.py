@@ -10,7 +10,7 @@ from sqlalchemy.orm import selectinload
 from config import settings
 from database import AsyncSessionLocal
 from models.orm import (
-    DosingTask, FeedingPause, FeedingSchedule, MaintenanceTask, Supply,
+    DosingTask, FeedingPause, FeedingSchedule, MaintenanceSnooze, MaintenanceTask, Supply,
     WaterTestReading, WaterTestSession, WaterTestSnooze,
 )
 from services.ha_client import ha_client
@@ -150,6 +150,45 @@ async def water_test_snooze_escalation():
                 f"🧪 {tank_name}: test {param.name_pl} wciąż zaległy (ostatni test: {last_str_pl}).{effect_pl}",
             )
             snooze.notified_at = now
+        await db.commit()
+
+
+@scheduler.scheduled_job("cron", minute=0)
+async def maintenance_snooze_reminder():
+    """Hourly repeating Telegram nudge for an overdue MaintenanceTask that's
+    been snoozed on the website - mirrors water_test_snooze_escalation's
+    pattern but repeats every hour from the start (per the user's request)
+    instead of firing once. Only re-sent once last_notified_at is >= 1h old;
+    the snooze row itself is deleted by complete_maintenance once the task
+    is actually finished, which stops the nudges."""
+    now = datetime.now(timezone.utc)
+    async with AsyncSessionLocal() as db:
+        result = await db.execute(
+            select(MaintenanceSnooze).options(selectinload(MaintenanceSnooze.task))
+        )
+        for snooze in result.scalars().all():
+            task = snooze.task
+            if not task or task.next_due is None:
+                continue
+            due = task.next_due.replace(tzinfo=timezone.utc) if task.next_due.tzinfo is None else task.next_due
+            if due > now:
+                continue  # no longer overdue
+
+            if snooze.last_notified_at is not None:
+                last_notified = (
+                    snooze.last_notified_at.replace(tzinfo=timezone.utc)
+                    if snooze.last_notified_at.tzinfo is None
+                    else snooze.last_notified_at
+                )
+                if (now - last_notified) < timedelta(hours=1):
+                    continue
+
+            tank_name = TANK_NAMES.get(task.tank_id, f"Tank {task.tank_id}")
+            await n8n_client.reminder(
+                f"🔧 {tank_name}: {task.name} maintenance is overdue.",
+                f"🔧 {tank_name}: konserwacja {task.name_pl} jest zaległa.",
+            )
+            snooze.last_notified_at = now
         await db.commit()
 
 
