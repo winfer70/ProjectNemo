@@ -266,15 +266,15 @@ async def dosing_reminder():
 async def record_power_history():
     """Write current watts/kwh_today for every smart plug to InfluxDB so the
     Plug Detail sheet in the UI has an actual trend to show instead of only
-    a live snapshot. Devices with no power sensor available (currently all
-    of Tank 2's Meross-based plugs - see the TODO in services/device_status.py)
-    are skipped, not errored.
+    a live snapshot. Devices with no power sensor (Tank 2's Meross-based
+    plugs - that strip has no power-monitoring hardware at all, confirmed,
+    see power_monitored=False in services/device_status.py) are skipped,
+    not errored - this is permanent, not pending.
 
     NOTE: points are tagged by device.name only (per DeviceOut), which is not
     unique across tanks today (e.g. "Heater"/"Light" exist for both Tank 1
-    and Tank 2). Harmless for now since Tank 2 devices always have
-    watts=None and are skipped below - revisit (e.g. tag by entity_id
-    instead) once Tank 2 gets real power sensors (see Part D TODO)."""
+    and Tank 2). Harmless since Tank 2 devices always have watts=None and
+    are skipped below, so only Tank 1's names ever get written."""
     devices = await asyncio.gather(*(fetch_device(d) for d in DEVICE_MAP))
     for device in devices:
         if device.watts is None:
