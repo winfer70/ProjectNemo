@@ -50,7 +50,10 @@
             @click="calState[tid].selectedDay = cell"
           >
             {{ cell }}
-            <span v-if="taskDaysFor(tid).has(cell)" class="cdot" />
+            <span v-if="taskDaysFor(tid).has(cell) || maintenanceDaysFor(tid).has(cell)" class="cdots">
+              <span v-if="taskDaysFor(tid).has(cell)" class="cdot" />
+              <span v-if="maintenanceDaysFor(tid).has(cell)" class="cdot cdot-maint" />
+            </span>
           </div>
         </template>
       </div>
@@ -66,7 +69,7 @@
     <div class="tile-body" style="padding-top:6px">
 
       <!-- Empty state -->
-      <div v-if="!dayTasksFor(tid).length" class="empty">
+      <div v-if="!dayTasksFor(tid).length && !dayMaintenanceTasksFor(tid).length" class="empty">
         <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
           <rect x="3" y="4.5" width="18" height="16" rx="2.5"/><path d="M3 9.5h18"/><path d="M8 2.5v4"/><path d="M16 2.5v4"/>
         </svg>
@@ -157,6 +160,26 @@
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+
+        <!-- Maintenance due (Konserwacja) - read-only, additive to CalendarTask -->
+        <div
+          v-for="(mt, mi) in dayMaintenanceTasksFor(tid)"
+          :key="'maint-' + mt.id"
+          class="row"
+          :style="{ padding: '12px 2px', borderTop: (mi > 0 || dayTasksFor(tid).length) ? '1px solid var(--border)' : 'none' }"
+        >
+          <span style="color:var(--warning);display:flex;flex-shrink:0" :title="locale === 'pl' ? 'Konserwacja' : 'Maintenance'">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+            </svg>
+          </span>
+          <div style="min-width:0;flex:1;overflow:hidden">
+            <div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text)">
+              {{ locale === 'pl' ? mt.name_pl : mt.name }}
+            </div>
+            <div class="muted" style="font-size:11.5px">{{ tankName(tid) }}</div>
           </div>
         </div>
       </template>
@@ -254,6 +277,7 @@
 <script setup>
 import { useCalendarStore } from '../stores/calendar'
 import { useTankSelectorStore } from '../stores/tankSelector'
+import { useMaintenanceStore } from '../stores/maintenance'
 import { storeToRefs } from 'pinia'
 import { useI18n } from 'vue-i18n'
 import { ref, reactive, computed, onMounted, watch } from 'vue'
@@ -261,6 +285,7 @@ import { ref, reactive, computed, onMounted, watch } from 'vue'
 const { locale } = useI18n()
 const calendarStore = useCalendarStore()
 const tankStore = useTankSelectorStore()
+const maintenanceStore = useMaintenanceStore()
 const { monthData } = storeToRefs(calendarStore)
 
 const tankIds = computed(() => tankStore.tanks.map(t => t.id).sort((a, b) => a - b))
@@ -336,6 +361,10 @@ onMounted(() => {
     ensureTankState(tid)
     calendarStore.fetchMonth(calState[tid].viewYear, calState[tid].viewMonth, tid)
   })
+  // Maintenance (Konserwacja) due-dates - fetched app-wide elsewhere (e.g.
+  // ScheduleView on mount), but fetch here too in case Calendar is the first
+  // tab visited so due-date dots/rows aren't empty on a direct load.
+  if (!maintenanceStore.tasks.length) maintenanceStore.fetchTasks()
 })
 
 // ── Locale helpers ────────────────────────────────────────────
@@ -383,6 +412,30 @@ function taskDaysFor(tid) {
     if (d.tasks?.length > 0) set.add(parseInt(d.date.slice(8), 10))
   }
   return set
+}
+
+// ── Maintenance (Konserwacja) due-dates - read-only, additive ────────────
+// Items predate multi-tank support and were backfilled to tank_id=1 - treat
+// missing tank_id as tank 1 (same convention as tankSelector.matchesActiveTank).
+function maintenanceTasksForTank(tid) {
+  return maintenanceStore.tasks.filter(t => (t.tank_id ?? 1) === tid && t.next_due)
+}
+
+function maintenanceDaysFor(tid) {
+  const s = calState[tid]
+  const set = new Set()
+  if (!s) return set
+  const prefix = `${s.viewYear}-${String(s.viewMonth).padStart(2, '0')}`
+  for (const t of maintenanceTasksForTank(tid)) {
+    const dateStr = t.next_due.slice(0, 10)
+    if (dateStr.startsWith(prefix)) set.add(parseInt(dateStr.slice(8, 10), 10))
+  }
+  return set
+}
+
+function dayMaintenanceTasksFor(tid) {
+  const dateStr = dayDateStrFor(tid)
+  return maintenanceTasksForTank(tid).filter(t => t.next_due.slice(0, 10) === dateStr)
 }
 
 // ── Selected day (per tank) ──────────────────────────────────

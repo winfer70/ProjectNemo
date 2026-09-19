@@ -1,4 +1,5 @@
 """Maintenance tasks — list, start, complete with checkboxes."""
+import logging
 from datetime import datetime, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -6,13 +7,20 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from config import settings
 from database import get_db
 from models.orm import MaintenanceLog, MaintenanceSnooze, MaintenanceTask, Supply
 from models.schemas import MaintenanceCompleteRequest, MaintenanceStartRequest, MaintenanceTaskOut
+from services.ha_client import ha_client
 from services.n8n_client import n8n_client
 from services.websocket_manager import broadcast_change
 
+logger = logging.getLogger("nemo.maintenance")
+
 router = APIRouter(prefix="/api/maintenance", tags=["maintenance"])
+
+# Same tank_id -> display name pattern as services/scheduler.py's TANK_NAMES.
+TANK_NAMES = {1: settings.tank_1_name, 2: settings.tank_2_name}
 
 
 def _days_until(next_due: datetime | None) -> int | None:
@@ -138,5 +146,34 @@ async def complete_maintenance(
     await broadcast_change("maintenance")
 
     await n8n_client.maintenance_completed(task)
+
+    # Best-effort push of the new due-date to Google Calendar via HA (Part B
+    # of maintenance-calendar-sync). This is a no-op until HA_CALENDAR_ENTITY_ID
+    # is configured, which itself requires the Google Calendar integration to
+    # be set up manually in HA first. Any failure here (missing entity, HA
+    # unreachable, wrong payload shape) must never break task completion,
+    # which has already succeeded above.
+    if settings.ha_calendar_entity_id:
+        try:
+            tank_id = task.tank_id or 1  # backfilled items predate multi-tank support
+            tank_name = TANK_NAMES.get(tank_id, f"Tank {tank_id}")
+            due_date = task.next_due.date()
+            await ha_client.call_service(
+                "calendar",
+                "create_event",
+                {
+                    "entity_id": settings.ha_calendar_entity_id,
+                    "summary": f"{task.name} — {tank_name}",
+                    "description": f"{task.name_pl} — {tank_name} (ProjectNemo Konserwacja)",
+                    # All-day event - HA/Google calendar's end_date is
+                    # exclusive, so it's the day after the due-date.
+                    "start_date": due_date.isoformat(),
+                    "end_date": (due_date + timedelta(days=1)).isoformat(),
+                    # calendar.create_event has no inline reminder/notification
+                    # field - HA's default calendar reminder settings apply.
+                },
+            )
+        except Exception as exc:
+            logger.warning("Failed to push maintenance due-date to HA calendar: %s", exc)
 
     return {"ok": True, "next_due": task.next_due}
