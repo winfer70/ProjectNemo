@@ -17,6 +17,32 @@
         </button>
       </div>
 
+      <!-- Alternative image sources: local upload / paste a URL -->
+      <div class="obsada-alt-row">
+        <label class="btn btn-secondary obsada-upload-btn" :class="{ disabled: uploading }">
+          {{ uploading ? '...' : (locale === 'pl' ? 'Wgraj zdjęcie' : 'Upload image') }}
+          <input
+            type="file"
+            accept="image/*"
+            class="obsada-file-input"
+            :disabled="uploading"
+            @change="onFileChange"
+          />
+        </label>
+      </div>
+      <div class="obsada-alt-row">
+        <input
+          v-model="pasteUrl"
+          :placeholder="locale === 'pl' ? 'Wklej URL zdjęcia' : 'Paste image URL'"
+          class="obsada-input obsada-input-grow"
+          @keyup.enter="onFetchUrl"
+        />
+        <button class="btn btn-secondary obsada-search-btn" @click="onFetchUrl" :disabled="fetchingUrl || !pasteUrl.trim()">
+          {{ fetchingUrl ? '...' : (locale === 'pl' ? 'Pobierz' : 'Fetch') }}
+        </button>
+      </div>
+      <div v-if="imgError" class="obsada-img-error">{{ imgError }}</div>
+
       <!-- Wikipedia extract -->
       <div v-if="store.searchResults?.wiki_extract" class="obsada-extract">
         <span class="obsada-extract-label">{{ store.searchResults.scientific_name }}</span>
@@ -69,12 +95,19 @@
 </template>
 
 <script setup>
-import { reactive, watch } from 'vue'
+import { reactive, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import axios from 'axios'
 import { useObsadaStore } from '../stores/obsada'
 
 const { locale } = useI18n()
 const store = useObsadaStore()
+
+// Alternative image sources: local upload / paste-a-URL
+const uploading = ref(false)
+const fetchingUrl = ref(false)
+const pasteUrl = ref('')
+const imgError = ref('')
 
 const props = defineProps({
   type: { type: String, default: 'fish' },  // 'fish' | 'plant'
@@ -121,6 +154,42 @@ async function doSearch() {
   // Auto-select first image if none chosen yet
   if (!form.img && store.searchResults?.images?.length) {
     form.img = store.searchResults.images[0].url
+  }
+}
+
+async function onFileChange(e) {
+  const file = e.target?.files?.[0]
+  e.target.value = ''
+  if (!file) return
+  imgError.value = ''
+  uploading.value = true
+  try {
+    const formData = new FormData()
+    formData.append('file', file)
+    const r = await axios.post('/api/obsada/upload-image', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
+    form.img = r.data.url
+  } catch (err) {
+    imgError.value = locale.value === 'pl' ? 'Nie udało się wgrać zdjęcia' : 'Failed to upload image'
+  } finally {
+    uploading.value = false
+  }
+}
+
+async function onFetchUrl() {
+  const url = pasteUrl.value.trim()
+  if (!url) return
+  imgError.value = ''
+  fetchingUrl.value = true
+  try {
+    const r = await axios.post('/api/obsada/fetch-image', { url })
+    form.img = r.data.url
+    pasteUrl.value = ''
+  } catch (err) {
+    imgError.value = locale.value === 'pl' ? 'Nie udało się pobrać zdjęcia' : 'Failed to fetch image'
+  } finally {
+    fetchingUrl.value = false
   }
 }
 
@@ -178,6 +247,38 @@ async function save() {
 .obsada-italic     { font-style: italic; }
 .obsada-select     { cursor: pointer; }
 .obsada-search-btn { white-space: nowrap; }
+
+.obsada-alt-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.obsada-upload-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  white-space: nowrap;
+  width: 100%;
+}
+.obsada-upload-btn.disabled {
+  opacity: 0.6;
+  pointer-events: none;
+}
+.obsada-file-input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}
+.obsada-img-error {
+  font-size: 11px;
+  color: var(--danger);
+  margin: -4px 0 8px;
+}
 
 .obsada-extract {
   font-size: 12px;

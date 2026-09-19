@@ -1,9 +1,11 @@
 """FastAPI application orchestrator for the ProjectNemo aquarium monitoring system."""
 import asyncio
 import logging
+import os
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy import text
 
 from config import settings
@@ -25,6 +27,12 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Static file serving (uploaded/fetched obsada species images live under
+# static/obsada_images/ - see routers/obsada.py).
+_STATIC_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static")
+os.makedirs(os.path.join(_STATIC_DIR, "obsada_images"), exist_ok=True)
+app.mount("/static", StaticFiles(directory=_STATIC_DIR), name="static")
 
 app.include_router(schedule.router)
 app.include_router(calendar.router)

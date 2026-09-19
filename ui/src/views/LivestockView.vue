@@ -123,7 +123,9 @@
     </div>
   </div>
 
-  <!-- ═══════════════════════════ DOSING TILE ═══════════════════════════ -->
+  <!-- ═══════════════════════════ DOSING TILE (disabled - duplicate of the
+       real dosing feature in ScheduleView.vue; kept here, commented out, in
+       case Livestock ever needs its own instead) ═══════════════════════════
   <div class="tile" v-resizable="'livestock.dosing'">
     <div class="tile-hd">
       <h2>
@@ -197,6 +199,7 @@
       </div>
     </div>
   </div>
+  -->
 
   <!-- ── LsEditModal (full-screen) ──────────────────────────────── -->
   <Teleport to="body">
@@ -339,7 +342,9 @@
     </div>
   </Teleport>
 
-  <!-- ═══════════════════════════ RESTOCK MODAL ═══════════════════════════ -->
+  <!-- ═══════════════════════════ RESTOCK MODAL (disabled along with the
+       DOSING TILE above - unreachable without its "Restock" button; see
+       the DAWKOWANIE block in script setup) ═══════════════════════════
   <div v-if="restockDose" class="backdrop" @click.self="restockDose = null">
     <div class="modal">
       <h3 class="modal-title">{{ locale === 'pl' ? 'Uzupełnij zapas' : 'Restock supply' }}</h3>
@@ -357,8 +362,11 @@
       </div>
     </div>
   </div>
+  -->
 
-  <!-- ═══════════════════════════ DOSE EDIT MODAL ═══════════════════════════ -->
+  <!-- ═══════════════════════════ DOSE EDIT MODAL (disabled along with the
+       DOSING TILE above - unreachable without its "Add"/edit buttons)
+       ═══════════════════════════
   <div v-if="doseEditOpen" class="backdrop" @click.self="doseEditOpen = false">
     <div class="modal">
       <h3 class="modal-title">{{ doseEditTask ? (locale === 'pl' ? 'Edytuj dawkę' : 'Edit dose') : (locale === 'pl' ? 'Nowa dawka' : 'Add dose') }}</h3>
@@ -410,6 +418,7 @@
       </div>
     </div>
   </div>
+  -->
 </template>
 
 <script setup>
@@ -470,93 +479,98 @@ const fish = computed(() =>
 const plants = computed(() =>
   obsadaStore.plants.filter(tankStore.matchesActiveTank).map(p => ({ ...p, kind: 'plant' }))
 )
-const filteredDosingTasks = computed(() => scheduleStore.dosingTasks.filter(tankStore.matchesActiveTank))
 
 onMounted(() => {
   obsadaStore.fetchFish()
   obsadaStore.fetchPlants()
-  scheduleStore.fetchDosing()
 })
 
-// ── Dosing ──────────────────────────────────────────────────────
-const supplyPct = (task) => {
-  if (!task.supply_current_amount || !task.supply_min_threshold) return 100
-  const max = task.supply_min_threshold * 3
-  return Math.round((task.supply_current_amount / max) * 100)
-}
-
-const supplyBarClass = (pct) => {
-  if (pct > 50) return 'green'
-  if (pct >= 20) return 'yellow'
-  return 'red'
-}
-
-// Restock modal
-const restockDose = ref(null)
-const restockAmount = ref(0)
-
-function openRestock(task) {
-  restockDose.value = task
-  restockAmount.value = 0
-}
-
-async function handleRestock() {
-  if (!restockDose.value || restockAmount.value <= 0) return
-  try {
-    await scheduleStore.restockSupply(restockDose.value.supply_id, restockAmount.value)
-    restockDose.value = null
-    showToast(locale.value === 'pl' ? 'Uzupełniono' : 'Restocked')
-  } catch (err) {
-    showToast(locale.value === 'pl' ? 'Błąd' : 'Error')
-  }
-}
-
-// Dose edit modal
-const doseEditOpen = ref(false)
-const doseEditTask = ref(null)
-const doseForm = reactive({ name_pl: '', name: '', amount: '', unit: 'ml', time: '08:00', tankId: 1 })
-
-function openDoseEdit(task) {
-  doseEditTask.value = task
-  if (task) {
-    doseForm.name_pl = task.supply_name_pl ?? ''
-    doseForm.name = task.supply_name ?? ''
-    doseForm.amount = String(task.dose_amount ?? '')
-    doseForm.unit = task.dose_unit ?? 'ml'
-    doseForm.time = task.time_of_day ?? '08:00'
-    doseForm.tankId = task.tank_id ?? tankStore.activeTankId
-  } else {
-    doseForm.name_pl = ''
-    doseForm.name = ''
-    doseForm.amount = ''
-    doseForm.unit = 'ml'
-    doseForm.time = '08:00'
-    doseForm.tankId = tankStore.activeTankId
-  }
-  doseEditOpen.value = true
-}
-
-async function saveDose() {
-  const data = {
-    supply_name: doseForm.name,
-    supply_name_pl: doseForm.name_pl,
-    dose_amount: parseFloat(doseForm.amount) || 0,
-    dose_unit: doseForm.unit,
-    time_of_day: doseForm.time || null,
-    tank_id: doseForm.tankId,
-  }
-  try {
-    if (doseEditTask.value) {
-      await scheduleStore.updateDosingTask(doseEditTask.value.id, data)
-    } else {
-      await scheduleStore.createDosingTask(data)
-    }
-    doseEditOpen.value = false
-    showToast(locale.value === 'pl' ? 'Zapisano' : 'Saved')
-  } catch (err) {
-    showToast(locale.value === 'pl' ? 'Błąd zapisu' : 'Save error')
-  }
-}
+// ─── DAWKOWANIE (disabled, see LivestockView template - the DOSING TILE /
+// RESTOCK MODAL / DOSE EDIT MODAL blocks above are commented out because
+// this duplicates the real dosing feature in ScheduleView.vue) ───
+// const filteredDosingTasks = computed(() => scheduleStore.dosingTasks.filter(tankStore.matchesActiveTank))
+//
+// (in onMounted, also called: scheduleStore.fetchDosing())
+//
+// const supplyPct = (task) => {
+//   if (!task.supply_current_amount || !task.supply_min_threshold) return 100
+//   const max = task.supply_min_threshold * 3
+//   return Math.round((task.supply_current_amount / max) * 100)
+// }
+//
+// const supplyBarClass = (pct) => {
+//   if (pct > 50) return 'green'
+//   if (pct >= 20) return 'yellow'
+//   return 'red'
+// }
+//
+// // Restock modal
+// const restockDose = ref(null)
+// const restockAmount = ref(0)
+//
+// function openRestock(task) {
+//   restockDose.value = task
+//   restockAmount.value = 0
+// }
+//
+// async function handleRestock() {
+//   if (!restockDose.value || restockAmount.value <= 0) return
+//   try {
+//     await scheduleStore.restockSupply(restockDose.value.supply_id, restockAmount.value)
+//     restockDose.value = null
+//     showToast(locale.value === 'pl' ? 'Uzupełniono' : 'Restocked')
+//   } catch (err) {
+//     showToast(locale.value === 'pl' ? 'Błąd' : 'Error')
+//   }
+// }
+//
+// // Dose edit modal
+// const doseEditOpen = ref(false)
+// const doseEditTask = ref(null)
+// const doseForm = reactive({ name_pl: '', name: '', amount: '', unit: 'ml', time: '08:00', tankId: 1 })
+//
+// function openDoseEdit(task) {
+//   doseEditTask.value = task
+//   if (task) {
+//     doseForm.name_pl = task.supply_name_pl ?? ''
+//     doseForm.name = task.supply_name ?? ''
+//     doseForm.amount = String(task.dose_amount ?? '')
+//     doseForm.unit = task.dose_unit ?? 'ml'
+//     doseForm.time = task.time_of_day ?? '08:00'
+//     doseForm.tankId = task.tank_id ?? tankStore.activeTankId
+//   } else {
+//     doseForm.name_pl = ''
+//     doseForm.name = ''
+//     doseForm.amount = ''
+//     doseForm.unit = 'ml'
+//     doseForm.time = '08:00'
+//     doseForm.tankId = tankStore.activeTankId
+//   }
+//   doseEditOpen.value = true
+// }
+//
+// async function saveDose() {
+//   const data = {
+//     supply_name: doseForm.name,
+//     supply_name_pl: doseForm.name_pl,
+//     dose_amount: parseFloat(doseForm.amount) || 0,
+//     dose_unit: doseForm.unit,
+//     time_of_day: doseForm.time || null,
+//     tank_id: doseForm.tankId,
+//   }
+//   try {
+//     if (doseEditTask.value) {
+//       await scheduleStore.updateDosingTask(doseEditTask.value.id, data)
+//     } else {
+//       await scheduleStore.createDosingTask(data)
+//     }
+//     doseEditOpen.value = false
+//     showToast(locale.value === 'pl' ? 'Zapisano' : 'Saved')
+//   } catch (err) {
+//     showToast(locale.value === 'pl' ? 'Błąd zapisu' : 'Save error')
+//   }
+// }
+// ─── end ───
 
 function formatDate(s) {
   if (!s) return '—'
