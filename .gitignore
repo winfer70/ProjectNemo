@@ -29,6 +29,10 @@ __pycache__/
 *.pyc
 *.pyo
 
+# User-uploaded/fetched obsada species images (user content, not source - same
+# reasoning as .env)
+api/static/obsada_images/
+
 # Node / Vue build artifacts
 ui/node_modules/
 ui/dist/
