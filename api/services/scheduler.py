@@ -105,23 +105,31 @@ async def check_overdue():
 TANK_NAMES = {1: settings.tank_1_name, 2: settings.tank_2_name}
 
 
-@scheduler.scheduled_job("cron", hour="*/6")
+@scheduler.scheduled_job("cron", hour="*", minute=0)
 async def water_test_snooze_escalation():
-    """A due water-test reminder gets snoozed in the UI first (no Telegram
-    yet); only once it's been snoozed for 2+ days without a new reading do
-    we escalate to Telegram - once per snooze, with last-tested date and
-    what a high reading of that parameter can do to the tank."""
+    """A due water-test reminder gets snoozed in the UI first; once snoozed,
+    we keep escalating to Telegram roughly once per hour - naming the tank
+    and what a high reading of that parameter can do - for as long as the
+    snooze row exists. The snooze (and this escalation) only stops once a
+    fresh reading for that tank+parameter is logged (see create_session's
+    "a fresh reading resolves any pending remind me later" snooze-clearing
+    logic, which this job does not touch).
+
+    `notified_at` holds the LAST notification time (not the first) so this
+    can re-fire indefinitely rather than being one-shot.
+    """
     now = datetime.now(timezone.utc)
     async with AsyncSessionLocal() as db:
         result = await db.execute(
             select(WaterTestSnooze).options(selectinload(WaterTestSnooze.parameter))
         )
         for snooze in result.scalars().all():
-            if snooze.notified_at is not None:
-                continue
-            snoozed_at = snooze.snoozed_at.replace(tzinfo=timezone.utc) if snooze.snoozed_at.tzinfo is None else snooze.snoozed_at
-            if (now - snoozed_at) < timedelta(days=2):
-                continue
+            last_notified_at = snooze.notified_at
+            if last_notified_at is not None:
+                if last_notified_at.tzinfo is None:
+                    last_notified_at = last_notified_at.replace(tzinfo=timezone.utc)
+                if (now - last_notified_at) < timedelta(hours=1):
+                    continue
 
             param = snooze.parameter
             tank_name = TANK_NAMES.get(snooze.tank_id, f"Tank {snooze.tank_id}")

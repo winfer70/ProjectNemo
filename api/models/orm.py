@@ -169,6 +169,9 @@ class WaterTestParameter(Base):
     test_frequency_days: Mapped[int | None] = mapped_column(Integer, nullable=True)
     high_effect_en: Mapped[str | None] = mapped_column(Text, nullable=True)
     high_effect_pl: Mapped[str | None] = mapped_column(Text, nullable=True)
+    # Soft-deactivate: hides a redundant/retired parameter from active test
+    # fields/norms/reminders while keeping its historical readings intact.
+    active: Mapped[bool] = mapped_column(Boolean, default=True)
 
     readings: Mapped[list["WaterTestReading"]] = relationship(back_populates="parameter")
 

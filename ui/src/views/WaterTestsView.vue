@@ -33,7 +33,7 @@
           <div class="row" style="gap:8px">
             <input class="input" type="number" step="0.01" v-model="reminderValues[r.parameter_id]" :placeholder="locale === 'pl' ? 'Wynik' : 'Result'" style="flex:1;text-align:right">
             <span class="muted" style="min-width:30px;font-size:12px">{{ r.unit }}</span>
-            <button class="btn btn-sm btn-accent" :disabled="!reminderValues[r.parameter_id]" @click="logReminder(r)">
+            <button class="btn btn-sm btn-accent" :disabled="reminderValues[r.parameter_id] === '' || reminderValues[r.parameter_id] === null || reminderValues[r.parameter_id] === undefined" @click="logReminder(r)">
               {{ locale === 'pl' ? 'Zapisz' : 'Log' }}
             </button>
             <button class="btn btn-sm btn-ghost" @click="snoozeReminder(r)">
