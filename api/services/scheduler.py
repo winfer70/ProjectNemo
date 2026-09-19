@@ -1,4 +1,5 @@
 """APScheduler jobs — daily summary, overdue checks, feeding pause auto-resume."""
+import asyncio
 import logging
 from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
@@ -13,6 +14,7 @@ from models.orm import (
     DosingTask, FeedingPause, FeedingSchedule, MaintenanceSnooze, MaintenanceTask, Supply,
     WaterTestReading, WaterTestSession, WaterTestSnooze,
 )
+from services.device_status import DEVICE_MAP, fetch_device
 from services.ha_client import ha_client
 from services.n8n_client import n8n_client
 from services.ntfy_client import ntfy_client
@@ -258,6 +260,29 @@ async def dosing_reminder():
                 f"💧 Dose {task.dose_amount}{task.dose_unit} {supply.name}{note}",
                 f"💧 Dawka {task.dose_amount}{task.dose_unit} {supply.name_pl or supply.name}{note_pl}",
             )
+
+
+@scheduler.scheduled_job("interval", minutes=5)
+async def record_power_history():
+    """Write current watts/kwh_today for every smart plug to InfluxDB so the
+    Plug Detail sheet in the UI has an actual trend to show instead of only
+    a live snapshot. Devices with no power sensor available (currently all
+    of Tank 2's Meross-based plugs - see the TODO in services/device_status.py)
+    are skipped, not errored.
+
+    NOTE: points are tagged by device.name only (per DeviceOut), which is not
+    unique across tanks today (e.g. "Heater"/"Light" exist for both Tank 1
+    and Tank 2). Harmless for now since Tank 2 devices always have
+    watts=None and are skipped below - revisit (e.g. tag by entity_id
+    instead) once Tank 2 gets real power sensors (see Part D TODO)."""
+    devices = await asyncio.gather(*(fetch_device(d) for d in DEVICE_MAP))
+    for device in devices:
+        if device.watts is None:
+            continue
+        try:
+            influx_client.write_power(device.name, device.watts, device.kwh_today or 0.0)
+        except Exception as exc:
+            logger.warning("Failed to write power history for %s: %s", device.name, exc)
 
 
 @scheduler.scheduled_job("interval", seconds=30)
