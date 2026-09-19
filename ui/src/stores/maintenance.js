@@ -23,5 +23,13 @@ export const useMaintenanceStore = defineStore('maintenance', () => {
     await fetchTasks()
   }
 
-  return { tasks, fetchTasks, startTask, completeTask }
+  // Defers the on-screen due-reminder but keeps the hourly Telegram nudge
+  // going (mirrors the water-test reminders' snooze) until the task is
+  // actually completed, which clears the snooze server-side.
+  async function snoozeTask(taskId) {
+    await axios.post(`/api/maintenance/${taskId}/snooze`)
+    await fetchTasks()
+  }
+
+  return { tasks, fetchTasks, startTask, completeTask, snoozeTask }
 })

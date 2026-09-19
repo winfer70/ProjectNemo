@@ -74,6 +74,7 @@ async def _run_migrations():
                 notified_at DATETIME,
                 UNIQUE(tank_id, parameter_id)
             )""",
+            """CREATE TABLE IF NOT EXISTS maintenance_snoozes (id INTEGER PRIMARY KEY, task_id INTEGER NOT NULL, snoozed_at DATETIME DEFAULT CURRENT_TIMESTAMP, last_notified_at DATETIME, UNIQUE(task_id))""",
         ]
         for sql in migrations:
             try:
