@@ -437,10 +437,15 @@ async def seed(session: AsyncSession):
     if not existing:
         for key, name_en, name_pl, unit, min_safe, max_safe, category in WATER_TEST_PARAMS:
             freq, effect_en, effect_pl = WATER_TEST_REMINDER_DEFAULTS.get(key, (None, None, None))
+            # total_alkalinity is redundant with kh - seed it deactivated on
+            # fresh installs (see the active-column migration in main.py for
+            # existing databases).
+            active = key != "total_alkalinity"
             session.add(WaterTestParameter(
                 key=key, name_en=name_en, name_pl=name_pl,
                 unit=unit, min_safe=min_safe, max_safe=max_safe, category=category,
                 test_frequency_days=freq, high_effect_en=effect_en, high_effect_pl=effect_pl,
+                active=active,
             ))
 
     # Supplies

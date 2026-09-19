@@ -65,6 +65,7 @@ async def _run_migrations():
             "ALTER TABLE water_test_parameters ADD COLUMN high_effect_en TEXT",
             "ALTER TABLE water_test_parameters ADD COLUMN high_effect_pl TEXT",
             "ALTER TABLE water_test_parameter_norms ADD COLUMN test_frequency_days INTEGER",
+            "ALTER TABLE water_test_parameters ADD COLUMN active BOOLEAN DEFAULT 1",
             """CREATE TABLE IF NOT EXISTS water_test_snoozes (
                 id INTEGER PRIMARY KEY,
                 tank_id INTEGER NOT NULL,
@@ -102,6 +103,16 @@ async def _run_migrations():
                 await db.commit()
             except Exception:
                 pass
+        # Retire "Total Alkalinity (TAL)" - redundant with the KH parameter.
+        # Soft-deactivate only, so past readings stay visible in history.
+        # Idempotent/safe to run every startup.
+        try:
+            await db.execute(text(
+                "UPDATE water_test_parameters SET active = 0 WHERE key = 'total_alkalinity'"
+            ))
+            await db.commit()
+        except Exception:
+            pass
 
 
 @app.on_event("startup")
