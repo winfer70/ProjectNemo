@@ -473,6 +473,23 @@
               <span class="v tnum">{{ (sheetDevice.kwh_today ?? 0).toFixed(2) }} kWh</span>
             </div>
           </div>
+
+          <!-- ── 24h watts trend ── -->
+          <div style="margin-bottom:18px">
+            <div class="muted" style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:6px">
+              {{ locale === 'pl' ? 'Moc — 24h' : 'Power — 24h' }}
+            </div>
+            <div v-if="powerHistoryLoading" class="muted" style="font-size:12px">
+              {{ locale === 'pl' ? 'Ładowanie...' : 'Loading...' }}
+            </div>
+            <div v-else-if="powerHistory.length" style="height:80px">
+              <Line :data="powerChartData" :options="powerChartOptions" />
+            </div>
+            <div v-else class="muted" style="font-size:12px">
+              {{ locale === 'pl' ? 'Brak danych historycznych' : 'No data yet' }}
+            </div>
+          </div>
+
           <div class="modal-actions">
             <button
               class="btn btn-block"
@@ -491,6 +508,11 @@
 import { ref, reactive, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { inject } from 'vue'
+import axios from 'axios'
+import {
+  Chart as ChartJS, LineElement, PointElement, LinearScale, CategoryScale, Filler, Tooltip,
+} from 'chart.js'
+import { Line } from 'vue-chartjs'
 import { useScheduleStore } from '../stores/schedule'
 import { useCalendarStore } from '../stores/calendar'
 import { useMaintenanceStore } from '../stores/maintenance'
@@ -498,6 +520,8 @@ import { useSensorsStore } from '../stores/sensors'
 import { useTankSelectorStore } from '../stores/tankSelector'
 import TankSwitcher from '../components/TankSwitcher.vue'
 import * as bleService from '../services/bleService'
+
+ChartJS.register(LineElement, PointElement, LinearScale, CategoryScale, Filler, Tooltip)
 
 const showToast = inject('showToast', () => {})
 const { locale } = useI18n()
@@ -781,6 +805,67 @@ async function handlePlugToggle(device) {
   } catch (err) {
     showToast(locale.value === 'pl' ? 'Błąd' : 'Error')
   }
+}
+
+// ─── Plug power trend (24h sparkline in the detail sheet) ────────────────────
+const powerHistory = ref([])
+const powerHistoryLoading = ref(false)
+
+async function fetchPowerHistory(deviceName) {
+  powerHistoryLoading.value = true
+  powerHistory.value = []
+  try {
+    const r = await axios.get('/api/sensors/history', {
+      params: { measurement: 'power', device: deviceName, hours: 24 },
+    })
+    powerHistory.value = Array.isArray(r.data) ? r.data : []
+  } catch (err) {
+    // No history yet (brand new device / no InfluxDB data) - just show
+    // the "no data" note below instead of erroring.
+    powerHistory.value = []
+  } finally {
+    powerHistoryLoading.value = false
+  }
+}
+
+watch(sheetDevice, (device) => {
+  if (device) {
+    fetchPowerHistory(device.name)
+  } else {
+    powerHistory.value = []
+  }
+})
+
+const powerChartData = computed(() => ({
+  labels: powerHistory.value.map(p => {
+    const d = new Date(p.time)
+    return d.toLocaleTimeString(locale.value === 'pl' ? 'pl-PL' : 'en-GB', { hour: '2-digit', minute: '2-digit' })
+  }),
+  datasets: [{
+    data: powerHistory.value.map(p => p.value),
+    borderColor: '#58a6ff',
+    backgroundColor: 'rgba(88,166,255,0.12)',
+    fill: true,
+    tension: 0.3,
+    pointRadius: 0,
+    borderWidth: 2,
+  }],
+}))
+
+const powerChartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  animation: false,
+  plugins: { legend: { display: false }, tooltip: { enabled: true } },
+  scales: {
+    x: { display: false },
+    y: {
+      display: true,
+      beginAtZero: true,
+      ticks: { color: '#8b949e', font: { size: 10 }, maxTicksLimit: 4 },
+      grid: { color: '#30363d' },
+    },
+  },
 }
 
 // ─── Lifecycle ────────────────────────────────────────────────────────────────

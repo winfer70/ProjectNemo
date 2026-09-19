@@ -45,8 +45,10 @@ async def current_sensors():
 
 @router.get("/history")
 async def sensor_history(
-    measurement: str = Query(..., description="temperature | ph | tds | orp"),
+    measurement: str = Query(..., description="temperature | ph | tds | orp | power"),
     hours: int = Query(24, ge=1, le=168),
+    device: str | None = Query(None, description="For measurement=power: filter to a single device name (matches DeviceOut.name)"),
 ):
-    points = await influx_client.query_history(measurement, hours)
+    tag_filter = {"device": device} if device else None
+    points = await influx_client.query_history(measurement, hours, tag_filter=tag_filter)
     return points
