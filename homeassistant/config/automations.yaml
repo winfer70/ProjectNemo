@@ -108,19 +108,19 @@
   - choose:
     - conditions:
       - condition: state
-        entity_id: switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_1
+        entity_id: switch.0xa4c1387daaa98e50_l1
         state: 'off'
       - condition: state
-        entity_id: switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_2
+        entity_id: switch.0xa4c1387daaa98e50_l2
         state: 'off'
       - condition: state
-        entity_id: switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_3
+        entity_id: switch.0xa4c1387daaa98e50_l4
         state: 'off'
       - condition: state
-        entity_id: switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_4
+        entity_id: switch.0xa4c1387daaa98e50_l3
         state: 'off'
       - condition: state
-        entity_id: switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_5
+        entity_id: switch.0xa4c1387daaa98e50_l5
         state: 'off'
       - condition: state
         entity_id: switch.office_led
@@ -129,9 +129,9 @@
       - service: switch.turn_on
         target:
           entity_id:
-          - switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_4
-          - switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_1
-          - switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_2
+          - switch.0xa4c1387daaa98e50_l3
+          - switch.0xa4c1387daaa98e50_l1
+          - switch.0xa4c1387daaa98e50_l2
       - if:
         - condition: sun
           after: sunset
@@ -139,38 +139,38 @@
         - service: switch.turn_on
           target:
             entity_id:
-            - switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_3
-            - switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_5
+            - switch.0xa4c1387daaa98e50_l4
+            - switch.0xa4c1387daaa98e50_l5
             - switch.office_led
     default:
     - choose:
       - conditions:
         - condition: state
-          entity_id: switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_3
+          entity_id: switch.0xa4c1387daaa98e50_l4
           state: 'off'
         sequence:
         - service: switch.turn_on
           target:
-            entity_id: switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_3
+            entity_id: switch.0xa4c1387daaa98e50_l4
       - conditions:
         - condition: state
-          entity_id: switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_3
+          entity_id: switch.0xa4c1387daaa98e50_l4
           state: 'on'
         - condition: state
-          entity_id: switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_5
+          entity_id: switch.0xa4c1387daaa98e50_l5
           state: 'off'
         sequence:
         - service: switch.turn_on
           target:
             entity_id:
-            - switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_5
+            - switch.0xa4c1387daaa98e50_l5
             - switch.office_led
       default:
       - service: switch.turn_off
         target:
           entity_id:
-          - switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_3
-          - switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_5
+          - switch.0xa4c1387daaa98e50_l4
+          - switch.0xa4c1387daaa98e50_l5
           - switch.office_led
   mode: single
   id: c3c16e19caff4556b1d2541e7797a690
@@ -188,43 +188,51 @@
   - choose:
     - conditions:
       - condition: state
-        entity_id: switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet
+        entity_id: switch.0xa4c1387daaa98e50_l3
         state: 'on'
       sequence:
       - service: switch.turn_off
         target:
           entity_id:
-          - switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet
+          - switch.0xa4c1387daaa98e50_l1
+          - switch.0xa4c1387daaa98e50_l2
+          - switch.0xa4c1387daaa98e50_l3
+          - switch.0xa4c1387daaa98e50_l4
+          - switch.0xa4c1387daaa98e50_l5
           - switch.office_led
     default:
     - service: switch.turn_on
       target:
         entity_id:
-        - switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet
+        - switch.0xa4c1387daaa98e50_l1
+        - switch.0xa4c1387daaa98e50_l2
+        - switch.0xa4c1387daaa98e50_l3
+        - switch.0xa4c1387daaa98e50_l4
+        - switch.0xa4c1387daaa98e50_l5
         - switch.office_led
   mode: single
   id: ae080d72d7334a71a23002cb0c1f4432
-- alias: 'Gate: Aqara left button (down click) - pulse gate relay'
-  trigger:
-  - platform: mqtt
-    topic: zigbee2mqtt/0x54ef44100156879e
+- id: b82f16c04c024941bc02c06052b0c1cc
+  alias: 'Gate: Aqara left button (down click) - pulse gate relay'
+  triggers:
+  - topic: zigbee2mqtt/0x54ef44100156879e
     value_template: '{{ value_json.action }}'
     payload: single_left_down
-  condition:
+    trigger: mqtt
+  conditions:
   - condition: template
     value_template: "{{ this.attributes.last_triggered is none or\n   (as_timestamp(now())
       - as_timestamp(this.attributes.last_triggered)) > 4 }}\n"
-  action:
-  - service: switch.turn_on
-    target:
+  actions:
+  - target:
       entity_id: switch.brama_sonoff_100254194e_1
+    action: switch.turn_on
   - delay:
       seconds: 1
-  - service: switch.turn_off
-    target:
+  - target:
       entity_id: switch.brama_sonoff_100254194e_1
+    action: switch.turn_off
   mode: single
-  id: b82f16c04c024941bc02c06052b0c1cc
 - alias: 'Desk: WłącznikBiurko single press - toggle monitors + dock'
   trigger:
   - platform: mqtt
@@ -237,47 +245,31 @@
   action:
   - choose:
     - conditions:
-      - condition: state
-        entity_id: switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet
-        state: 'off'
-      sequence:
-      - service: switch.turn_on
-        target:
-          entity_id: switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet
-      - delay:
-          seconds: 1
-      - service: switch.turn_on
-        target:
-          entity_id:
-          - switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_1
-          - switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_2
-          - switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_4
-    - conditions:
       - condition: or
         conditions:
         - condition: state
-          entity_id: switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_1
+          entity_id: switch.0xa4c1387daaa98e50_l1
           state: 'off'
         - condition: state
-          entity_id: switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_2
+          entity_id: switch.0xa4c1387daaa98e50_l2
           state: 'off'
         - condition: state
-          entity_id: switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_4
+          entity_id: switch.0xa4c1387daaa98e50_l3
           state: 'off'
       sequence:
       - service: switch.turn_on
         target:
           entity_id:
-          - switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_1
-          - switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_2
-          - switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_4
+          - switch.0xa4c1387daaa98e50_l1
+          - switch.0xa4c1387daaa98e50_l2
+          - switch.0xa4c1387daaa98e50_l3
     default:
     - service: switch.turn_off
       target:
         entity_id:
-        - switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_1
-        - switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_2
-        - switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_4
+        - switch.0xa4c1387daaa98e50_l1
+        - switch.0xa4c1387daaa98e50_l2
+        - switch.0xa4c1387daaa98e50_l3
   mode: single
   id: c3eeeffdc2ab4a029a86ff176eec7643
 - id: trv_unavailable_3h_mobile_alert
@@ -306,18 +298,22 @@
   description: Turns on the kitchen LED (WlacznikKuchniaLed relay) on kitchen PIR
     motion after sundown; turns off after 5 minutes of no motion at any time. Can
     be disabled until next sundown via the bottom button on WlacznikKuchniaLed.
-  trigger:
-  - platform: state
-    entity_id: binary_sensor.kuchnia
+  triggers:
+  - entity_id: binary_sensor.kuchnia
     to: 'on'
     id: motion_on
-  - platform: state
-    entity_id: binary_sensor.kuchnia
-    to: 'off'
+    trigger: state
+  - entity_id:
+    - binary_sensor.kuchnia
+    to:
+    - 'off'
     for:
-      minutes: 5
+      hours: 0
+      minutes: 3
+      seconds: 0
     id: motion_off
-  action:
+    trigger: state
+  actions:
   - choose:
     - conditions:
       - condition: trigger
@@ -326,16 +322,16 @@
         entity_id: sun.sun
         state: below_horizon
       sequence:
-      - service: switch.turn_on
-        target:
+      - target:
           entity_id: switch.0x54ef441001525ff8_up
+        action: switch.turn_on
     - conditions:
       - condition: trigger
         id: motion_off
       sequence:
-      - service: switch.turn_off
-        target:
+      - target:
           entity_id: switch.0x54ef441001525ff8_up
+        action: switch.turn_off
 - id: kitchen_led_disable_toggle_on_button
   alias: Kitchen LED - disable-enable via switch button
   description: Bottom button press (single_down) on WlacznikKuchniaLed toggles the
@@ -405,86 +401,6 @@
         data:
           hvac_mode: auto
         action: climate.set_hvac_mode
-- id: alarm_auto_arm_away_presence
-  alias: Alarm auto arm away presence
-  description: Arms Alarm Główny after Kamil's phone and watch have both been away
-    for 5 minutes.
-  mode: restart
-  trigger:
-  - platform: state
-    entity_id:
-    - device_tracker.sg_kamil
-    - device_tracker.galaxy_watch6_classic_9s5w
-    to: not_home
-  condition:
-  - condition: state
-    entity_id: device_tracker.sg_kamil
-    state: not_home
-  - condition: state
-    entity_id: device_tracker.galaxy_watch6_classic_9s5w
-    state: not_home
-  - condition: state
-    entity_id: alarm_control_panel.glowne
-    state: disarmed
-  action:
-  - delay:
-      minutes: 5
-  - condition: state
-    entity_id: device_tracker.sg_kamil
-    state: not_home
-  - condition: state
-    entity_id: device_tracker.galaxy_watch6_classic_9s5w
-    state: not_home
-  - condition: state
-    entity_id: alarm_control_panel.glowne
-    state: disarmed
-  - service: alarm_control_panel.alarm_arm_away
-    target:
-      entity_id: alarm_control_panel.glowne
-    data:
-      code: !secret alarm_code
-  - action: notify.send_message
-    target:
-      entity_id:
-      - notify.sg_kamil
-      - notify.galaxy_watch6_classic_9s5w
-    data:
-      title: "\U0001F512 Alarm Armed"
-      message: Everyone has left - alarm armed away automatically.
-      data:
-        tag: alarm-auto-arm-away
-        notification_icon: mdi:shield-lock
-- id: alarm_auto_disarm_presence
-  alias: Alarm auto disarm presence
-  description: Disarms Alarm Główny when Kamil's phone or watch arrives home.
-  trigger:
-  - platform: state
-    entity_id:
-    - device_tracker.sg_kamil
-    - device_tracker.galaxy_watch6_classic_9s5w
-    to: home
-  condition:
-  - condition: template
-    value_template: '{{ states(''alarm_control_panel.glowne'') in [''armed_away'',
-      ''armed_home''] }}'
-  action:
-  - service: alarm_control_panel.alarm_disarm
-    target:
-      entity_id: alarm_control_panel.glowne
-    data:
-      code: !secret alarm_code
-  - action: notify.send_message
-    target:
-      entity_id:
-      - notify.sg_kamil
-      - notify.galaxy_watch6_classic_9s5w
-    data:
-      title: "\U0001F513 Alarm Disarmed"
-      message: '{{ trigger.to_state.attributes.friendly_name | default(trigger.entity_id,
-        true) }} arrived home - alarm disarmed automatically.'
-      data:
-        tag: alarm-auto-disarm-home
-        notification_icon: mdi:shield-home
 - id: gate_ring_notify_with_open_action
   alias: Gate ring notify with open action
   description: Sends a phone actionable notification (with live snapshot + deep link
@@ -901,3 +817,239 @@
         data:
           tag: frigate-gate-auto-open
   - delay: 00:05:00
+- id: '1787528946444'
+  alias: Brama Toggle
+  description: ''
+  triggers:
+  - trigger: webhook
+    allowed_methods:
+    - POST
+    - PUT
+    local_only: false
+    webhook_id: -nN-gChDkz-lkud7YBtGpawWs
+  conditions: []
+  actions:
+  - target:
+      entity_id: switch.brama_sonoff_100254194e_1
+    action: switch.turn_on
+  - delay:
+      seconds: 1
+  - target:
+      entity_id: switch.brama_sonoff_100254194e_1
+    action: switch.turn_off
+  mode: single
+- id: '1788711244798'
+  alias: Grzałka grzanie
+  description: Keep sensor.0xa4c138061c90ffff_temperature at 27.0°C via switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_3
+  triggers:
+  - trigger: numeric_state
+    entity_id:
+    - sensor.0xa4c138061c90ffff_temperature
+    below: 26.9
+  - trigger: numeric_state
+    entity_id:
+    - sensor.0xa4c138061c90ffff_temperature
+    above: 26.9
+  - trigger: homeassistant
+    event: start
+  - trigger: time_pattern
+    minutes: '*'
+    seconds: '10'
+  conditions: []
+  actions:
+  - choose:
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.0xa4c138061c90ffff_temperature
+        below: 26.9
+      sequence:
+      - action: switch.turn_on
+        target:
+          entity_id: switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_3
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.0xa4c138061c90ffff_temperature
+        above: 26.9
+      sequence:
+      - action: switch.turn_off
+        target:
+          entity_id: switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_3
+  mode: single
+- id: swiatlo_akwarium_salon
+  alias: Swiatlo akwarium salon
+  description: On 07:30 / off 20:00 via salon aquarium light (outlet_4). Branched
+    by trigger id.
+  triggers:
+  - trigger: time
+    at: '10:00:00'
+    id: turn_on
+  - trigger: time
+    at: '21:00:00'
+    id: turn_off
+  conditions: []
+  actions:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: turn_on
+      sequence:
+      - action: switch.turn_on
+        target:
+          entity_id: switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_4
+    - conditions:
+      - condition: trigger
+        id: turn_off
+      sequence:
+      - action: switch.turn_off
+        target:
+          entity_id: switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_4
+  mode: single
+- id: alarm_telegram_triggered_notify
+  alias: 'Alarm: Telegram alert on trigger (repeats until resolved)'
+  description: 'Fires the moment Glowne enters pending/triggered and repeats every
+    2 minutes while still triggered, so it can no longer sound for hours unattended.
+    Includes an inline Disarm button.
+
+    '
+  mode: restart
+  trigger:
+  - platform: state
+    entity_id: alarm_control_panel.glowne
+    to: pending
+    id: pending
+  - platform: state
+    entity_id: alarm_control_panel.glowne
+    to: triggered
+    id: triggered
+  action:
+  - action: telegram_bot.send_message
+    target:
+      entity_id: notify.kamil_k
+    data:
+      message: '{{ ''ALARM TRIGGERED'' if trigger.id == ''triggered'' else ''Entry
+        delay running (pending)'' }} — Glowne, {{ now().strftime(''%H:%M:%S'') }}'
+      parse_mode: plain_text
+      inline_keyboard:
+      - Disarm now:/disarm
+  - repeat:
+      while:
+      - condition: state
+        entity_id: alarm_control_panel.glowne
+        state: triggered
+      sequence:
+      - delay:
+          minutes: 2
+      - condition: state
+        entity_id: alarm_control_panel.glowne
+        state: triggered
+      - action: telegram_bot.send_message
+        target:
+          entity_id: notify.kamil_k
+        data:
+          message: STILL TRIGGERED — Glowne, {{ now().strftime('%H:%M:%S') }}
+          parse_mode: plain_text
+          inline_keyboard:
+          - Disarm now:/disarm
+- id: przypomnienie_testy_no2
+  alias: 'Przypomnienie: Testy NO2'
+  description: 'One-time reminder at 11:05:00: Sprawdź testy NO2 teraz'
+  triggers:
+  - trigger: time
+    at: '11:05:00'
+  conditions: []
+  actions:
+  - action: notify.send_message
+    target:
+      entity_id: notify.kamil_k
+    data:
+      message: Sprawdź testy NO2 teraz
+  - action: automation.turn_off
+    target:
+      entity_id: '{{ this.entity_id }}'
+  mode: single
+- id: przypomnienie_testy_amonii
+  alias: 'Przypomnienie: testy amonii'
+  description: 'One-time reminder at 11:00:00: Sprawdź testy amonii w czekoladzie
+    11'
+  triggers:
+  - trigger: time
+    at: '11:00:00'
+  conditions: []
+  actions:
+  - action: notify.send_message
+    target:
+      entity_id: notify.kamil_k
+    data:
+      message: Sprawdź testy amonii w czekoladzie 11
+  - action: automation.turn_off
+    target:
+      entity_id: '{{ this.entity_id }}'
+  mode: single
+- id: test_amonii_11_32
+  alias: Test amonii 11.32
+  description: 'One-time reminder at 11:32:00: Test amonii'
+  triggers:
+  - trigger: time
+    at: '11:32:00'
+  conditions: []
+  actions:
+  - action: notify.send_message
+    target:
+      entity_id: notify.kamil_k
+    data:
+      message: Test amonii
+  - action: automation.turn_off
+    target:
+      entity_id: '{{ this.entity_id }}'
+  mode: single
+- id: przypomnienie_testu_eno2
+  alias: Przypomnienie testu ENO2
+  description: 'One-time reminder at 11:20:00: Czas na test ENO2!'
+  triggers:
+  - trigger: time
+    at: '11:20:00'
+  conditions: []
+  actions:
+  - action: notify.send_message
+    target:
+      entity_id: notify.kamil_k
+    data:
+      message: Czas na test ENO2!
+  - action: automation.turn_off
+    target:
+      entity_id: '{{ this.entity_id }}'
+  mode: single
+- id: przypomnienie_no2
+  alias: Przypomnienie NO2
+  description: 'One-time reminder at 11:24:00: Sprawdź poziom NO2 w akwarium'
+  triggers:
+  - trigger: time
+    at: '11:24:00'
+  conditions: []
+  actions:
+  - action: notify.send_message
+    target:
+      entity_id: notify.kamil_k
+    data:
+      message: Sprawdź poziom NO2 w akwarium
+  - action: automation.turn_off
+    target:
+      entity_id: '{{ this.entity_id }}'
+  mode: single
+- id: kreatywne_przypomnienie_lukas
+  alias: Kreatywne Przypomnienie Lukas
+  description: 'One-time reminder at 10:32:00: Lukas'
+  triggers:
+  - trigger: time
+    at: '10:32:00'
+  conditions: []
+  actions:
+  - action: notify.send_message
+    target:
+      entity_id: notify.kamil_k
+    data:
+      message: Lukas
+  - action: automation.turn_off
+    target:
+      entity_id: '{{ this.entity_id }}'
+  mode: single

@@ -172,3 +172,4 @@ logger:
 # ── Automation — Fluval BLE via tablet WebSocket gateway ─────────────────────
 
 automation: !include automations.yaml
+automation manual: !include automations_manual.yaml
