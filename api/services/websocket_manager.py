@@ -30,7 +30,6 @@ def _get_entity_names() -> dict[str, tuple[str, str]]:
         _ENTITY_NAMES = {
             settings.tapo_filter_entity: ("Filter", "Filtr"),
             settings.tapo_heater_entity: ("Heater", "Grzałka"),
-            settings.tapo_light_entity: ("Light", "Światło"),
             settings.tapo_air_entity: ("Air Pump", "Pompa Powietrza"),
             settings.tapo_heater_entity_2: ("Heater (Salon)", "Grzałka (Salon)"),
             settings.tapo_filter_entity_2: ("Filter+Pump (Salon)", "Filtr+Pompka (Salon)"),

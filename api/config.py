@@ -38,7 +38,6 @@ class Settings(BaseSettings):
 
     tapo_filter_entity: str = "switch.tapo_filter"
     tapo_heater_entity: str = "switch.tapo_heater"
-    tapo_light_entity: str = "switch.tapo_light"
     tapo_air_entity: str = "switch.tapo_air_pump"
 
     # Tank 2 (Akwarium Salon) - single Meross power strip, individually

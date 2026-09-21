@@ -14,7 +14,11 @@ from services.ha_client import ha_client
 DEVICE_MAP = [
     {"entity_id": settings.tapo_filter_entity, "name": "Filter", "name_pl": "Filtr", "role": "filter", "tank_id": 1},
     {"entity_id": settings.tapo_heater_entity, "name": "Heater", "name_pl": "Grzałka", "role": "heater", "tank_id": 1},
-    {"entity_id": settings.tapo_light_entity, "name": "Light", "name_pl": "Światło", "role": "light", "tank_id": 1},
+    # Tank 1 ("Akwarium Kuchnia") has no Tapo-plug light entry - the tank
+    # light is BLE-controlled (Fluval, with its own on-board schedule, see
+    # the Oswietlenie/Lighting tile) and the Tapo plug once considered for
+    # this role stayed an office light instead. Confirmed with the user
+    # 2026-09-21 - do not re-add without a real physical light plug.
     {"entity_id": settings.tapo_air_entity, "name": "Air Pump", "name_pl": "Pompa Powietrza", "role": "air", "tank_id": 1},
     # Tank 2 (Akwarium Salon) runs on a Meross power strip, addressed via
     # switch.smart_switch_... entity IDs (not Tapo). Confirmed: this Meross
