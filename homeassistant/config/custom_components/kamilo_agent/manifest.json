@@ -1,0 +1,11 @@
+{
+  "domain": "kamilo_agent",
+  "name": "Kamilo",
+  "version": "1.0.0",
+  "codeowners": [],
+  "requirements": [],
+  "dependencies": ["conversation"],
+  "config_flow": true,
+  "documentation": "",
+  "iot_class": "local_polling"
+}

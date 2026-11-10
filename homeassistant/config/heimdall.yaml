@@ -208,6 +208,137 @@ script:
               {% endif %}
       - stop: "Temperature history retrieved"
         response_variable: history_summary
+
+  # Heating boost (added 2026-08-20; restored 2026-09-20 after it was
+  # accidentally dropped from this file during the plant-health/water-test
+  # additions - the dashboard's Boost 30/60/90min buttons on dashboard_biuro
+  # still call script.heimdall_boost_heating, which had stopped existing).
+  # Turns a radiator on to a comfort temperature for a fixed duration, then
+  # reverts to whatever it was doing before - the "boost" button on old
+  # thermostatic valves. Split into two scripts so the voice response is
+  # instant instead of blocking for the full duration:
+  #   - heimdall_boost_heating: the only one exposed to Assist/Kamilo.
+  #     Captures the entity's current state, applies the boost, fires the
+  #     revert worker via `script.turn_on` (fire-and-forget - does NOT wait
+  #     for it, unlike calling a script by its own domain service, which
+  #     would block this one until the worker's delay finishes), then
+  #     returns immediately.
+  #   - heimdall_boost_revert_worker: not exposed to Assist (internal only).
+  #     Just waits out the duration then restores the original hvac_mode/
+  #     temperature captured by the caller.
+  # mode: parallel on both so boosting multiple different radiators at once
+  # doesn't queue/block on each other.
+  #
+  # Known limitation, not yet handled: boosting the SAME entity twice while
+  # a boost is already active starts a second independent revert worker
+  # rather than replacing the first - the first one's revert will still
+  # fire at its original time, potentially cutting the second boost short.
+  # Acceptable for v1; would need a per-entity "boost generation" token
+  # (e.g. an input_text/counter checked before reverting) to fix properly.
+  heimdall_boost_heating:
+    alias: "Heimdall: Boost heating"
+    mode: parallel
+    max: 10
+    description: >-
+      Turn a radiator on to a comfortable temperature for a fixed period of
+      time, then automatically revert to whatever it was doing before -
+      like the "boost" button on an old thermostatic radiator valve. Use
+      this for "turn the heating on for an hour" / "boost the bedroom
+      radiator for 30 minutes" type requests, not for permanent temperature
+      changes (use the normal set-temperature tool for those).
+    fields:
+      entity_id:
+        description: "The radiator/climate entity to boost"
+        example: "climate.0xa4c138c7970d8809"
+        required: true
+        selector:
+          entity:
+            domain: climate
+      duration_minutes:
+        description: "How long to keep it boosted, in minutes (5-240, default 60)"
+        example: "60"
+        required: false
+        selector:
+          number:
+            min: 5
+            max: 240
+      temperature:
+        description: "Boost target temperature in °C (default 22)"
+        example: "22"
+        required: false
+        selector:
+          number:
+            min: 15
+            max: 28
+            step: 0.5
+    sequence:
+      - variables:
+          boost_entity: "{{ entity_id }}"
+          boost_duration: "{{ duration_minutes | default(60) | int }}"
+          boost_temperature: "{{ temperature | default(22) | float }}"
+          original_hvac_mode: "{{ states(entity_id) }}"
+          original_temperature: "{{ state_attr(entity_id, 'temperature') }}"
+      - action: climate.set_hvac_mode
+        target:
+          entity_id: "{{ boost_entity }}"
+        data:
+          hvac_mode: heat
+      - action: climate.set_temperature
+        target:
+          entity_id: "{{ boost_entity }}"
+        data:
+          temperature: "{{ boost_temperature }}"
+      - action: script.turn_on
+        target:
+          entity_id: script.heimdall_boost_revert_worker
+        data:
+          variables:
+            target_entity: "{{ boost_entity }}"
+            revert_hvac_mode: "{{ original_hvac_mode }}"
+            revert_temperature: "{{ original_temperature }}"
+            wait_minutes: "{{ boost_duration }}"
+      - variables:
+          boost_result:
+            status: "boosting"
+            entity_id: "{{ boost_entity }}"
+            temperature: "{{ boost_temperature }}"
+            duration_minutes: "{{ boost_duration }}"
+            reverts_at: "{{ (now() + timedelta(minutes=boost_duration)).strftime('%H:%M') }}"
+      - stop: "Boost started"
+        response_variable: boost_result
+
+  heimdall_boost_revert_worker:
+    alias: "Heimdall: Boost revert worker (internal, not voice-exposed)"
+    mode: parallel
+    max: 10
+    sequence:
+      - delay:
+          minutes: "{{ wait_minutes }}"
+      - if:
+          - condition: template
+            value_template: "{{ revert_hvac_mode == 'off' }}"
+        then:
+          - action: climate.set_hvac_mode
+            target:
+              entity_id: "{{ target_entity }}"
+            data:
+              hvac_mode: "off"
+        else:
+          - action: climate.set_hvac_mode
+            target:
+              entity_id: "{{ target_entity }}"
+            data:
+              hvac_mode: "{{ revert_hvac_mode }}"
+          - if:
+              - condition: template
+                value_template: "{{ revert_temperature is not none }}"
+            then:
+              - action: climate.set_temperature
+                target:
+                  entity_id: "{{ target_entity }}"
+                data:
+                  temperature: "{{ revert_temperature }}"
+
   heimdall_plant_health_status:
     alias: "Heimdall: Plant health status"
     description: >-

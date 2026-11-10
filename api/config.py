@@ -41,12 +41,14 @@ class Settings(BaseSettings):
     tapo_light_entity: str = "switch.tapo_light"
     tapo_air_entity: str = "switch.tapo_air_pump"
 
-    # Tank 2 (Akwarium Salon) - single Meross power strip, individually
-    # controlled outlets. No separate air pump outlet: filter+pump share one
-    # switch, so feeding-pause only needs to toggle tapo_filter_entity_2.
-    tapo_filter_entity_2: str = "switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_2"
-    tapo_heater_entity_2: str = "switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_3"
-    tapo_light_entity_2: str = "switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_1"
+    # Tank 2 (Akwarium Salon) - single Zigbee power strip (Zigbee2MQTT,
+    # 0xa4c1387daaa98e50), individually controlled outlets: L1 light, L2
+    # heater, L3 filters, L4 cabinet LED, L5 USB. No separate air pump outlet:
+    # filter+pump share L3, so feeding-pause only toggles tapo_filter_entity_2.
+    # (Was the Meross strip until 2026-10-08; that one is back in the office.)
+    tapo_filter_entity_2: str = "switch.0xa4c1387daaa98e50_l3"
+    tapo_heater_entity_2: str = "switch.0xa4c1387daaa98e50_l2"
+    tapo_light_entity_2: str = "switch.0xa4c1387daaa98e50_l1"
 
     fluval_ble_mac: str = ""
     esphome_temp_entity: str = "sensor.nemo_sensor_temperature"

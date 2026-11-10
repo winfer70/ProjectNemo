@@ -16,8 +16,8 @@ DEVICE_MAP = [
     {"entity_id": settings.tapo_heater_entity, "name": "Heater", "name_pl": "Grzałka", "role": "heater", "tank_id": 1},
     {"entity_id": settings.tapo_light_entity, "name": "Light", "name_pl": "Światło", "role": "light", "tank_id": 1},
     {"entity_id": settings.tapo_air_entity, "name": "Air Pump", "name_pl": "Pompa Powietrza", "role": "air", "tank_id": 1},
-    # Tank 2 (Akwarium Salon) runs on a Meross power strip, addressed via
-    # switch.smart_switch_... entity IDs (not Tapo). Confirmed: this Meross
+    # Tank 2 (Akwarium Salon) runs on a Zigbee power strip, addressed via
+    # switch.0xa4c1387daaa98e50_lN entity IDs (not Tapo). Confirmed: this
     # strip has no power-monitoring hardware at all, so there is no sensor
     # entity to look up here, ever - `power_monitored: False` below skips
     # the HA lookup entirely instead of guessing at nonexistent sensor IDs.
@@ -33,7 +33,7 @@ def _power_entities(switch_id: str) -> tuple[str, str]:
 
     Only called for devices with power_monitored=True (Tank 1's Tapo
     plugs) - see the power_monitored=False entries in DEVICE_MAP above for
-    Tank 2's Meross strip, which has no power-monitoring hardware.
+    Tank 2's Zigbee strip, which has no power-monitoring hardware.
     """
     base = switch_id.removeprefix("switch.")
     return f"sensor.{base}_current_consumption", f"sensor.{base}_today_s_consumption"
@@ -42,7 +42,7 @@ def _power_entities(switch_id: str) -> tuple[str, str]:
 async def fetch_device(d: dict) -> DeviceOut:
     """Fetch live state + power data for one DEVICE_MAP entry from HA.
 
-    Devices with power_monitored=False (Tank 2's Meross strip - no
+    Devices with power_monitored=False (Tank 2's Zigbee strip - no
     power-monitoring hardware) skip the sensor lookup entirely and always
     report watts=None / kwh_today=None.
     """

@@ -266,8 +266,8 @@ async def dosing_reminder():
 async def record_power_history():
     """Write current watts/kwh_today for every smart plug to InfluxDB so the
     Plug Detail sheet in the UI has an actual trend to show instead of only
-    a live snapshot. Devices with no power sensor (Tank 2's Meross-based
-    plugs - that strip has no power-monitoring hardware at all, confirmed,
+    a live snapshot. Devices with no power sensor (Tank 2's Zigbee strip
+    outlets - that strip has no power-monitoring hardware at all, confirmed,
     see power_monitored=False in services/device_status.py) are skipped,
     not errored - this is permanent, not pending.
 

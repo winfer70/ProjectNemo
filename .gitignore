@@ -50,3 +50,20 @@ homeassistant/config/*.bak-*
 homeassistant/config/*.bak
 mosquitto/config/*.bak-*
 zigbee2mqtt/config/*.bak-*
+
+# Local backups, runtime databases and editor state (audit cleanup 2026-11-10)
+backups/
+.cursor/
+.env.bak-*
+api/nemo.db
+homeassistant/config/home-assistant_v2.db*
+homeassistant/config/.cache/
+homeassistant/config/tts/
+homeassistant/config/www/
+# Third-party HA integrations (installed from upstream, not our source)
+homeassistant/config/custom_components/frigate/
+homeassistant/config/custom_components/meross_lan/
+homeassistant/config/custom_components/sonoff/
+# zigbee2mqtt runtime state (holds the network key)
+zigbee2mqtt/config/coordinator_backup.json
+zigbee2mqtt/config/database.db*

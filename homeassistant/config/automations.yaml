@@ -98,7 +98,7 @@
   trigger:
   - platform: mqtt
     topic: zigbee2mqtt/0x54ef4410016759d1
-    value_template: '{{ value_json.action }}'
+    value_template: '{{ value_json.action | default("") }}'
     payload: single_down
   condition:
   - condition: template
@@ -108,19 +108,16 @@
   - choose:
     - conditions:
       - condition: state
-        entity_id: switch.0xa4c1387daaa98e50_l1
+        entity_id: switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_2
         state: 'off'
       - condition: state
-        entity_id: switch.0xa4c1387daaa98e50_l2
+        entity_id: switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_3
         state: 'off'
       - condition: state
-        entity_id: switch.0xa4c1387daaa98e50_l4
+        entity_id: switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_4
         state: 'off'
       - condition: state
-        entity_id: switch.0xa4c1387daaa98e50_l3
-        state: 'off'
-      - condition: state
-        entity_id: switch.0xa4c1387daaa98e50_l5
+        entity_id: switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_5
         state: 'off'
       - condition: state
         entity_id: switch.office_led
@@ -129,9 +126,9 @@
       - service: switch.turn_on
         target:
           entity_id:
-          - switch.0xa4c1387daaa98e50_l3
-          - switch.0xa4c1387daaa98e50_l1
-          - switch.0xa4c1387daaa98e50_l2
+          - switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_4
+          - switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_2
+          - switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_3
       - if:
         - condition: sun
           after: sunset
@@ -139,38 +136,25 @@
         - service: switch.turn_on
           target:
             entity_id:
-            - switch.0xa4c1387daaa98e50_l4
-            - switch.0xa4c1387daaa98e50_l5
+            - switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_5
             - switch.office_led
     default:
     - choose:
       - conditions:
         - condition: state
-          entity_id: switch.0xa4c1387daaa98e50_l4
-          state: 'off'
-        sequence:
-        - service: switch.turn_on
-          target:
-            entity_id: switch.0xa4c1387daaa98e50_l4
-      - conditions:
-        - condition: state
-          entity_id: switch.0xa4c1387daaa98e50_l4
-          state: 'on'
-        - condition: state
-          entity_id: switch.0xa4c1387daaa98e50_l5
+          entity_id: switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_5
           state: 'off'
         sequence:
         - service: switch.turn_on
           target:
             entity_id:
-            - switch.0xa4c1387daaa98e50_l5
+            - switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_5
             - switch.office_led
       default:
       - service: switch.turn_off
         target:
           entity_id:
-          - switch.0xa4c1387daaa98e50_l4
-          - switch.0xa4c1387daaa98e50_l5
+          - switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_5
           - switch.office_led
   mode: single
   id: c3c16e19caff4556b1d2541e7797a690
@@ -178,7 +162,7 @@
   trigger:
   - platform: mqtt
     topic: zigbee2mqtt/0x54ef4410016759d1
-    value_template: '{{ value_json.action }}'
+    value_template: '{{ value_json.action | default("") }}'
     payload: double_down
   condition:
   - condition: template
@@ -188,27 +172,25 @@
   - choose:
     - conditions:
       - condition: state
-        entity_id: switch.0xa4c1387daaa98e50_l3
+        entity_id: switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_4
         state: 'on'
       sequence:
       - service: switch.turn_off
         target:
           entity_id:
-          - switch.0xa4c1387daaa98e50_l1
-          - switch.0xa4c1387daaa98e50_l2
-          - switch.0xa4c1387daaa98e50_l3
-          - switch.0xa4c1387daaa98e50_l4
-          - switch.0xa4c1387daaa98e50_l5
+          - switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_2
+          - switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_3
+          - switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_4
+          - switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_5
           - switch.office_led
     default:
     - service: switch.turn_on
       target:
         entity_id:
-        - switch.0xa4c1387daaa98e50_l1
-        - switch.0xa4c1387daaa98e50_l2
-        - switch.0xa4c1387daaa98e50_l3
-        - switch.0xa4c1387daaa98e50_l4
-        - switch.0xa4c1387daaa98e50_l5
+        - switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_2
+        - switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_3
+        - switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_4
+        - switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_5
         - switch.office_led
   mode: single
   id: ae080d72d7334a71a23002cb0c1f4432
@@ -216,7 +198,7 @@
   alias: 'Gate: Aqara left button (down click) - pulse gate relay'
   triggers:
   - topic: zigbee2mqtt/0x54ef44100156879e
-    value_template: '{{ value_json.action }}'
+    value_template: '{{ value_json.action | default("") }}'
     payload: single_left_down
     trigger: mqtt
   conditions:
@@ -248,28 +230,28 @@
       - condition: or
         conditions:
         - condition: state
-          entity_id: switch.0xa4c1387daaa98e50_l1
+          entity_id: switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_2
           state: 'off'
         - condition: state
-          entity_id: switch.0xa4c1387daaa98e50_l2
+          entity_id: switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_3
           state: 'off'
         - condition: state
-          entity_id: switch.0xa4c1387daaa98e50_l3
+          entity_id: switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_4
           state: 'off'
       sequence:
       - service: switch.turn_on
         target:
           entity_id:
-          - switch.0xa4c1387daaa98e50_l1
-          - switch.0xa4c1387daaa98e50_l2
-          - switch.0xa4c1387daaa98e50_l3
+          - switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_2
+          - switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_3
+          - switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_4
     default:
     - service: switch.turn_off
       target:
         entity_id:
-        - switch.0xa4c1387daaa98e50_l1
-        - switch.0xa4c1387daaa98e50_l2
-        - switch.0xa4c1387daaa98e50_l3
+        - switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_2
+        - switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_3
+        - switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_4
   mode: single
   id: c3eeeffdc2ab4a029a86ff176eec7643
 - id: trv_unavailable_3h_mobile_alert
@@ -339,7 +321,7 @@
   trigger:
   - platform: mqtt
     topic: zigbee2mqtt/0x54ef441001525ff8
-    value_template: '{{ value_json.action }}'
+    value_template: '{{ value_json.action | default("") }}'
     payload: single_down
   condition:
   - condition: template
@@ -483,7 +465,7 @@
   trigger:
   - platform: mqtt
     topic: zigbee2mqtt/0x54ef44100156879e
-    value_template: '{{ value_json.action }}'
+    value_template: '{{ value_json.action | default("") }}'
     payload: single_right_down
   condition:
   - condition: template
@@ -522,7 +504,7 @@
   trigger:
   - platform: mqtt
     topic: zigbee2mqtt/0x449fdafffe431c91
-    value_template: '{{ value_json.action }}'
+    value_template: '{{ value_json.action | default("") }}'
     payload: single
   condition:
   - condition: template
@@ -697,7 +679,7 @@
   trigger:
   - platform: numeric_state
     entity_id: sensor.0xa4c138060885ffff_temperature
-    above: 27.5
+    above: 29.0
     for:
       minutes: 5
   action:
@@ -740,9 +722,7 @@
       review_id: '{{ trigger.payload_json.after.id }}'
       objects_en: '{{ trigger.payload_json.after.data.objects | unique | join('',
         '') }}'
-  - action: notify.send_message
-    target:
-      entity_id: notify.sg_kamil
+  - action: notify.mobile_app_sg_kamil
     data:
       title: "\U0001F6A7 Driveway activity"
       message: 'Detected: {{ objects_en }}'
@@ -794,9 +774,7 @@
       - condition: template
         value_template: '{{ is_learning_gated }}'
       sequence:
-      - action: notify.send_message
-        target:
-          entity_id: notify.sg_kamil
+      - action: notify.mobile_app_sg_kamil
         data:
           title: "\U0001F9EA Frigate learning mode: would open gate"
           message: Recognized {{ car_or_person_name }} by {{ match_method }} — gate
@@ -807,9 +785,7 @@
     - service: switch.turn_on
       target:
         entity_id: switch.brama_sonoff_100254194e_1
-    - action: notify.send_message
-      target:
-        entity_id: notify.sg_kamil
+    - action: notify.mobile_app_sg_kamil
       data:
         title: "\U0001F6A7 Gate opened automatically"
         message: Recognized {{ car_or_person_name }} by {{ match_method }} — opening
@@ -840,16 +816,16 @@
   mode: single
 - id: '1788711244798'
   alias: Grzałka grzanie
-  description: Keep sensor.0xa4c138061c90ffff_temperature at 27.0°C via switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_3
+  description: Keep sensor.0xa4c138061c90ffff_temperature at 26.0°C via switch.0xa4c1387daaa98e50_l2
   triggers:
   - trigger: numeric_state
     entity_id:
     - sensor.0xa4c138061c90ffff_temperature
-    below: 26.9
+    below: 25.9
   - trigger: numeric_state
     entity_id:
     - sensor.0xa4c138061c90ffff_temperature
-    above: 26.9
+    above: 26
   - trigger: homeassistant
     event: start
   - trigger: time_pattern
@@ -861,48 +837,19 @@
     - conditions:
       - condition: numeric_state
         entity_id: sensor.0xa4c138061c90ffff_temperature
-        below: 26.9
+        below: 25.9
       sequence:
       - action: switch.turn_on
         target:
-          entity_id: switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_3
+          entity_id: switch.0xa4c1387daaa98e50_l2
     - conditions:
       - condition: numeric_state
         entity_id: sensor.0xa4c138061c90ffff_temperature
-        above: 26.9
+        above: 26
       sequence:
       - action: switch.turn_off
         target:
-          entity_id: switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_3
-  mode: single
-- id: swiatlo_akwarium_salon
-  alias: Swiatlo akwarium salon
-  description: On 07:30 / off 20:00 via salon aquarium light (outlet_4). Branched
-    by trigger id.
-  triggers:
-  - trigger: time
-    at: '10:00:00'
-    id: turn_on
-  - trigger: time
-    at: '21:00:00'
-    id: turn_off
-  conditions: []
-  actions:
-  - choose:
-    - conditions:
-      - condition: trigger
-        id: turn_on
-      sequence:
-      - action: switch.turn_on
-        target:
-          entity_id: switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_4
-    - conditions:
-      - condition: trigger
-        id: turn_off
-      sequence:
-      - action: switch.turn_off
-        target:
-          entity_id: switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_4
+          entity_id: switch.0xa4c1387daaa98e50_l2
   mode: single
 - id: alarm_telegram_triggered_notify
   alias: 'Alarm: Telegram alert on trigger (repeats until resolved)'
@@ -1052,4 +999,126 @@
   - action: automation.turn_off
     target:
       entity_id: '{{ this.entity_id }}'
+  mode: single
+- id: grzalka_grzanie_biuro
+  alias: Grzałka grzanie biuro
+  description: Keep sensor.0xa4c138061c3fffff_temperature (office aquarium) at 25.0°C
+    via switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_1 (BiurkoLED outlet
+    on the office Meross strip)
+  triggers:
+  - trigger: numeric_state
+    entity_id:
+    - sensor.0xa4c138061c3fffff_temperature
+    below: 24.9
+  - trigger: numeric_state
+    entity_id:
+    - sensor.0xa4c138061c3fffff_temperature
+    above: 25
+  - trigger: homeassistant
+    event: start
+  - trigger: time_pattern
+    minutes: '*'
+    seconds: '10'
+  conditions: []
+  actions:
+  - choose:
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.0xa4c138061c3fffff_temperature
+        below: 24.9
+      sequence:
+      - action: switch.turn_on
+        target:
+          entity_id: switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_1
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.0xa4c138061c3fffff_temperature
+        above: 25
+      sequence:
+      - action: switch.turn_off
+        target:
+          entity_id: switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_1
+  mode: single
+- id: grzalka_grzanie_kuchnia
+  alias: Grzałka grzanie kuchnia
+  description: Keep sensor.0xa4c138060885ffff_temperature (kitchen aquarium) between
+    28.3°C and 28.5°C via switch.grzalka (Tapo P110). On below 28.3, off once it reaches
+    28.5.
+  triggers:
+  - trigger: numeric_state
+    entity_id:
+    - sensor.0xa4c138060885ffff_temperature
+    below: 27.9
+  - trigger: numeric_state
+    entity_id:
+    - sensor.0xa4c138060885ffff_temperature
+    above: 28.2
+  - trigger: homeassistant
+    event: start
+  - trigger: time_pattern
+    minutes: '*'
+    seconds: '10'
+  conditions: []
+  actions:
+  - choose:
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.0xa4c138060885ffff_temperature
+        below: 27.9
+      sequence:
+      - action: switch.turn_on
+        target:
+          entity_id: switch.grzalka
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.0xa4c138060885ffff_temperature
+        above: 28.2
+      sequence:
+      - action: switch.turn_off
+        target:
+          entity_id: switch.grzalka
+  mode: single
+- id: office_heater_outlet_unavailable_alert
+  alias: 'Alert: Office tank heater outlet unavailable'
+  description: Meross outlet_1 feeds the office aquarium heater. If it stays unavailable
+    the thermostat cannot switch it, so tell the user.
+  trigger:
+  - platform: state
+    entity_id: switch.smart_switch_20111713503031290d1748e1e93cb12d_outlet_1
+    to: unavailable
+    for:
+      minutes: 15
+  action:
+  - action: notify.send_message
+    target:
+      entity_id: notify.sg_kamil
+    data:
+      title: Office tank heater outlet offline
+      message: Meross outlet_1 (office aquarium heater) has been unavailable for 15
+        minutes. Office tank is at {{ states('sensor.0xa4c138061c3fffff_temperature')
+        }} °C.
+  mode: single
+- id: office_tank_temp_out_of_range_alert
+  alias: 'Alert: Office tank temperature out of range'
+  description: Office aquarium target is 25 °C; alert below 23.5 or above 27 for 10
+    minutes.
+  trigger:
+  - platform: numeric_state
+    entity_id: sensor.0xa4c138061c3fffff_temperature
+    below: 23.5
+    for:
+      minutes: 10
+  - platform: numeric_state
+    entity_id: sensor.0xa4c138061c3fffff_temperature
+    above: 27
+    for:
+      minutes: 10
+  action:
+  - action: notify.send_message
+    target:
+      entity_id: notify.sg_kamil
+    data:
+      title: Office tank temperature
+      message: Office tank is at {{ states('sensor.0xa4c138061c3fffff_temperature')
+        }} °C (target 25 °C).
   mode: single

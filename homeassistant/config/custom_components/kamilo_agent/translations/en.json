@@ -1,0 +1,20 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect to Kamilo",
+        "description": "Enter the URL of your kamilo-core instance and an HA token from KAMILO_HA_TOKENS.",
+        "data": {
+          "url": "Kamilo URL",
+          "token": "HA Token"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Cannot connect to Kamilo. Check the URL and try again."
+    },
+    "abort": {
+      "already_configured": "Kamilo is already configured."
+    }
+  }
+}

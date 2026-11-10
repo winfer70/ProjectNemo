@@ -17,7 +17,7 @@ router = APIRouter(prefix="/api", tags=["schedule"])
 FEEDING_PAUSE_SECS = 180  # 3 minutes
 
 # Tank 1 (Akwarium Kuchnia): separate filter + air pump Tapo switches.
-# Tank 2 (Akwarium Salon): one Meross outlet powers filter+pump together.
+# Tank 2 (Akwarium Salon): one Zigbee strip outlet (L3) powers filter+pump together.
 FEED_ENTITIES_BY_TANK = {
     1: [settings.tapo_filter_entity, settings.tapo_air_entity],
     2: [settings.tapo_filter_entity_2],

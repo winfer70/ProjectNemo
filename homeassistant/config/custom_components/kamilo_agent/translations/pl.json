@@ -1,0 +1,20 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Połącz z Kamilo",
+        "description": "Podaj adres URL instancji kamilo-core i token z KAMILO_HA_TOKENS.",
+        "data": {
+          "url": "URL Kamilo",
+          "token": "Token HA"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Nie można połączyć się z Kamilo. Sprawdź URL i spróbuj ponownie."
+    },
+    "abort": {
+      "already_configured": "Kamilo jest już skonfigurowane."
+    }
+  }
+}
